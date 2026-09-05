@@ -1,0 +1,27 @@
+# Secrets — the most important line in this file.
+.env
+.env.*
+!.env.example
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Local data stores
+chroma_db/
+data/cache/
+*.sqlite3
+
+# Local model / embedding caches
+.cache/
+models/
+
+# Editors and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

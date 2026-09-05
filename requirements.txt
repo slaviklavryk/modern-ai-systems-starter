@@ -1,0 +1,19 @@
+# Modern AI Systems — Week 1
+#
+# Pinned so the whole class is on one version, for the same reason the Neo4j
+# image tag is pinned: when we debug together, we debug the same thing.
+#
+# Weeks 3+ add chromadb, sentence-transformers, rank_bm25, a Ukrainian
+# lemmatiser, the neo4j driver, and deepeval. Not needed yet — installing them
+# now costs a long download for something Week 1 does not use.
+
+google-genai==2.22.0
+python-dotenv==1.2.3
+
+# Runs prompt_lab.ipynb inside VS Code. Not full JupyterLab -- VS Code has the
+# notebook UI built in, so this is only the kernel.
+#
+# On Windows: install from a SHORT path (C:\dev\modern-ai, not a deep folder
+# inside OneDrive Documents). One of ipykernel's dependencies ships paths that
+# exceed the 260-character limit, and the resulting OSError is unhelpful.
+ipykernel==7.3.0

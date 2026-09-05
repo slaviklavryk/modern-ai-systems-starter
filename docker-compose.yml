@@ -1,0 +1,60 @@
+# Modern AI Systems — course services
+#
+# One compose file for the whole semester (syllabus §11.2).
+# Week 1: `docker compose pull` then `docker compose up -d`.
+#
+# Neo4j Browser: http://localhost:7474   ·   Bolt: bolt://localhost:7687
+
+services:
+  neo4j:
+    # Pinned, never `latest`, so the whole class is on one version and Cypher
+    # behaves identically when debugging someone else's query (§11.2).
+    # 5.26 is the current LTS line. Community edition, explicitly.
+    image: neo4j:5.26-community
+    container_name: modernai-neo4j
+    restart: unless-stopped
+    ports:
+      - "7474:7474"   # HTTP / Neo4j Browser
+      - "7687:7687"   # Bolt / Python driver
+    environment:
+      # Local development only. Never reuse this password anywhere real.
+      NEO4J_AUTH: neo4j/modernai
+
+      # APOC is wanted once graph construction starts in Weeks 5-6.
+      NEO4J_PLUGINS: '["apoc"]'
+
+      # Heap and page cache capped deliberately. An uncapped Neo4j on an 8 GB
+      # laptop already running VS Code, a browser, a local embedding model and
+      # Docker's WSL2 VM is what makes the machine unusable (§11.2).
+      # Student graphs are small; this is plenty.
+      NEO4J_server_memory_heap_initial__size: 512M
+      NEO4J_server_memory_heap_max__size: 512M
+      NEO4J_server_memory_pagecache_size: 512M
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:7474 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  # Offline fallback for weeks when there is no network (§11.4).
+  # Commented out on purpose: the images and models are gigabytes, and Week 1
+  # should not spend its bandwidth on an optional component. Enable it later,
+  # then `docker compose pull ollama` and `docker exec modernai-ollama ollama pull <model>`.
+  #
+  # ollama:
+  #   image: ollama/ollama:0.5.7
+  #   container_name: modernai-ollama
+  #   restart: unless-stopped
+  #   ports:
+  #     - "11434:11434"
+  #   volumes:
+  #     - ollama_data:/root/.ollama
+
+volumes:
+  neo4j_data:
+  neo4j_logs:
+  # ollama_data:
