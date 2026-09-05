@@ -11,7 +11,7 @@ Run these in order. **Start step 1 first and let it download while you do the re
 
 ```bash
 cd C:\dev
-git clone <STARTER-REPO-URL> modern-ai
+git clone https://github.com/slaviklavryk/modern-ai-systems-starter.git modern-ai
 cd modern-ai
 ```
 
