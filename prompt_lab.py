@@ -17,7 +17,7 @@ from google.genai import errors
 
 load_dotenv()
 
-MODEL = "gemini-flash-latest"
+MODEL = "gemini-3.5-flash"
 _client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
 
 
