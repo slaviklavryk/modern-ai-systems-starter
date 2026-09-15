@@ -1,0 +1,640 @@
+<!doctype html>
+<html lang="uk" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Week 1 — Practical: First Calls and the Prompt Lab</title>
+<style>
+:root{
+  --w:1280px; --h:720px;
+  --bg:#fbfaf8; --panel:#ffffff; --ink:#1a1a1a; --ink-soft:#5b5b5b; --ink-faint:#8c8c8c;
+  --rule:#e2ded7; --accent:#1c5d99; --accent-soft:#e8f0f7; --mark:#f5efe3;
+  --code-bg:#f4f2ee; --code-ink:#26303a;
+  --tok-kw:#8a3d8f; --tok-str:#1f6f4a; --tok-com:#8c8c8c; --tok-num:#a35a1f;
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Consolas,"Liberation Mono",Menlo,monospace;
+}
+html[data-theme="dark"]{
+  --bg:#14161a; --panel:#1b1e24; --ink:#e9e6e1; --ink-soft:#a9a5a0; --ink-faint:#6f6b67;
+  --rule:#2c3138; --accent:#6fb3e8; --accent-soft:#1d2b38; --mark:#2a2620;
+  --code-bg:#1f242b; --code-ink:#d6dee7;
+  --tok-kw:#c99ae0; --tok-str:#7fd0a3; --tok-com:#7b7772; --tok-num:#e0a86a;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font-family:var(--font)}
+body.is-overview{overflow:auto}
+
+#stage{position:relative;width:100%;height:100%}
+.frame{position:absolute;top:0;left:0;width:var(--w);height:var(--h);transform-origin:top left}
+.slide{
+  position:absolute;inset:0;background:var(--panel);display:flex;flex-direction:column;
+  padding:56px 72px 40px;visibility:hidden;opacity:0;
+  transition:opacity .18s ease;overflow:hidden;
+}
+.frame.is-active .slide{visibility:visible;opacity:1}
+/* Inactive frames stay in the DOM (for the crossfade) stacked at the same
+   position as the active one. Without this they are invisible but still
+   catch the mouse, which silently blocks selecting text on the slide you
+   can actually see. Overview mode needs the opposite -- every thumbnail
+   must stay clickable -- so the rule is scoped to non-overview only. */
+body:not(.is-overview) .frame:not(.is-active){pointer-events:none}
+.slide-body{flex:1;min-height:0;font-size:calc(23px * var(--fit,1));line-height:1.5}
+
+.slide-title{margin:0 0 .7em;font-size:2.0em;line-height:1.15;font-weight:650;letter-spacing:-.015em}
+.slide--title{justify-content:center;padding:72px 96px}
+.slide--title .slide-body{display:flex;flex-direction:column;justify-content:center}
+.slide--title .slide-title{font-size:3.1em;margin-bottom:.35em}
+.slide-subtitle{margin:0;font-size:1.25em;color:var(--ink-soft);max-width:34em}
+.slide--section{justify-content:center}
+.slide--section .slide-body{display:flex;flex-direction:column;justify-content:center}
+.slide--section .slide-title{font-size:2.6em;margin-bottom:.5em}
+.slide--section .slide-title::after{
+  content:"";display:block;width:2.2em;height:3px;margin-top:.5em;background:var(--accent);border-radius:2px;
+}
+.slide--content .slide-title{
+  padding-bottom:.4em;border-bottom:2px solid var(--rule);
+}
+
+.slide-content h3{margin:1.1em 0 .45em;font-size:1.22em;font-weight:640;color:var(--accent)}
+.slide-content h4,.slide-content h5,.slide-content h6{margin:.9em 0 .35em;font-size:1.05em;font-weight:640}
+.slide-content>:first-child{margin-top:0}
+.slide-content p{margin:0 0 .7em;max-width:46em}
+.slide-content ul,.slide-content ol{margin:0 0 .7em;padding-left:1.35em}
+.slide-content li{margin:.3em 0}
+.slide-content li>ul,.slide-content li>ol{margin:.25em 0 .25em}
+.slide-content ul>li::marker{color:var(--accent)}
+.slide-content strong{font-weight:660}
+.slide-content a{color:var(--accent);text-decoration:none;border-bottom:1px solid var(--rule)}
+.slide-content hr{border:0;border-top:1px solid var(--rule);margin:1em 0}
+.slide-content code{
+  font-family:var(--mono);font-size:.88em;background:var(--code-bg);color:var(--code-ink);
+  padding:.12em .34em;border-radius:4px;
+}
+.slide-content pre{
+  margin:0 0 .75em;background:var(--code-bg);border:1px solid var(--rule);border-left:3px solid var(--accent);
+  border-radius:6px;padding:.7em .9em;overflow:auto;max-width:100%;
+}
+.slide-content pre code{
+  background:none;padding:0;font-size:.82em;line-height:1.45;color:var(--code-ink);
+  display:block;white-space:pre;
+}
+.slide-content pre.verbatim code{font-size:.78em;line-height:1.35}
+.tok-kw{color:var(--tok-kw)}.tok-str{color:var(--tok-str)}
+.tok-com{color:var(--tok-com);font-style:italic}.tok-num{color:var(--tok-num)}
+.slide-content blockquote{
+  margin:0 0 .8em;padding:.6em 1em;background:var(--accent-soft);border-left:3px solid var(--accent);
+  border-radius:0 6px 6px 0;
+}
+.slide-content blockquote p{margin:0;font-size:1.05em}
+.slide-content blockquote p+p{margin-top:.5em}
+.table-wrap{overflow-x:auto;margin:0 0 .8em;max-width:100%}
+.slide-content table{border-collapse:collapse;width:100%;font-size:.92em}
+.slide-content th,.slide-content td{padding:.4em .7em;border-bottom:1px solid var(--rule);vertical-align:top}
+.slide-content th{font-weight:660;color:var(--accent);border-bottom:2px solid var(--rule);white-space:nowrap}
+.slide-content tbody tr:last-child td{border-bottom:none}
+.slide-content img{max-width:100%;height:auto;border-radius:6px}
+
+.slide-foot{
+  display:flex;justify-content:space-between;align-items:flex-end;
+  font-size:13px;color:var(--ink-faint);padding-top:12px;flex:none;
+}
+.slide--title .slide-foot,.slide--section .slide-foot{opacity:.55}
+.foot-num{font-variant-numeric:tabular-nums}
+
+#progress{position:fixed;left:0;top:0;height:3px;background:var(--accent);width:0;z-index:40;transition:width .18s ease}
+#hud{
+  position:fixed;right:14px;bottom:12px;z-index:40;display:flex;gap:10px;align-items:center;
+  font-size:12px;color:var(--ink-faint);background:var(--bg);padding:4px 8px;border-radius:6px;opacity:.75;
+}
+#hud button{
+  font:inherit;color:inherit;background:none;border:1px solid var(--rule);border-radius:5px;
+  padding:2px 7px;cursor:pointer;
+}
+#hud button:hover{color:var(--accent);border-color:var(--accent)}
+
+#notes{
+  position:fixed;right:0;bottom:0;top:0;width:360px;z-index:50;background:var(--panel);
+  border-left:1px solid var(--rule);padding:18px 20px;overflow:auto;
+  font-size:15px;line-height:1.55;transform:translateX(100%);transition:transform .2s ease;
+}
+#notes.is-open{transform:none}
+#notes h3{margin:.9em 0 .3em;font-size:1em;color:var(--accent)}
+#notes p,#notes li{margin:.35em 0}
+#notes pre{background:var(--code-bg);padding:.5em .7em;border-radius:5px;overflow:auto;font-size:.85em}
+#notes code{font-family:var(--mono);font-size:.88em}
+.notes-head{
+  display:flex;justify-content:space-between;align-items:baseline;
+  border-bottom:1px solid var(--rule);padding-bottom:8px;margin-bottom:10px;
+  font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-faint);
+}
+#timer{font-variant-numeric:tabular-nums;font-size:15px;letter-spacing:0;color:var(--ink)}
+.notes-empty{color:var(--ink-faint);font-style:italic}
+
+/* Anchored to the L button in the HUD (bottom-right) horizontally, so
+   opening it is a small mouse/eye movement rather than a trip across the
+   screen -- but full page height, so a normal-length deck lists with no
+   internal scrolling. Closed state keeps pointer-events:none -- the same
+   fix as the inactive-slide-frame bug: an invisible-but-present fixed
+   element must not be able to catch clicks meant for whatever is under it. */
+#outline{
+  position:fixed;right:14px;top:16px;bottom:52px;z-index:50;background:var(--panel);
+  border:1px solid var(--rule);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.22);
+  width:320px;padding:12px 10px;overflow:auto;
+  transform-origin:bottom right;transform:scale(.97);opacity:0;pointer-events:none;
+  transition:transform .15s ease,opacity .15s ease;
+}
+#outline.is-open{transform:scale(1);opacity:1;pointer-events:auto}
+.outline-head{
+  display:flex;justify-content:space-between;align-items:baseline;
+  border-bottom:1px solid var(--rule);padding:0 8px 8px;margin:0 0 6px;
+  font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-faint);
+}
+.outline-item{
+  display:flex;gap:10px;align-items:baseline;padding:7px 8px;border-radius:5px;
+  cursor:pointer;font-size:14px;line-height:1.35;
+}
+.outline-item:hover{background:var(--accent-soft)}
+.outline-item.is-current{background:var(--accent-soft);color:var(--accent);font-weight:650}
+.outline-num{flex:none;width:2em;text-align:right;color:var(--ink-faint);font-variant-numeric:tabular-nums}
+.outline-item.is-current .outline-num{color:var(--accent)}
+.outline-item.is-section .outline-title{font-style:italic}
+
+#overlay{
+  position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.86);color:#fff;
+  display:none;align-items:center;justify-content:center;font-size:15px;line-height:1.7;
+}
+#overlay.is-open{display:flex}
+#overlay dl{display:grid;grid-template-columns:auto 1fr;gap:.4em 1.4em;margin:0}
+#overlay dt{font-family:var(--mono);color:#8fd0ff;text-align:right}
+#overlay dd{margin:0}
+#blank{position:fixed;inset:0;background:#000;z-index:70;display:none}
+#blank.is-open{display:block}
+
+body.is-overview #stage{height:auto;padding:24px}
+body.is-overview .slide{visibility:visible;opacity:1;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.12)}
+body.is-overview .frame{outline:2px solid transparent;border-radius:8px}
+body.is-overview .frame.is-active{outline-color:var(--accent)}
+body.is-overview #hud,body.is-overview #progress{opacity:.9}
+
+@media print{
+  html,body{overflow:visible;height:auto;background:#fff}
+  #progress,#hud,#notes,#outline,#overlay,#blank{display:none!important}
+  #stage{position:static;width:auto;height:auto}
+  .frame{position:static!important;transform:none!important;width:100%;height:auto;page-break-after:always}
+  .slide{
+    position:static;visibility:visible!important;opacity:1!important;
+    height:auto;min-height:0;border:1px solid #ddd;box-shadow:none;page-break-inside:avoid;
+  }
+  .slide-body{font-size:15px!important}
+  @page{size:landscape;margin:10mm}
+}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<div id="stage"><div class="frame" data-index="1"><section class="slide slide--title" aria-label="Slide 1"><div class="slide-body"><h1 class="slide-title">Week 1 — Practical</h1><p class="slide-subtitle">Modern AI Systems · Practical 1</p><div class="slide-content"><p><strong>Calling the model from Python, and finding out what a prompt actually does</strong></p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">1</span></div></section><div class="notes-src" hidden><p>≈90 min. Run sheet in week-01-practical-plan.md §3.</p>
+<p>Project this deck and leave it up. Students self-pace through the steps — do not try to keep 25 people in lockstep. Print it as a handout too (Ctrl+P) so nobody is blocked waiting for you to advance a slide.</p>
+<p>Your job this session is to circulate, not to present.</p>
+<p>Step timings sum to ≈88 min and are guidance, not a script. The prompt lab is the point of the session; the setup steps exist to make it possible.</p>
+<p>NOTE: Docker and Neo4j are deliberately NOT here. They belong to Week 5 and their setup moves to the Week 4 practical — see week-01-practical-plan.md §9.</p></div></div>
+<div class="frame" data-index="2"><section class="slide slide--content" aria-label="Slide 2"><div class="slide-body"><h2 class="slide-title">What you leave with today</h2><div class="slide-content"><ul><li>A working API key</li><li>A Python script that calls a model and reads its token usage</li><li><strong>Evidence, from your own experiments, that how you ask changes what you get</strong></li></ul></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">2</span></div></section><div class="notes-src" hidden><p>≈1 min. Read the list, then start Step 1 immediately — the API key is the long pole.</p>
+<p>The third item is the session's real content. Everything before it is plumbing.</p></div></div>
+<div class="frame" data-index="3"><section class="slide slide--content" aria-label="Slide 3"><div class="slide-body"><h2 class="slide-title">Before anything: the corpus rule</h2><div class="slide-content"><p>Everything you send to the API is used to improve Google's products and models.</p>
+<ul><li><strong>No personal data</strong></li><li><strong>Nothing licence-restricted</strong></li><li><strong>Nothing confidential</strong></li></ul></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">3</span></div></section><div class="notes-src" hidden><p>≈3 min. Say this out loud; it is not a footnote.</p>
+<p>Per §11.3: Ukraine is a supported region and the free tier is legitimate here, but the paid-tier privacy exemption does <strong>not</strong> apply to us. Free-tier prompts and responses are used for training.</p>
+<p>This binds every prompt and every corpus all semester — including the project domain they are about to choose. A student whose domain is their employer's internal documentation has chosen wrong, and better to learn it now than in Week 4.</p></div></div>
+<div class="frame" data-index="4"><section class="slide slide--content" aria-label="Slide 4"><div class="slide-body"><h2 class="slide-title">Step 1 — Cloud project and API key</h2><div class="slide-content"><ol><li>Sign in to <strong>Google AI Studio</strong> with a <strong>personal</strong> Google account (or create new Google account)</li><li>Create a new Cloud project</li><li>Generate an API key in that project</li><li>Copy it somewhere temporary — you will move it in Step 3</li></ol></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">4</span></div></section><div class="notes-src" hidden><p>≈17 min, and the highest-variance segment of the session. Start it first.</p>
+<p>Not a university Workspace account: admins can disable AI Studio per organizational unit, and we are not debugging that today (§11.1).</p>
+<p>Quota is per <strong>Cloud project</strong>, not per key — extra keys in one project add nothing. That is why everyone makes their own: 25 independent allowances rather than one shared pool to exhaust.</p>
+<p>TRIAGE: if a student stalls on phone or card verification, pair them with a working neighbour so they can still do the prompt lab on that machine, and resolve the account outside the session. Do not spend twenty minutes on one account while the room waits.</p></div></div>
+<div class="frame" data-index="5"><section class="slide slide--content" aria-label="Slide 5"><div class="slide-body"><h2 class="slide-title">Step 2 — Python environment</h2><div class="slide-content"><pre class="lang-bash"><code><span class="tok-kw">cd</span> C:\dev
+git clone https://github.com/slaviklavryk/modern-ai-systems-starter.git modern-ai
+<span class="tok-kw">cd</span> modern-ai
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt</code></pre>
+<p><strong>Clone somewhere with a short path.</strong> Not inside OneDrive or Documents.</p>
+<p>macOS / Linux: <code>source .venv/bin/activate</code></p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">5</span></div></section><div class="notes-src" hidden><p>≈6 min.</p>
+<p>One prescribed approach for the whole course (§11.5) — plain <code>venv</code>, because it ships with Python and there is nothing extra to install or fail today.</p>
+<p><strong>The short-path warning is not fussiness — verified on this machine.</strong> <code>ipykernel</code> pulls in <code>jedi</code>, which ships files whose paths exceed Windows' 260-character limit. From a deep folder the install dies with a bare <code>OSError</code> naming a django-stubs <code>.pyi</code> file, which tells a student nothing. From <code>C:\dev\modern-ai</code> it installs cleanly in under a minute. This machine has <code>LongPathsEnabled = 0</code>, and student laptops mostly will too.</p>
+<p>Put "clone to a short path" on the board before they start. It costs one sentence now and saves twenty minutes of triage.</p>
+<p>If someone already uses uv or conda and it works, leave them alone.</p>
+<p>Watch for: the prompt must show <code>(.venv)</code>.</p>
+<p>REPO URL: contents are written and verified in <code>starter-repo/</code>; only the hosting URL is outstanding.</p></div></div>
+<div class="frame" data-index="6"><section class="slide slide--content" aria-label="Slide 6"><div class="slide-body"><h2 class="slide-title">Step 3 — Keys go in <code>.env</code>, never in code</h2><div class="slide-content"><pre class="lang-bash"><code>copy .env.example .env</code></pre>
+<p>Then open <code>.env</code> and paste your key:</p>
+<pre class="verbatim"><code>GEMINI_API_KEY=your-key-here</code></pre></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">6</span></div></section><div class="notes-src" hidden><p>≈5 min.</p>
+<p>Both <code>.env.example</code> and <code>.gitignore</code> are already in the repo; they are copying one and trusting the other — but not before verifying it on the next slide.</p>
+<p>The rule for the semester, stated once, plainly: <strong>a key never appears in a source file, a notebook, a screenshot, or a chat message.</strong> Not even temporarily. Not even on a branch you intend to delete.</p></div></div>
+<div class="frame" data-index="7"><section class="slide slide--content" aria-label="Slide 7"><div class="slide-body"><h2 class="slide-title">Verify it before you continue</h2><div class="slide-content"><pre class="lang-bash"><code>git status</code></pre>
+<p><code>.env</code> must <strong>not</strong> appear in the output.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">7</span></div></section><div class="notes-src" hidden><p>≈2 min. Make everyone actually run this.</p>
+<p>If <code>.env</code> shows up, <code>.gitignore</code> is missing or in the wrong directory. Fix it here — this thirty-second check is what prevents a leaked key in Week 6.</p>
+<p>While you are here, the thing worth saying once: git history is permanent. A key committed in one commit and deleted in the next is still in the first one, still in every clone. So if a key ever leaks, <strong>revoke it in AI Studio first</strong> — the commit cleanup is optional, the revocation is not.</p></div></div>
+<div class="frame" data-index="8"><section class="slide slide--content" aria-label="Slide 8"><div class="slide-body"><h2 class="slide-title">Step 4 — Your first model call</h2><div class="slide-content"><pre class="lang-bash"><code>python hello.py</code></pre>
+<pre class="lang-python"><code>client = genai.Client(api_key=os.environ[<span class="tok-str">"GEMINI_API_KEY"</span>])
+
+response = client.models.generate_content(
+    model=<span class="tok-str">"gemini-3.5-flash"</span>,
+    contents=<span class="tok-str">"Reply with exactly: setup complete"</span>,
+)
+
+<span class="tok-kw">print</span>(response.text)
+<span class="tok-kw">print</span>(response.usage_metadata)</code></pre></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">8</span></div></section><div class="notes-src" hidden><p>≈7 min. The moment the course becomes real — make sure everyone sees a response.</p>
+<p><strong>The model tier, not a version.</strong> We say Flash and pin the exact ID in the starter repo only, because IDs moved 3.0 → 3.8 within a year (§4) — <code>gemini-2.5-flash</code>, this course's original pin, was <strong>retired for new API keys</strong> partway through writing this material; Google's own 404 named <code>gemini-3.6-flash</code> as the replacement. We settled on <code>gemini-3.5-flash</code> instead: active, not a preview build, and — unlike the <code>-lite</code> tier, which returns no <code>thoughts_token_count</code> at all — it keeps the reasoning-token behaviour this demo needs. Pro returns 429 on the free tier, confirmed by probe — this course is Flash-only.</p>
+<p><strong>Re-verify this pin at the start of each semester.</strong> A model that works today can 404 by the next offering, exactly as it did here.</p>
+<p><strong>That second print line.</strong> Have them find <code>thoughts_token_count</code>, then say nothing more about it. Measured on this course's key, <code>gemini-3.5-flash</code>, two runs of this identical prompt:</p>
+<p>prompt=7  thinking=102  answer=2 prompt=7  thinking=71   answer=2</p>
+<p>A hundred-plus, then seventy-one tokens of thinking to emit two tokens of output — on a prompt with nothing to reason about. Same answer both times; invisible cost moved by nearly a third between runs. Week 2 explains it, and it lands far better once they have seen it on their own account. Do not explain it today.</p>
+<p><strong>Pre-empt the noise:</strong> the SDK prints an "automatic function calling (AFC) is not recommended" warning on every call. It is unrelated to anything they did.</p></div></div>
+<div class="frame" data-index="9"><section class="slide slide--section" aria-label="Slide 9"><div class="slide-body"><h2 class="slide-title">The prompt lab</h2></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">9</span></div></section><div class="notes-src" hidden><p>Section divider. ≈24 min, and this is the session.</p>
+<p><strong>Open <code>prompt_lab.ipynb</code> in VS Code.</strong> Kernel picker, top right, choose the interpreter inside <code>.venv</code> — that is the one step that trips people, so say it once to the room.</p>
+<p>Five experiments, one per section, each followed by a ✍️ notes cell they fill in. Putting the notes <em>in the notebook next to the output</em> is deliberate: asked to keep notes in a separate file, most students will not, and the synthesis then has nothing to draw on. Here the empty cell is staring at them under their own result.</p>
+<p>Check a few notes cells as you circulate. "I changed the prompt and it got better" is not a note; push for what specifically changed in the answer.</p>
+<p>RATE LIMITS: the lab is roughly a dozen calls per student. At ~6 requests per minute they will hit 429 if they run everything at once. That is fine and it is instructive — <code>ask()</code> catches it and prints a plain-language message rather than a stack trace. Tell them to expect it.</p></div></div>
+<div class="frame" data-index="10"><section class="slide slide--content" aria-label="Slide 10"><div class="slide-body"><h2 class="slide-title">Experiment 1 — vague, then specific</h2><div class="slide-content"><pre class="lang-python"><code>ask(<span class="tok-str">"Tell me about Lviv."</span>)
+
+ask(<span class="tok-str">"In exactly 3 bullet points, describe Lviv's Old Town "</span>
+    <span class="tok-str">"for a first-time visitor who has one afternoon. "</span>
+    <span class="tok-str">"No history lecture — what to actually do."</span>)</code></pre></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">10</span></div></section><div class="notes-src" hidden><p>≈5 min.</p>
+<p>The first returns an essay. Measured while writing this: roughly a thousand words of history, architecture, and cuisine, none of it asked for.</p>
+<p>The second returns something usable.</p>
+<p>The question to put to the room: <em>the model did not get smarter between those two calls. So what actually changed?</em> Push past "the prompt was better" — what changed is how much of the answer was determined by them rather than guessed by the model.</p></div></div>
+<div class="frame" data-index="11"><section class="slide slide--content" aria-label="Slide 11"><div class="slide-body"><h2 class="slide-title">Experiment 2 — who is it for?</h2><div class="slide-content"><pre class="lang-python"><code>ask(<span class="tok-str">"Explain what an API key is."</span>)
+ask(<span class="tok-str">"Explain what an API key is to a 10-year-old."</span>)
+ask(<span class="tok-str">"Explain what an API key is to a security auditor."</span>)</code></pre></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">11</span></div></section><div class="notes-src" hidden><p>≈4 min.</p>
+<p>Same topic, three audiences, three genuinely different answers — vocabulary, depth, and what each one chooses to leave out.</p>
+<p>The point: audience is information the model does not have unless you supply it. With no audience it does not refuse, and it does not ask. It picks one silently. Every unstated thing gets filled in with a guess.</p></div></div>
+<div class="frame" data-index="12"><section class="slide slide--content" aria-label="Slide 12"><div class="slide-body"><h2 class="slide-title">Experiment 3 — ask for a shape</h2><div class="slide-content"><pre class="lang-python"><code>ask(<span class="tok-str">"List 3 risks of committing an API key to a public "</span>
+    <span class="tok-str">"repository. Return ONLY a JSON array of objects with "</span>
+    <span class="tok-str">"keys 'risk' and 'severity'. No prose, no code fence."</span>)</code></pre>
+<p>Did you get exactly what you asked for?</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">12</span></div></section><div class="notes-src" hidden><p>≈4 min.</p>
+<p>Often yes. Sometimes it wraps the JSON in a code fence anyway, or adds a sentence before it — despite being told twice not to.</p>
+<p>Both outcomes teach. If it complied, ask how they would <em>know</em> it complied without reading it. If it did not, they have just met the reason Week 2 covers structured output as a first-class feature rather than a prompting trick: asking politely for JSON is not a guarantee, and code that parses the reply will crash on the day it is not.</p></div></div>
+<div class="frame" data-index="13"><section class="slide slide--content" aria-label="Slide 13"><div class="slide-body"><h2 class="slide-title">Experiment 4 — something it cannot know</h2><div class="slide-content"><pre class="lang-python"><code>ask(<span class="tok-str">"What is assessed in Lab 2 of the Modern AI Tools "</span>
+    <span class="tok-str">"and Systems course, and what is it worth?"</span>)</code></pre>
+<p>Then paste a few lines of the syllabus in and ask again.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">13</span></div></section><div class="notes-src" hidden><p>≈7 min. The most important experiment of the session — it is the lecture demo, now in their own hands and on their own key.</p>
+<p>Round one: fluent, specific, confident, invented. Ask them how they would have known it was wrong if it had been about a course they had not taken.</p>
+<p>Round two: correct, and it quotes the text.</p>
+<p>Then the point, which they should say rather than you: <strong>the model did not learn anything between those two calls.</strong> The only difference was what it could see.</p>
+<p>Note the <code>ask</code> call in the file also instructs it to reply "not stated" if the text does not answer. Worth pointing at: that instruction is the difference between a system that admits ignorance and one that fills the gap. Week 4 makes it a requirement.</p></div></div>
+<div class="frame" data-index="14"><section class="slide slide--content" aria-label="Slide 14"><div class="slide-body"><h2 class="slide-title">Experiment 5 — the same prompt, three times</h2><div class="slide-content"><pre class="lang-python"><code>repeat(<span class="tok-str">"Name one interesting fact about graph databases."</span>, n=<span class="tok-num">3</span>)</code></pre></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">14</span></div></section><div class="notes-src" hidden><p>≈4 min.</p>
+<p>The answers differ. Usually the token counts differ too, sometimes substantially.</p>
+<p>This unsettles people, and it should. Every test they write for the rest of the semester has to cope with a component that does not return the same thing twice — which is exactly why Week 11 evaluates against a gold set of many queries rather than by eyeballing one output.</p>
+<p>Tie it back to Step 4 if they noticed the thinking tokens move between runs there: same prompt, same answer, different invisible cost.</p></div></div>
+<div class="frame" data-index="15"><section class="slide slide--content" aria-label="Slide 15"><div class="slide-body"><h2 class="slide-title">So what did you actually change?</h2><div class="slide-content"><p>Not the model. Not its knowledge.</p>
+<p><strong>You changed what it could see when it answered.</strong></p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">15</span></div></section><div class="notes-src" hidden><p>≈3 min. Close the block here, and make them do the work.</p>
+<p>Go round the room and collect one line per student from their notes. Then sort what they say into the categories without naming them first — instructions, audience, output shape, source material, examples. They will have discovered most of the taxonomy Week 2 puts names to.</p>
+<p>Land it: every one of those five experiments changed the <em>context</em>, and nothing else. That is the whole course in one sentence, and they now have their own evidence for it rather than a claim from a slide.</p></div></div>
+<div class="frame" data-index="16"><section class="slide slide--section" aria-label="Slide 16"><div class="slide-body"><h2 class="slide-title">The domain clinic</h2></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">16</span></div></section><div class="notes-src" hidden><p>Section divider. ≈14 min, and the segment with the longest consequences in Week 1.</p>
+<p>Protect this time. If you are running late, the prompt lab can lose an experiment — this cannot be cut.</p></div></div>
+<div class="frame" data-index="17"><section class="slide slide--section" aria-label="Slide 17"><div class="slide-body"><h2 class="slide-title">Pick a domain you actually care about</h2><div class="slide-content"><p>You will live with it for twelve weeks. Interest is what carries you through Lab 2.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">17</span></div></section><div class="notes-src" hidden><p>≈2 min.</p>
+<p>Push back on the safe-but-dull choice. A student who picks something to please you will resent it by Week 7.</p>
+<p>If they have no idea: a hobby, a field of study, a game, a sport, music, literature, travel, a fictional universe. The requirement is structure, not seriousness.</p></div></div>
+<div class="frame" data-index="18"><section class="slide slide--content" aria-label="Slide 18"><div class="slide-body"><h2 class="slide-title">Write evidence against all five</h2><div class="slide-content"><div class="table-wrap"><table><thead><tr><th style="text-align:left">#</th><th style="text-align:left">Criterion</th><th style="text-align:left">The test</th></tr></thead><tbody><tr><td style="text-align:left">1</td><td style="text-align:left">An accessible text source</td><td style="text-align:left">Point at it now. Is it legal to use?</td></tr><tr><td style="text-align:left">2</td><td style="text-align:left">Identifiable entities</td><td style="text-align:left">Name five.</td></tr><tr><td style="text-align:left">3</td><td style="text-align:left"><strong>Three relationship types</strong></td><td style="text-align:left">Write them as <code>A —VERB→ B</code>.</td></tr><tr><td style="text-align:left">4</td><td style="text-align:left">Two plausible tool actions</td><td style="text-align:left">What would it <em>do</em>, not just answer?</td></tr><tr><td style="text-align:left">5</td><td style="text-align:left">Per-user information worth remembering</td><td style="text-align:left">What should it know about you next week?</td></tr></tbody></table></div></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">18</span></div></section><div class="notes-src" hidden><p>≈6 min of writing, then circulate for the rest.</p>
+<p>Hand out the criteria sheet. They write in sentences, not in their heads — a domain that fails criterion 3 looks fine until someone tries to write the arrows down.</p>
+<p>Circulate the entire segment. This is the highest-value use of your attention in Week 1.</p></div></div>
+<div class="frame" data-index="19"><section class="slide slide--content" aria-label="Slide 19"><div class="slide-body"><h2 class="slide-title">Criterion 3 is where domains die</h2><div class="slide-content"><p><code>Einstein —DEVELOPED→ Relativity</code> <code>Einstein —WORKED_AT→ Princeton</code></p>
+<p>Not: <em>"this article is about Einstein."</em></p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">19</span></div></section><div class="notes-src" hidden><p>≈4 min. Say the consequence out loud.</p>
+<p>If the only relationships you can name are "is about" and "mentions", you do not have a graph — you have a vector store with extra steps, and <strong>Lab 2 becomes impossible.</strong> You would find out in Week 6, with no time to change.</p>
+<p>That is the entire reason this clinic is in Week 1 rather than Week 5.</p>
+<p>The usual fix is narrowing to a domain containing people, organisations, events, or dependencies. Flat bodies of articles usually fail. Redirect on the spot — do not let a failing domain leave the room with a provisional approval.</p></div></div>
+<div class="frame" data-index="20"><section class="slide slide--section" aria-label="Slide 20"><div class="slide-body"><h2 class="slide-title">If the corpus fights you, drop it</h2><div class="slide-content"><p>Curated fallback corpora are available, <strong>unpenalised</strong>.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">20</span></div></section><div class="notes-src" hidden><p>≈2 min. Offer this explicitly, more than once.</p>
+<p>Sourcing, licensing, and cleaning a corpus can eat more hours than all the AI work in Lab 1, and it teaches nothing this course assesses (§3.2).</p>
+<p>Students will not ask — they will quietly burn a week and arrive at Lab 1 with nothing. Say the word "unpenalised" out loud.</p></div></div>
+<div class="frame" data-index="21"><section class="slide slide--content" aria-label="Slide 21"><div class="slide-body"><h2 class="slide-title">Before you leave</h2><div class="slide-content"><ul><li>[ ] Personal Google account and Cloud project created</li><li>[ ] API key working — a real response, not just a key string</li><li>[ ] <code>.env</code> holds the key; <code>git status</code> does not show it</li><li>[ ] You can say what to do if a key leaks</li><li>[ ] <code>hello.py</code> runs; you found <code>thoughts_token_count</code></li><li>[ ] All five experiments run, with notes on what changed</li><li>[ ] Proposal drafted, with evidence against all five criteria</li><li>[ ] <strong>Domain provisionally approved, or redirected, by me</strong></li></ul></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">21</span></div></section><div class="notes-src" hidden><p>≈3 min. Verified by you or a paired classmate — not self-reported.</p>
+<p>The last line is the one that matters. A student leaving with an unchecked domain has gained nothing from the clinic.</p></div></div>
+<div class="frame" data-index="22"><section class="slide slide--content" aria-label="Slide 22"><div class="slide-body"><h2 class="slide-title">Due end of Week 2</h2><div class="slide-content"><p><strong>Milestone 0 — Project Proposal.</strong> One page: domain, intended users, the problem, candidate AI functionality, knowledge sources, evidence against all five criteria.</p>
+<blockquote><p>Lab 1 is not accepted without an approved proposal.</p></blockquote></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">22</span></div></section><div class="notes-src" hidden><p>≈2 min.</p>
+<p>Be explicit about the two stages so the later deadline is not misread: their domain was approved or redirected <strong>today</strong>. Next week's deadline is for the written page, not for finding out whether the domain works.</p>
+<p>Graded within Lab 1.</p></div></div>
+<div class="frame" data-index="23"><section class="slide slide--section" aria-label="Slide 23"><div class="slide-body"><h2 class="slide-title">Troubleshooting</h2></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">23</span></div></section><div class="notes-src" hidden><p>Section divider. Do not present these — jump to one when someone hits it, or point at the printed handout.</p></div></div>
+<div class="frame" data-index="24"><section class="slide slide--content" aria-label="Slide 24"><div class="slide-body"><h2 class="slide-title"><code>OSError</code> during <code>pip install</code></h2><div class="slide-content"><p>You cloned into too deep a folder. Windows path limit.</p>
+<pre class="lang-bash"><code><span class="tok-kw">cd</span> C:\dev
+git clone https://github.com/slaviklavryk/modern-ai-systems-starter.git modern-ai</code></pre>
+<p>Then recreate the venv.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">24</span></div></section><div class="notes-src" hidden><p>Verified on this machine: <code>ipykernel</code> → <code>jedi</code> ships django-stubs paths past 260 characters, and with <code>LongPathsEnabled = 0</code> the install dies naming a <code>.pyi</code> file that means nothing to a student.</p>
+<p>Moving the repo is faster and safer than enabling long paths, which needs admin rights and a reboot. Do not go down that road mid-session.</p></div></div>
+<div class="frame" data-index="25"><section class="slide slide--section" aria-label="Slide 25"><div class="slide-body"><h2 class="slide-title">Notebook has no kernel</h2><div class="slide-content"><p>VS Code, kernel picker top right → the interpreter inside <code>.venv</code>.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">25</span></div></section><div class="notes-src" hidden><p>The single most common notebook problem, and it looks like a broken install rather than an unselected kernel. Say it to the room once before they open the notebook.</p>
+<p>If <code>import prompt_lab</code> fails, they opened the notebook from outside the repo folder.</p></div></div>
+<div class="frame" data-index="26"><section class="slide slide--content" aria-label="Slide 26"><div class="slide-body"><h2 class="slide-title"><code>ModuleNotFoundError</code></h2><div class="slide-content"><p>Your prompt is missing <code>(.venv)</code>.</p>
+<pre class="lang-bash"><code>.venv\Scripts\activate
+pip install -r requirements.txt</code></pre></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">26</span></div></section><div class="notes-src" hidden><p>Installed into system Python while running inside the venv, or the reverse.</p></div></div>
+<div class="frame" data-index="27"><section class="slide slide--content" aria-label="Slide 27"><div class="slide-body"><h2 class="slide-title"><code>KeyError</code> or <code>API key not valid</code></h2><div class="slide-content"><ul><li>The variable in <code>.env</code> is not spelled <code>GEMINI_API_KEY</code></li><li>The key was copied with a trailing space</li><li><code>load_dotenv()</code> was never called</li><li>The key belongs to a different Cloud project</li></ul></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">27</span></div></section><div class="notes-src" hidden><p>The first two account for most of it.</p>
+<p>The whole class uses one spelling — <code>GEMINI_API_KEY</code> — matching the starter repo.</p>
+<p>For the trailing space, have them print <code>len(os.environ["GEMINI_API_KEY"])</code>; it is invisible otherwise.</p></div></div>
+<div class="frame" data-index="28"><section class="slide slide--content" aria-label="Slide 28"><div class="slide-body"><h2 class="slide-title"><code>429 RESOURCE_EXHAUSTED</code></h2><div class="slide-content"><p>You have hit the per-minute ceiling: about <strong>6 requests per minute</strong>.</p>
+<p>It is a fixed window, not a backoff. Waiting five seconds does nothing.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">28</span></div></section><div class="notes-src" hidden><p>Measured directly on this course's account: 6 requests per minute, confirmed twice — 2026-09-03 on <code>gemini-flash-latest</code>, and again 2026-09-05 on <code>gemini-3.5-flash</code> after the course switched off the rolling alias. Same ceiling both times; it looks like an account-level limit, not a per-model one.</p>
+<p><code>ask()</code> catches this and waits 25s rather than crashing. Expect to see the message during the prompt lab — it is not a mistake, it is the free tier.</p>
+<p>On Pro: a 429 on the very first call is expected. Pro is not on the free tier. Use Flash.</p></div></div>
+<div class="frame" data-index="29"><section class="slide slide--content" aria-label="Slide 29"><div class="slide-body"><h2 class="slide-title"><code>503 UNAVAILABLE</code></h2><div class="slide-content"><blockquote><p>This model is currently experiencing high demand.</p></blockquote>
+<p>Not your fault, not your key, not your quota. <code>ask()</code> backs off and retries.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">29</span></div></section><div class="notes-src" hidden><p>Hit repeatedly while building this session on 2026-09-04: six attempts and ~2 minutes of exponential backoff before the call succeeded. Earlier the same day, first attempt worked. Load fluctuates hard.</p>
+<p>Distinguish it from the 429 explicitly, because they look alike and the responses differ: <strong>429 means wait for the minute window; 503 means the model is busy for everyone.</strong></p>
+<p>If the room hits sustained 503s, do not let 25 students hammer it — pause the lab, run one experiment together on the projector, and continue when it clears. See week-01-practical-plan.md §8.</p></div></div></div>
+
+<aside id="notes" aria-label="Speaker notes">
+  <div class="notes-head"><span>Speaker notes</span><span id="timer">00:00</span></div>
+  <div id="notes-body"></div>
+</aside>
+
+<aside id="outline" aria-label="Slide list">
+  <div class="outline-head"><span>Slides</span><span id="outline-count">29</span></div>
+  <div id="outline-list"></div>
+</aside>
+
+<div id="hud">
+  <span id="counter">1 / 29</span>
+  <button type="button" data-act="prev" title="Previous (←)">‹</button>
+  <button type="button" data-act="next" title="Next (→)">›</button>
+  <button type="button" data-act="notes" title="Speaker notes (S)">S</button>
+  <button type="button" data-act="overview" title="Overview (O)">O</button>
+  <button type="button" data-act="outline" title="Slide list (L)">L</button>
+  <button type="button" data-act="theme" title="Light / dark (T)">T</button>
+  <button type="button" data-act="help" title="Help (?)">?</button>
+</div>
+
+<div id="overlay" role="dialog" aria-label="Keyboard shortcuts">
+  <dl>
+    <dt>← →</dt><dd>Previous / next slide</dd>
+    <dt>Space</dt><dd>Next slide</dd>
+    <dt>Home / End</dt><dd>First / last slide</dd>
+    <dt>1–9</dt><dd>Jump to slide number, then Enter</dd>
+    <dt>S</dt><dd>Speaker notes and lecture timer</dd>
+    <dt>R</dt><dd>Reset the timer</dd>
+    <dt>O</dt><dd>Slide overview — a visual grid, click a slide to jump</dd>
+    <dt>L</dt><dd>Slide list — titles only, click to jump</dd>
+    <dt>T</dt><dd>Light / dark, for the room you are in</dd>
+    <dt>F</dt><dd>Fullscreen</dd>
+    <dt>B</dt><dd>Blank the screen</dd>
+    <dt>Ctrl+P</dt><dd>Print / export a PDF handout</dd>
+    <dt>Esc</dt><dd>Close this, or leave overview</dd>
+  </dl>
+</div>
+<div id="blank"></div>
+
+<script>
+(function(){
+  "use strict";
+  var W = 1280, H = 720;
+  var stage = document.getElementById("stage");
+  var frames = Array.prototype.slice.call(stage.querySelectorAll(".frame"));
+  var notesPanel = document.getElementById("notes");
+  var notesBody = document.getElementById("notes-body");
+  var outlinePanel = document.getElementById("outline");
+  var outlineList = document.getElementById("outline-list");
+  var OUTLINE = [{"i": 1, "t": "Week 1 — Practical", "k": "title"}, {"i": 2, "t": "What you leave with today", "k": "content"}, {"i": 3, "t": "Before anything: the corpus rule", "k": "content"}, {"i": 4, "t": "Step 1 — Cloud project and API key", "k": "content"}, {"i": 5, "t": "Step 2 — Python environment", "k": "content"}, {"i": 6, "t": "Step 3 — Keys go in .env, never in code", "k": "content"}, {"i": 7, "t": "Verify it before you continue", "k": "content"}, {"i": 8, "t": "Step 4 — Your first model call", "k": "content"}, {"i": 9, "t": "The prompt lab", "k": "section"}, {"i": 10, "t": "Experiment 1 — vague, then specific", "k": "content"}, {"i": 11, "t": "Experiment 2 — who is it for?", "k": "content"}, {"i": 12, "t": "Experiment 3 — ask for a shape", "k": "content"}, {"i": 13, "t": "Experiment 4 — something it cannot know", "k": "content"}, {"i": 14, "t": "Experiment 5 — the same prompt, three times", "k": "content"}, {"i": 15, "t": "So what did you actually change?", "k": "content"}, {"i": 16, "t": "The domain clinic", "k": "section"}, {"i": 17, "t": "Pick a domain you actually care about", "k": "section"}, {"i": 18, "t": "Write evidence against all five", "k": "content"}, {"i": 19, "t": "Criterion 3 is where domains die", "k": "content"}, {"i": 20, "t": "If the corpus fights you, drop it", "k": "section"}, {"i": 21, "t": "Before you leave", "k": "content"}, {"i": 22, "t": "Due end of Week 2", "k": "content"}, {"i": 23, "t": "Troubleshooting", "k": "section"}, {"i": 24, "t": "OSError during pip install", "k": "content"}, {"i": 25, "t": "Notebook has no kernel", "k": "section"}, {"i": 26, "t": "ModuleNotFoundError", "k": "content"}, {"i": 27, "t": "KeyError or API key not valid", "k": "content"}, {"i": 28, "t": "429 RESOURCEEXHAUSTED", "k": "content"}, {"i": 29, "t": "503 UNAVAILABLE", "k": "content"}];
+  var counter = document.getElementById("counter");
+  var progress = document.getElementById("progress");
+  var overlay = document.getElementById("overlay");
+  var blank = document.getElementById("blank");
+  var total = frames.length;
+  var index = 0;
+  var overview = false;
+  var pending = "";
+  var pendingTimer = null;
+
+  function store(key, value){ try{ localStorage.setItem(key, value); }catch(e){} }
+  function load(key){ try{ return localStorage.getItem(key); }catch(e){ return null; } }
+
+  var savedTheme = load("deck-theme");
+  if(savedTheme === "light" || savedTheme === "dark"){
+    document.documentElement.setAttribute("data-theme", savedTheme);
+  }
+
+  /* Shrink a slide's type until its content fits the fixed 1280x720 box.
+     Content is never removed -- only scaled. */
+  function fit(frame){
+    var slide = frame.querySelector(".slide");
+    var body = frame.querySelector(".slide-body");
+    if(!slide || !body) return;
+    body.style.setProperty("--fit", 1);
+    if(body.scrollHeight <= body.clientHeight + 1) { frame.removeAttribute("data-overflow"); return; }
+    var lo = 0.55, hi = 1, best = 0.55;
+    for(var i = 0; i < 9; i++){
+      var mid = (lo + hi) / 2;
+      body.style.setProperty("--fit", mid);
+      if(body.scrollHeight <= body.clientHeight + 1){ best = mid; lo = mid; } else { hi = mid; }
+    }
+    body.style.setProperty("--fit", best);
+    if(best <= 0.56 && body.scrollHeight > body.clientHeight + 1){
+      frame.setAttribute("data-overflow", "1");
+    } else {
+      frame.removeAttribute("data-overflow");
+    }
+  }
+
+  function layout(){
+    if(overview){
+      document.body.classList.add("is-overview");
+      var pad = 24, gap = 18;
+      var cols = window.innerWidth > 1500 ? 4 : (window.innerWidth > 1000 ? 3 : 2);
+      var cellW = (window.innerWidth - pad * 2 - gap * (cols - 1)) / cols;
+      var scale = cellW / W;
+      var cellH = H * scale;
+      frames.forEach(function(frame, i){
+        var col = i % cols, row = Math.floor(i / cols);
+        frame.style.transform = "translate(" + (col * (cellW + gap)) + "px," +
+                                (row * (cellH + gap)) + "px) scale(" + scale + ")";
+      });
+      stage.style.height = (Math.ceil(total / cols) * (cellH + gap) + pad) + "px";
+    } else {
+      document.body.classList.remove("is-overview");
+      stage.style.height = "";
+      var s = Math.min(window.innerWidth / W, window.innerHeight / H);
+      var x = (window.innerWidth - W * s) / 2, y = (window.innerHeight - H * s) / 2;
+      frames.forEach(function(frame){
+        frame.style.transform = "translate(" + x + "px," + y + "px) scale(" + s + ")";
+      });
+    }
+  }
+
+  function renderNotes(){
+    var src = frames[index].querySelector(".notes-src");
+    notesBody.innerHTML = src ? src.innerHTML
+      : '<p class="notes-empty">No notes for this slide.</p>';
+  }
+
+  /* Built once: a plain list of slide titles, independent of the O overview
+     grid. textContent only -- a title is untrusted-ish authored text, and
+     this sidesteps ever needing to HTML-escape it. */
+  function buildOutline(){
+    OUTLINE.forEach(function(o){
+      var row = document.createElement("div");
+      row.className = "outline-item" + (o.k === "section" || o.k === "title" ? " is-section" : "");
+      row.setAttribute("data-index", o.i);
+      var num = document.createElement("span");
+      num.className = "outline-num";
+      num.textContent = o.i;
+      var t = document.createElement("span");
+      t.className = "outline-title";
+      t.textContent = o.t;
+      row.appendChild(num);
+      row.appendChild(t);
+      outlineList.appendChild(row);
+    });
+  }
+
+  function updateOutlineHighlight(){
+    var items = outlineList.querySelectorAll(".outline-item");
+    for(var i = 0; i < items.length; i++){
+      items[i].classList.toggle("is-current", i === index);
+    }
+  }
+
+  function show(next, push){
+    index = Math.max(0, Math.min(total - 1, next));
+    frames.forEach(function(frame, i){ frame.classList.toggle("is-active", i === index); });
+    counter.textContent = (index + 1) + " / " + total;
+    progress.style.width = (total > 1 ? (index / (total - 1)) * 100 : 100) + "%";
+    renderNotes();
+    if(outlinePanel.classList.contains("is-open")) updateOutlineHighlight();
+    if(push !== false){
+      try{ history.replaceState(null, "", "#" + (index + 1)); }catch(e){}
+    }
+    if(overview) frames[index].scrollIntoView({block:"nearest"});
+  }
+
+  /* Lecture timer -- starts on first use of the notes panel. */
+  var elapsed = 0, ticking = null, timerEl = document.getElementById("timer");
+  function paint(){
+    var m = Math.floor(elapsed / 60), s = elapsed % 60;
+    timerEl.textContent = (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s;
+  }
+  function startTimer(){
+    if(ticking) return;
+    ticking = setInterval(function(){ elapsed++; paint(); }, 1000);
+  }
+
+  function toggleNotes(){
+    var open = notesPanel.classList.toggle("is-open");
+    if(open) startTimer();
+  }
+  function toggleOutline(){
+    var open = outlinePanel.classList.toggle("is-open");
+    if(open){
+      updateOutlineHighlight();
+      var current = outlineList.querySelector(".outline-item.is-current");
+      if(current) current.scrollIntoView({block:"nearest"});
+    }
+  }
+  function toggleOverview(){
+    overview = !overview;
+    layout();
+    if(!overview) frames[index].scrollIntoView({block:"nearest"});
+  }
+  function toggleTheme(){
+    var root = document.documentElement;
+    var next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    root.setAttribute("data-theme", next);
+    store("deck-theme", next);
+  }
+
+  document.getElementById("hud").addEventListener("click", function(ev){
+    var act = ev.target.getAttribute && ev.target.getAttribute("data-act");
+    if(!act) return;
+    if(act === "prev") show(index - 1);
+    else if(act === "next") show(index + 1);
+    else if(act === "notes") toggleNotes();
+    else if(act === "overview") toggleOverview();
+    else if(act === "outline") toggleOutline();
+    else if(act === "theme") toggleTheme();
+    else if(act === "help") overlay.classList.toggle("is-open");
+  });
+
+  outlineList.addEventListener("click", function(ev){
+    var item = ev.target.closest ? ev.target.closest(".outline-item") : null;
+    if(!item) return;
+    show(parseInt(item.getAttribute("data-index"), 10) - 1);
+    outlinePanel.classList.remove("is-open");
+  });
+
+  stage.addEventListener("click", function(ev){
+    if(!overview) return;
+    var frame = ev.target.closest ? ev.target.closest(".frame") : null;
+    if(!frame) return;
+    show(frames.indexOf(frame));
+    toggleOverview();
+  });
+
+  overlay.addEventListener("click", function(){ overlay.classList.remove("is-open"); });
+  blank.addEventListener("click", function(){ blank.classList.remove("is-open"); });
+
+  document.addEventListener("keydown", function(ev){
+    if(ev.ctrlKey || ev.metaKey || ev.altKey) return;
+    var key = ev.key;
+
+    if(/^[0-9]$/.test(key)){
+      pending += key;
+      clearTimeout(pendingTimer);
+      pendingTimer = setTimeout(function(){ pending = ""; }, 1200);
+      return;
+    }
+    if(key === "Enter" && pending){
+      show(parseInt(pending, 10) - 1);
+      pending = "";
+      return;
+    }
+
+    switch(key){
+      case "ArrowRight": case "PageDown": case " ": case "Spacebar":
+        ev.preventDefault(); show(index + 1); break;
+      case "ArrowLeft": case "PageUp":
+        ev.preventDefault(); show(index - 1); break;
+      case "ArrowDown": ev.preventDefault(); show(index + 1); break;
+      case "ArrowUp": ev.preventDefault(); show(index - 1); break;
+      case "Home": ev.preventDefault(); show(0); break;
+      case "End": ev.preventDefault(); show(total - 1); break;
+      case "s": case "S": case "і": case "І": toggleNotes(); break;
+      case "o": case "O": case "щ": case "Щ": toggleOverview(); break;
+      case "l": case "L": case "д": case "Д": toggleOutline(); break;
+      case "t": case "T": case "е": case "Е": toggleTheme(); break;
+      case "r": case "R": case "к": case "К": elapsed = 0; paint(); break;
+      case "b": case "B": case "и": case "И": blank.classList.toggle("is-open"); break;
+      case "f": case "F": case "а": case "А":
+        if(document.fullscreenElement) document.exitFullscreen();
+        else if(document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+        break;
+      case "?": overlay.classList.toggle("is-open"); break;
+      case "Escape":
+        if(blank.classList.contains("is-open")) blank.classList.remove("is-open");
+        else if(overlay.classList.contains("is-open")) overlay.classList.remove("is-open");
+        else if(overview) toggleOverview();
+        else if(outlinePanel.classList.contains("is-open")) outlinePanel.classList.remove("is-open");
+        else notesPanel.classList.remove("is-open");
+        break;
+    }
+  });
+
+  var touchX = null;
+  document.addEventListener("touchstart", function(ev){ touchX = ev.touches[0].clientX; }, {passive:true});
+  document.addEventListener("touchend", function(ev){
+    if(touchX === null) return;
+    var dx = ev.changedTouches[0].clientX - touchX;
+    if(Math.abs(dx) > 60) show(index + (dx < 0 ? 1 : -1));
+    touchX = null;
+  }, {passive:true});
+
+  var resizeTimer = null;
+  window.addEventListener("resize", function(){
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(layout, 90);
+  });
+  window.addEventListener("beforeprint", function(){ frames.forEach(fit); });
+
+  function boot(){
+    buildOutline();
+    frames.forEach(fit);
+    layout();
+    var hash = parseInt((location.hash || "").replace("#", ""), 10);
+    show(isNaN(hash) ? 0 : hash - 1, false);
+    var bad = frames.filter(function(f){ return f.hasAttribute("data-overflow"); })
+                    .map(function(f){ return f.getAttribute("data-index"); });
+    if(bad.length){
+      console.warn("[deck] content still overflows after scaling on slide(s): " + bad.join(", ") +
+                   " -- split them in the source Markdown with an --- rule.");
+    }
+  }
+  if(document.readyState === "complete") boot();
+  else window.addEventListener("load", boot);
+})();
+</script>
+</body>
+</html>

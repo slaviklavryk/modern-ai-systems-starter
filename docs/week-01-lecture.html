@@ -1,0 +1,674 @@
+<!doctype html>
+<html lang="uk" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Week 1 — Modern AI and the AI Software Stack</title>
+<style>
+:root{
+  --w:1280px; --h:720px;
+  --bg:#fbfaf8; --panel:#ffffff; --ink:#1a1a1a; --ink-soft:#5b5b5b; --ink-faint:#8c8c8c;
+  --rule:#e2ded7; --accent:#1c5d99; --accent-soft:#e8f0f7; --mark:#f5efe3;
+  --code-bg:#f4f2ee; --code-ink:#26303a;
+  --tok-kw:#8a3d8f; --tok-str:#1f6f4a; --tok-com:#8c8c8c; --tok-num:#a35a1f;
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Consolas,"Liberation Mono",Menlo,monospace;
+}
+html[data-theme="dark"]{
+  --bg:#14161a; --panel:#1b1e24; --ink:#e9e6e1; --ink-soft:#a9a5a0; --ink-faint:#6f6b67;
+  --rule:#2c3138; --accent:#6fb3e8; --accent-soft:#1d2b38; --mark:#2a2620;
+  --code-bg:#1f242b; --code-ink:#d6dee7;
+  --tok-kw:#c99ae0; --tok-str:#7fd0a3; --tok-com:#7b7772; --tok-num:#e0a86a;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font-family:var(--font)}
+body.is-overview{overflow:auto}
+
+#stage{position:relative;width:100%;height:100%}
+.frame{position:absolute;top:0;left:0;width:var(--w);height:var(--h);transform-origin:top left}
+.slide{
+  position:absolute;inset:0;background:var(--panel);display:flex;flex-direction:column;
+  padding:56px 72px 40px;visibility:hidden;opacity:0;
+  transition:opacity .18s ease;overflow:hidden;
+}
+.frame.is-active .slide{visibility:visible;opacity:1}
+/* Inactive frames stay in the DOM (for the crossfade) stacked at the same
+   position as the active one. Without this they are invisible but still
+   catch the mouse, which silently blocks selecting text on the slide you
+   can actually see. Overview mode needs the opposite -- every thumbnail
+   must stay clickable -- so the rule is scoped to non-overview only. */
+body:not(.is-overview) .frame:not(.is-active){pointer-events:none}
+.slide-body{flex:1;min-height:0;font-size:calc(23px * var(--fit,1));line-height:1.5}
+
+.slide-title{margin:0 0 .7em;font-size:2.0em;line-height:1.15;font-weight:650;letter-spacing:-.015em}
+.slide--title{justify-content:center;padding:72px 96px}
+.slide--title .slide-body{display:flex;flex-direction:column;justify-content:center}
+.slide--title .slide-title{font-size:3.1em;margin-bottom:.35em}
+.slide-subtitle{margin:0;font-size:1.25em;color:var(--ink-soft);max-width:34em}
+.slide--section{justify-content:center}
+.slide--section .slide-body{display:flex;flex-direction:column;justify-content:center}
+.slide--section .slide-title{font-size:2.6em;margin-bottom:.5em}
+.slide--section .slide-title::after{
+  content:"";display:block;width:2.2em;height:3px;margin-top:.5em;background:var(--accent);border-radius:2px;
+}
+.slide--content .slide-title{
+  padding-bottom:.4em;border-bottom:2px solid var(--rule);
+}
+
+.slide-content h3{margin:1.1em 0 .45em;font-size:1.22em;font-weight:640;color:var(--accent)}
+.slide-content h4,.slide-content h5,.slide-content h6{margin:.9em 0 .35em;font-size:1.05em;font-weight:640}
+.slide-content>:first-child{margin-top:0}
+.slide-content p{margin:0 0 .7em;max-width:46em}
+.slide-content ul,.slide-content ol{margin:0 0 .7em;padding-left:1.35em}
+.slide-content li{margin:.3em 0}
+.slide-content li>ul,.slide-content li>ol{margin:.25em 0 .25em}
+.slide-content ul>li::marker{color:var(--accent)}
+.slide-content strong{font-weight:660}
+.slide-content a{color:var(--accent);text-decoration:none;border-bottom:1px solid var(--rule)}
+.slide-content hr{border:0;border-top:1px solid var(--rule);margin:1em 0}
+.slide-content code{
+  font-family:var(--mono);font-size:.88em;background:var(--code-bg);color:var(--code-ink);
+  padding:.12em .34em;border-radius:4px;
+}
+.slide-content pre{
+  margin:0 0 .75em;background:var(--code-bg);border:1px solid var(--rule);border-left:3px solid var(--accent);
+  border-radius:6px;padding:.7em .9em;overflow:auto;max-width:100%;
+}
+.slide-content pre code{
+  background:none;padding:0;font-size:.82em;line-height:1.45;color:var(--code-ink);
+  display:block;white-space:pre;
+}
+.slide-content pre.verbatim code{font-size:.78em;line-height:1.35}
+.tok-kw{color:var(--tok-kw)}.tok-str{color:var(--tok-str)}
+.tok-com{color:var(--tok-com);font-style:italic}.tok-num{color:var(--tok-num)}
+.slide-content blockquote{
+  margin:0 0 .8em;padding:.6em 1em;background:var(--accent-soft);border-left:3px solid var(--accent);
+  border-radius:0 6px 6px 0;
+}
+.slide-content blockquote p{margin:0;font-size:1.05em}
+.slide-content blockquote p+p{margin-top:.5em}
+.table-wrap{overflow-x:auto;margin:0 0 .8em;max-width:100%}
+.slide-content table{border-collapse:collapse;width:100%;font-size:.92em}
+.slide-content th,.slide-content td{padding:.4em .7em;border-bottom:1px solid var(--rule);vertical-align:top}
+.slide-content th{font-weight:660;color:var(--accent);border-bottom:2px solid var(--rule);white-space:nowrap}
+.slide-content tbody tr:last-child td{border-bottom:none}
+.slide-content img{max-width:100%;height:auto;border-radius:6px}
+
+.slide-foot{
+  display:flex;justify-content:space-between;align-items:flex-end;
+  font-size:13px;color:var(--ink-faint);padding-top:12px;flex:none;
+}
+.slide--title .slide-foot,.slide--section .slide-foot{opacity:.55}
+.foot-num{font-variant-numeric:tabular-nums}
+
+#progress{position:fixed;left:0;top:0;height:3px;background:var(--accent);width:0;z-index:40;transition:width .18s ease}
+#hud{
+  position:fixed;right:14px;bottom:12px;z-index:40;display:flex;gap:10px;align-items:center;
+  font-size:12px;color:var(--ink-faint);background:var(--bg);padding:4px 8px;border-radius:6px;opacity:.75;
+}
+#hud button{
+  font:inherit;color:inherit;background:none;border:1px solid var(--rule);border-radius:5px;
+  padding:2px 7px;cursor:pointer;
+}
+#hud button:hover{color:var(--accent);border-color:var(--accent)}
+
+#notes{
+  position:fixed;right:0;bottom:0;top:0;width:360px;z-index:50;background:var(--panel);
+  border-left:1px solid var(--rule);padding:18px 20px;overflow:auto;
+  font-size:15px;line-height:1.55;transform:translateX(100%);transition:transform .2s ease;
+}
+#notes.is-open{transform:none}
+#notes h3{margin:.9em 0 .3em;font-size:1em;color:var(--accent)}
+#notes p,#notes li{margin:.35em 0}
+#notes pre{background:var(--code-bg);padding:.5em .7em;border-radius:5px;overflow:auto;font-size:.85em}
+#notes code{font-family:var(--mono);font-size:.88em}
+.notes-head{
+  display:flex;justify-content:space-between;align-items:baseline;
+  border-bottom:1px solid var(--rule);padding-bottom:8px;margin-bottom:10px;
+  font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-faint);
+}
+#timer{font-variant-numeric:tabular-nums;font-size:15px;letter-spacing:0;color:var(--ink)}
+.notes-empty{color:var(--ink-faint);font-style:italic}
+
+/* Anchored to the L button in the HUD (bottom-right) horizontally, so
+   opening it is a small mouse/eye movement rather than a trip across the
+   screen -- but full page height, so a normal-length deck lists with no
+   internal scrolling. Closed state keeps pointer-events:none -- the same
+   fix as the inactive-slide-frame bug: an invisible-but-present fixed
+   element must not be able to catch clicks meant for whatever is under it. */
+#outline{
+  position:fixed;right:14px;top:16px;bottom:52px;z-index:50;background:var(--panel);
+  border:1px solid var(--rule);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.22);
+  width:320px;padding:12px 10px;overflow:auto;
+  transform-origin:bottom right;transform:scale(.97);opacity:0;pointer-events:none;
+  transition:transform .15s ease,opacity .15s ease;
+}
+#outline.is-open{transform:scale(1);opacity:1;pointer-events:auto}
+.outline-head{
+  display:flex;justify-content:space-between;align-items:baseline;
+  border-bottom:1px solid var(--rule);padding:0 8px 8px;margin:0 0 6px;
+  font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-faint);
+}
+.outline-item{
+  display:flex;gap:10px;align-items:baseline;padding:7px 8px;border-radius:5px;
+  cursor:pointer;font-size:14px;line-height:1.35;
+}
+.outline-item:hover{background:var(--accent-soft)}
+.outline-item.is-current{background:var(--accent-soft);color:var(--accent);font-weight:650}
+.outline-num{flex:none;width:2em;text-align:right;color:var(--ink-faint);font-variant-numeric:tabular-nums}
+.outline-item.is-current .outline-num{color:var(--accent)}
+.outline-item.is-section .outline-title{font-style:italic}
+
+#overlay{
+  position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.86);color:#fff;
+  display:none;align-items:center;justify-content:center;font-size:15px;line-height:1.7;
+}
+#overlay.is-open{display:flex}
+#overlay dl{display:grid;grid-template-columns:auto 1fr;gap:.4em 1.4em;margin:0}
+#overlay dt{font-family:var(--mono);color:#8fd0ff;text-align:right}
+#overlay dd{margin:0}
+#blank{position:fixed;inset:0;background:#000;z-index:70;display:none}
+#blank.is-open{display:block}
+
+body.is-overview #stage{height:auto;padding:24px}
+body.is-overview .slide{visibility:visible;opacity:1;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.12)}
+body.is-overview .frame{outline:2px solid transparent;border-radius:8px}
+body.is-overview .frame.is-active{outline-color:var(--accent)}
+body.is-overview #hud,body.is-overview #progress{opacity:.9}
+
+@media print{
+  html,body{overflow:visible;height:auto;background:#fff}
+  #progress,#hud,#notes,#outline,#overlay,#blank{display:none!important}
+  #stage{position:static;width:auto;height:auto}
+  .frame{position:static!important;transform:none!important;width:100%;height:auto;page-break-after:always}
+  .slide{
+    position:static;visibility:visible!important;opacity:1!important;
+    height:auto;min-height:0;border:1px solid #ddd;box-shadow:none;page-break-inside:avoid;
+  }
+  .slide-body{font-size:15px!important}
+  @page{size:landscape;margin:10mm}
+}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<div id="stage"><div class="frame" data-index="1"><section class="slide slide--title" aria-label="Slide 1"><div class="slide-body"><h1 class="slide-title">Modern AI Systems</h1><p class="slide-subtitle">Modern AI Systems · Lecture 1</p><div class="slide-content"><p><em>How do we build software that uses modern AI models as one component of a larger intelligent system?</em></p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">1</span></div></section><div class="notes-src" hidden><p>≈90 min. Run sheet in week-01-lecture-plan.md §3.</p>
+<p>Open cold with the guiding question on screen. Take two or three answers from the room before showing anything else — you want their current mental model out loud, because most of the lecture is adjusting it.</p>
+<p>Do not start with logistics. Start with the idea.</p></div></div>
+<div class="frame" data-index="2"><section class="slide slide--section" aria-label="Slide 2"><div class="slide-body"><h2 class="slide-title">How did we get here?</h2></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">2</span></div></section><div class="notes-src" hidden><p>Section divider. ≈15 min for this whole block — keep moving, this is the part most of the room half-knows already.</p>
+<p>The organising idea, which you should state before the slides: at every stage, ask <strong>what did "programming" mean?</strong> That is the through-line, and it sets up the paradigm shift later.</p></div></div>
+<div class="frame" data-index="3"><section class="slide slide--content" aria-label="Slide 3"><div class="slide-body"><h2 class="slide-title">Classical Algorithm</h2><div class="slide-content"><p>Humans write the rules (code, program). The machine executes them.</p>
+<pre class="verbatim"><code>if temperature &gt; 38 and cough:
+    diagnosis = "possible influenza"</code></pre>
+<p><strong>Programming meant:</strong> writing the rules by hand.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">3</span></div></section><div class="notes-src" hidden><p>≈3 min.</p>
+<p>Worked where rules are knowable and few. Broke on anything with real-world variety — the expert systems of the 1980s collapsed under the cost of maintaining rule bases.</p>
+<p>Key failure: nobody can enumerate the rules for "is this a photo of a cat".</p></div></div>
+<div class="frame" data-index="4"><section class="slide slide--content" aria-label="Slide 4"><div class="slide-body"><h2 class="slide-title">Machine learning</h2><div class="slide-content"><p>Humans supply labelled examples. The machine infers the rules.</p>
+<p><strong>Example: is this email spam?</strong></p>
+<ul><li>Show it 10,000 emails, each labelled <code>spam</code> or <code>not spam</code></li><li>For each one, count things a human picked in advance — <em>contains "free"?</em> · <em>number of exclamation marks</em> · <em>sender seen before?</em></li><li>The machine learns which combination of counts predicts the label</li></ul>
+<p><strong>Programming meant:</strong> collecting labels, and hand-picking which counts to feed it.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">4</span></div></section><div class="notes-src" hidden><p>≈4 min.</p>
+<p>The shift from Classical AI: we stopped writing the <em>if/else</em> rules ourselves and started supplying <em>examples of right answers</em> instead. The machine works out the rule that fits them.</p>
+<p>The catch, and the reason for the next slide: a human still had to decide in advance which counts (features) were worth measuring. Nobody hand-designs "number of exclamation marks" for a cat photo — that feature works for spam and nothing else.</p>
+<p>This is called <strong>feature engineering</strong>, and for years it was most of the actual job.</p>
+<p>Also: one model per task. This spam classifier knows nothing about sentiment, or cats, or anything else. A new task meant starting over.</p></div></div>
+<div class="frame" data-index="5"><section class="slide slide--content" aria-label="Slide 5"><div class="slide-body"><h2 class="slide-title">Deep learning</h2><div class="slide-content"><p>The machine learns the features too — not just the rule on top of them.</p>
+<p><strong>Example: is this a photo of a cat?</strong></p>
+<pre class="verbatim"><code>   pixels  →  edges  →  shapes  →  ears, whiskers  →  "cat"</code></pre>
+<p>Nobody wrote "detect an edge" or "detect a whisker." The network discovered that those were the useful things to look for, on its own, from millions of labelled photos.</p>
+<p><strong>Programming meant:</strong> choosing an architecture and finding enough data — not deciding what to measure.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">5</span></div></section><div class="notes-src" hidden><p>≈4 min.</p>
+<p>2012 onward. This is the one genuine leap in this slide's story: feature engineering, the "most of the job" from the previous slide, mostly disappears. The network's early layers learn to detect edges; later layers combine edges into shapes; later still into parts like ears and whiskers; the last layer says "cat."</p>
+<p>Say plainly: nobody programmed the edge detector. It emerged from data, because detecting edges turned out to be a useful step toward the label.</p>
+<p>Point at the diagram and note the shape of it — small pieces combining into bigger ones — because next week's transformer slide and Week 3's embeddings both reuse this same idea of "the machine finds its own useful representation."</p>
+<p>But the economics did not change: still one model per task, still thousands of labelled examples per task, still weeks of work before you know whether it works. A cat-photo network knows nothing about spam.</p>
+<p>This is the world most ML courses describe. The next two slides are why this course is not that course.</p></div></div>
+<div class="frame" data-index="6"><section class="slide slide--content" aria-label="Slide 6"><div class="slide-body"><h2 class="slide-title">Transformers, 2017</h2><div class="slide-content"><p><strong>Attention:</strong> for each word, look at every other word in the sentence and decide which ones matter most to it.</p>
+<blockquote><p><em>"The trophy didn't fit in the suitcase because <strong>it</strong> was too big."</em> What does <em>it</em> mean? Attention weighs <em>it</em> against every other word — <em>trophy</em> wins — and that is the mechanism, not a trick.</p></blockquote>
+<p><strong>And it does this for the whole sentence at once</strong>, not one word after another — which means training can happen <strong>in parallel</strong>, across many chips simultaneously.</p>
+<p>Parallel training is what made scale affordable.</p>
+<p><strong>This is the "T" in GPT</strong> — Generative Pre-trained Transformer.</p>
+<p><em>Vaswani et al., "Attention Is All You Need," Google, 2017 — the paper that started it.</em></p>
+<p><a href="https://poloclub.github.io/transformer-explainer/">Interactive transformer visualisation →</a></p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">6</span></div></section><div class="notes-src" hidden><p>≈2 min. One slide, conceptual only. Week 2 revisits attention at the level we need.</p>
+<p>Read the trophy/suitcase sentence aloud and ask the room what "it" refers to before explaining anything. They resolve it instantly and unconsciously — that instant, whole-sentence weighing of "which word matters to which other word" is exactly what attention does mechanically. This is a classic ambiguous-pronoun example, chosen because a human resolves it by holding the whole sentence in mind at once, which is the same thing the model does.</p>
+<p>The older approach (before 2017) read one word at a time, in order, each step waiting on the one before it — like one person reading a queue of instructions aloud, word by word. Attention removes that ordering requirement: since every word can already see every other word directly, there is nothing forcing the words to be processed one after another. That is what "trains in parallel" means concretely — many words, many chips, all at once, instead of one long queue.</p>
+<p>The point to land is not the architecture. It is that this parallelism removed the sequential bottleneck in training, which made "just make it much bigger" viable for the first time.</p>
+<p>Spell out GPT while you are here, since half the room uses the word daily without knowing what it stands for:</p>
+<p><strong>G</strong>enerative — it produces new text, not just a label or a score <strong>P</strong>re-trained — trained once, in advance, on a general corpus, before it ever sees a specific task <strong>T</strong>ransformer — this architecture, the one on this slide</p>
+<p>Worth one sentence: "GPT" started as OpenAI's name for their model family, and has since become a generic word the way "hoover" did for vacuum cleaners — this course uses "foundation model" or "LLM" for the general case and reserves "GPT" for OpenAI's actual models.</p>
+<p>The citation is worth a sentence too: this came out of Google, not OpenAI — Google published the mechanism, OpenAI built GPT on top of it a year later. Small piece of trivia the room tends to enjoy: the title is a pun on the Beatles' "All You Need Is Love," which is part of why a paper title is still being quoted by name a decade on.</p>
+<p>If there's time, pull up the interactive visualiser live — watching attention weights light up on a real sentence lands the trophy/suitcase point better than the slide alone.</p></div></div>
+<div class="frame" data-index="7"><section class="slide slide--content" aria-label="Slide 7"><div class="slide-body"><h2 class="slide-title">What is an LLM?</h2><div class="slide-content"><p><strong>L</strong>arge — billions of parameters, trained on a huge slice of the internet <strong>L</strong>anguage — it works on text <strong>M</strong>odel — a function that predicts what comes next</p>
+<p><strong>The core mechanic, in one line:</strong> given the words so far, predict the most likely next word. Then feed that word back in, and predict the next one. Repeat.</p>
+<blockquote><p>"The capital of France is <em>_</em>" → <strong>Paris</strong> (very likely), not <em>banana</em> (very unlikely).</p></blockquote></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">7</span></div></section><div class="notes-src" hidden><p>≈2 min. The missing bridge between the last two slides — attention explains <em>how</em> it weighs words against each other; this slide says <em>what it's doing that for</em>.</p>
+<p>Walk the France example literally: the model isn't "looking up" Paris. It is scoring every possible next word by how likely it is to follow everything before it, and Paris scores far higher than any alternative. Do that scoring once, output the winner, append it to the sentence, and do it again — one word at a time. A whole essay is this loop, run thousands of times.</p>
+<p>This is deliberately the <em>floor</em> of the explanation, not the full mechanism — tokenisation, the actual probability distribution, and sampling parameters are Week 2. Today's job is just: attention (previous slide) is the mechanism <em>inside</em> each prediction; this next-word loop is <em>what it's repeatedly doing</em>; foundation model (next slide) is what you get when this training recipe is scaled up enormously. Three different questions, three consecutive slides, on purpose.</p></div></div>
+<div class="frame" data-index="8"><section class="slide slide--content" aria-label="Slide 8"><div class="slide-body"><h2 class="slide-title">Foundation LLMs (Large Language Models)</h2><div class="slide-content"><p>Pretrain <strong>once</strong>, on an enormous <strong>general corpus</strong>. Adapt to a task by <strong>describing the task</strong>, not by retraining.</p>
+<p>GPT · Gemini · Claude · Llama — one model family, many tasks, no retraining.</p>
+<p><strong>Model families</strong>: Language · vision · audio · multimodal · **embedding</p>
+<p><strong>Programming means:</strong> constructing the <strong>right context and asking the right question.</strong></p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">8</span></div></section><div class="notes-src" hidden><p>≈3 min. This is the hinge of the lecture. Slow down here.</p>
+<p>The names on the slide are the point made concrete: four different companies, four different model families, all foundation models in exactly this sense — pretrained once, then adapted by prompting rather than retraining. Say each is a <em>family</em>, not one fixed model — this is deliberately the family name with no version number, the same reason §4 of the syllabus names a tier rather than an ID. This course builds on Gemini's Flash tier, but the concept and everything we build applies to any of them.</p>
+<p>Trace the line back explicitly: hand-written rules → labelled examples → learned features → described tasks. Each step moved work away from the developer and into the model, and this last one moved it further than the others combined.</p>
+<p>And note what the new job is. It is not gone — it moved. It is now about what goes into the context window, which is the whole rest of the semester.</p></div></div>
+<div class="frame" data-index="9"><section class="slide slide--content" aria-label="Slide 9"><div class="slide-body"><h2 class="slide-title">Why now?</h2><div class="slide-content"><ul><li><strong>Scale</strong> — parameters, and the training runs to match</li><li><strong>Data</strong> — a usable fraction of the public internet</li><li><strong>Compute</strong> — GPUs cheap enough to make it thinkable</li><li><strong>Pretraining</strong> — general capability before any specific task</li><li><strong>General-purpose models</strong> — one model, many tasks</li><li><strong>Accessible APIs</strong> — a developer can use one this afternoon</li></ul></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">9</span></div></section><div class="notes-src" hidden><p>≈5 min.</p>
+<p>Ask the room which of these they think mattered most before you give an opinion.</p>
+<p>The honest answer is that no single one was sufficient. Transformers existed for three years before GPT-3 made the shift obvious.</p>
+<p>The last bullet is the one that makes this a software engineering course rather than a research topic. Ten years ago, using a state-of-the-art model meant being a research lab. Now it is an API key — which they will have by the end of this week.</p></div></div>
+<div class="frame" data-index="10"><section class="slide slide--section" aria-label="Slide 10"><div class="slide-body"><h2 class="slide-title">We are not building another ChatGPT</h2><div class="slide-content"><p>We are learning to build <strong>software that uses a model like ChatGPT as one component</strong>.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">10</span></div></section><div class="notes-src" hidden><p>≈2 min. This single sentence sets expectations for the whole semester and heads off the two wrong assumptions in the room: that this is a maths course about transformers, and that this is a course about being good at prompting.</p>
+<p>Neither. It is a software engineering course.</p></div></div>
+<div class="frame" data-index="11"><section class="slide slide--content" aria-label="Slide 11"><div class="slide-body"><h2 class="slide-title">Where AI earns its place</h2><div class="slide-content"><blockquote><p>AI adds value where a problem involves <strong>ambiguity, unstructured input, or natural human interaction</strong> — not because it's available.</p></blockquote>
+<div class="table-wrap"><table><thead><tr><th style="text-align:left">Conventional</th><th style="text-align:left">AI-powered</th></tr></thead><tbody><tr><td style="text-align:left">Keyword search</td><td style="text-align:left">Semantic search</td></tr><tr><td style="text-align:left">FAQ pages</td><td style="text-align:left">Natural-language Q&amp;A</td></tr><tr><td style="text-align:left">Manually classified tickets</td><td style="text-align:left">Automatic classification</td></tr><tr><td style="text-align:left">Fixed document parser</td><td style="text-align:left">Intelligent extraction</td></tr><tr><td style="text-align:left">Manual summarization</td><td style="text-align:left">Automatic summarization</td></tr><tr><td style="text-align:left">Rule-based recommendations</td><td style="text-align:left">Personalized recommendations</td></tr></tbody></table></div></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">11</span></div></section><div class="notes-src" hidden><p>≈4 min.</p>
+<p>The principle first, before the table: ask the room <em>why</em> each right-hand column beats the left. The answer is always the same shape — the left column needed the input to already be tidy (an exact keyword, a ticket someone hand-labelled); the right column copes when it isn't.</p>
+<p>Two worked examples, if there's time for one:</p>
+<p><strong>Support system.</strong> A normal system: FAQ search, submit a ticket. AI adds: natural-language Q&amp;A grounded in the company's docs (RAG — Week 4), automatic ticket classification and routing, conversation summarisation, suggested responses drawn from past cases. Why it's worth it: users don't need to know the exact terminology or where in the knowledge base an answer lives — the system understands intent and retrieves.</p>
+<p><strong>Document processing.</strong> A normal system: an employee retypes an invoice into a database. AI-enhanced: OCR/document AI extracts text, an LLM identifies which fields mean what, results are validated against business rules, ambiguous documents get flagged for a human. A real invoice might resolve to:</p>
+<p>Supplier: ABC Ltd.        Total: $4,275.50 Invoice #: INV-10482      Currency: USD Date: 2026-09-01          PO: PO-8391</p>
+<p>Why it's worth it: documents are not laid out consistently. A traditional rule-based parser breaks the moment the layout changes; an LLM copes with a much wider range of formats without being reprogrammed for each one.</p></div></div>
+<div class="frame" data-index="12"><section class="slide slide--content" aria-label="Slide 12"><div class="slide-body"><h2 class="slide-title">Where it doesn't</h2><div class="slide-content"><blockquote><p>Use AI where the rules are hard to state precisely. Use ordinary code where they're <strong>exact, deterministic, and must be auditable.</strong></p></blockquote>
+<div class="table-wrap"><table><thead><tr><th style="text-align:left">Function</th><th style="text-align:left">Better approach</th><th style="text-align:left">Why not AI</th></tr></thead><tbody><tr><td style="text-align:left">Calculate a total</td><td style="text-align:left">Code / database</td><td style="text-align:left">Arithmetic must be exact</td></tr><tr><td style="text-align:left">Validate a password</td><td style="text-align:left">Regex / validation rules</td><td style="text-align:left">The rules are already explicit</td></tr><tr><td style="text-align:left">Process a transaction</td><td style="text-align:left">Conventional business logic</td><td style="text-align:left">Unpredictable output is unacceptable</td></tr><tr><td style="text-align:left">Authenticate a user</td><td style="text-align:left">Cryptography + auth libraries</td><td style="text-align:left">Must be deterministic and auditable</td></tr><tr><td style="text-align:left">Sort records</td><td style="text-align:left">Database <code>ORDER BY</code></td><td style="text-align:left">Exact, and already fast</td></tr><tr><td style="text-align:left">Enforce permissions</td><td style="text-align:left">RBAC / ABAC rules</td><td style="text-align:left">Access decisions must be explicit</td></tr></tbody></table></div></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">12</span></div></section><div class="notes-src" hidden><p>≈4 min.</p>
+<p>The full list this table is trimmed from also covers: checking a date is valid (standard library, no reasoning needed), calculating tax from a known formula (AI can introduce inconsistent results where none is acceptable), a simple threshold check (an <code>if</code> statement, not a model), storing structured data (a database, not an LLM).</p>
+<p><strong>The example that lands best: one system, both columns at once.</strong> An online shop — AI is genuinely useful for recommending products, understanding natural-language search, generating descriptions, answering questions, catching unusual purchase patterns. But nobody wants AI deciding the final price.</p>
+<p>Circle back to the very first slide's central question here: <em>one component of a larger system.</em> This is the whole point stated concretely — a real system is both columns at once, and the engineering judgement is knowing which parts are which.</p></div></div>
+<div class="frame" data-index="13"><section class="slide slide--content" aria-label="Slide 13"><div class="slide-body"><h2 class="slide-title">What this course is, and is not</h2><div class="slide-content"><div class="table-wrap"><table><thead><tr><th style="text-align:left">Not this course</th><th style="text-align:left">This course</th></tr></thead><tbody><tr><td style="text-align:left">Building neural networks, custom ML systems</td><td style="text-align:left">Using existing LLMs</td></tr><tr><td style="text-align:left">Training foundation models</td><td style="text-align:left">Using them as components</td></tr><tr><td style="text-align:left">AI-powered development</td><td style="text-align:left">AI-powered software</td></tr></tbody></table></div></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">13</span></div></section><div class="notes-src" hidden><p>≈3 min.</p>
+<p>The "not" column matters as much as the "is" column. Several students will have expected the left-hand side and should know now.</p>
+<p>If asked "will we learn how transformers work?" — conceptually in Week 2, in one slide, and that is all we need to build with them.</p></div></div>
+<div class="frame" data-index="14"><section class="slide slide--content" aria-label="Slide 14"><div class="slide-body"><h2 class="slide-title">Course mechanics</h2><div class="slide-content"><ul><li><strong>12 weeks</strong> · two sessions a week — one lecture, one practical</li><li><strong>One semester project</strong>, grown across the whole course<ul><li>Make this worth putting in your CV</li></ul></li><li><strong>Four graded deliverables</strong>, not weekly homework</li><li>No exam</li></ul></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">14</span></div></section><div class="notes-src" hidden><p>≈2 min. Keep this brisk — details are in the syllabus and they can read.</p>
+<p>Emphasise the project is <em>one</em> project. Everything they build in Lab 1 is what Lab 2 extends. Choosing badly in Week 1 is expensive; that is why the practical session has a domain clinic.</p></div></div>
+<div class="frame" data-index="15"><section class="slide slide--content" aria-label="Slide 15"><div class="slide-body"><h2 class="slide-title">Assessment</h2><div class="slide-content"><div class="table-wrap"><table><thead><tr><th style="text-align:left">Deliverable</th><th style="text-align:left">Due</th><th style="text-align:right">Points</th></tr></thead><tbody><tr><td style="text-align:left">Lab 1 — Vector RAG</td><td style="text-align:left">Week 4</td><td style="text-align:right">20</td></tr><tr><td style="text-align:left">Lab 2 — Knowledge graph / Graph RAG</td><td style="text-align:left">Week 7</td><td style="text-align:right">25</td></tr><tr><td style="text-align:left">Lab 3 — Agent, tools, memory</td><td style="text-align:left">Week 10</td><td style="text-align:right">35</td></tr><tr><td style="text-align:left">Final integrated project</td><td style="text-align:left">Week 12</td><td style="text-align:right">20</td></tr></tbody></table></div>
+<p>Passing score: 51</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">15</span></div></section><div class="notes-src" hidden><p>≈2 min.</p>
+<p>Point out the spacing: four weeks, three weeks, three weeks, two weeks. Lab 2 is the hardest and has been given room deliberately.</p></div></div>
+<div class="frame" data-index="16"><section class="slide slide--content" aria-label="Slide 16"><div class="slide-body"><h2 class="slide-title">AI assistance is OK</h2><div class="slide-content"><p>Using coding agents and assistants on this course is **permitted.</p>
+<ol><li><strong>Disclose it</strong> — a short note in every README</li><li><strong>Own it</strong> — you can explain any line you submit</li><li><strong>Know the boundary</strong> — writing your pipeline with an agent is fine; not understanding your own retrieval is not</li></ol></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">16</span></div></section><div class="notes-src" hidden><p>≈3 min.</p>
+<p>This is a course about building with these tools; pretending otherwise would be incoherent. Say that.</p>
+<p>The honest framing: condition 2 is the real one, and the oral walkthrough is where it is checked. Undisclosed use, or inability to explain your own work, goes through normal academic integrity procedure.</p>
+<p>Expect a question about "how much is too much" — the answer is there is no percentage, there is only whether you can explain it.</p></div></div>
+<div class="frame" data-index="17"><section class="slide slide--content" aria-label="Slide 17"><div class="slide-body"><h2 class="slide-title">Context - a demonstration</h2><div class="slide-content"><p>Same model. Same question. Twice.</p>
+<blockquote><p>In the Modern AI Systems course, what is assessed in Lab 2, and what is it worth?</p></blockquote></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">17</span></div></section><div class="notes-src" hidden><p>Section divider. ≈15 min for the demo — the anchor of the session. Protect this time; if you are running late, cut the history block, never this.</p>
+<p>Full script in week-01-lecture-plan.md §4. Recording is ready if the live call fails.</p></div></div>
+<div class="frame" data-index="18"><section class="slide slide--content" aria-label="Slide 18"><div class="slide-body"><h2 class="slide-title">Round 1 — no context</h2><div class="slide-content"><p>Most likely outputs:</p>
+<ol><li>Could not locate the details of what you're asking.</li><li>Searched and found something similar on the Internet and provided an answer.</li><li>Replies "I don't know" (less likely).</li></ol></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">18</span></div></section><div class="notes-src" hidden><p>≈4 min.</p>
+<p>Run it live. Do not editorialise while it generates — let the room read it.</p>
+<p>Then ask: <em>how would you know this is wrong?</em> Sit in the silence. The answer is that from the text alone, you could not. It invented a plausible course.</p>
+<p>Do not call this a bug yet. That is the next slide, and it is worth its own beat.</p></div></div>
+<div class="frame" data-index="19"><section class="slide slide--content" aria-label="Slide 19"><div class="slide-body"><h2 class="slide-title">Round 2 — with context</h2><div class="slide-content"><p>Paste the Lab 2 section of the syllabus into the prompt. Ask again.</p>
+<p>Correct. Specific. <strong>Quotable.</strong></p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">19</span></div></section><div class="notes-src" hidden><p>≈3 min.</p>
+<p>Run it. Point out it now cites specifics — the 25% weight, the re-seedable ingest, the measured comparison — because they were in front of it.</p>
+<p>Then the three points, in this order:</p>
+<ol><li>Same model, same weights, same question. Only the context changed.</li><li>Round 1 was not a malfunction (previous slide — refer back).</li><li>So the engineering question is the one on the next slide.</li></ol></div></div>
+<div class="frame" data-index="20"><section class="slide slide--section" aria-label="Slide 20"><div class="slide-body"><h2 class="slide-title">Which leaves one question</h2><div class="slide-content"><p>How does the right information get into that window — at the right moment, without a human pasting it in by hand?</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">20</span></div></section><div class="notes-src" hidden><p>≈1 min. Ask it, then leave it hanging for a beat before the reveal slide.</p>
+<p>Every remaining week of this course is an answer to this question.</p></div></div>
+<div class="frame" data-index="21"><section class="slide slide--content" aria-label="Slide 21"><div class="slide-body"><h2 class="slide-title">So what is the developer's job now?</h2><div class="slide-content"><p>Not training the model. Not writing the rules.</p>
+<p><strong>Deciding what the model sees, what it can reach, what it may do, and what it remembers.</strong></p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">21</span></div></section><div class="notes-src" hidden><p>≈2 min. This is the thesis of the course in one slide.</p>
+<p>Pause after it. This is the sentence you want them repeating in Week 12.</p></div></div>
+<div class="frame" data-index="22"><section class="slide slide--content" aria-label="Slide 22"><div class="slide-body"><h2 class="slide-title">The rest of the semester</h2><div class="slide-content"><div class="table-wrap"><table><thead><tr><th style="text-align:left">Week</th><th style="text-align:left">Mechanism</th></tr></thead><tbody><tr><td style="text-align:left">2</td><td style="text-align:left">Shape the context by hand — prompting</td></tr><tr><td style="text-align:left">3–4</td><td style="text-align:left">Fetch text into it — retrieval and RAG</td></tr><tr><td style="text-align:left">5–6</td><td style="text-align:left">Fetch relationships into it — knowledge graphs</td></tr><tr><td style="text-align:left">7–8</td><td style="text-align:left">Let the model <em>act</em> and put results back — tools, agents</td></tr><tr><td style="text-align:left">9</td><td style="text-align:left">Carry it across sessions — memory</td></tr><tr><td style="text-align:left">11</td><td style="text-align:left">Find out whether any of it works — evaluation</td></tr></tbody></table></div></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">22</span></div></section><div class="notes-src" hidden><p>≈3 min.</p>
+<p>The reveal: these are not six unrelated technologies. They are six mechanisms for constructing context, which is why the syllabus calls context engineering the spine of the course.</p>
+<p>Say it: if you remember one thing from today, it is that this table is one idea, not six.</p></div></div>
+<div class="frame" data-index="23"><section class="slide slide--content" aria-label="Slide 23"><div class="slide-body"><h2 class="slide-title">The AI Application Stack</h2><div class="slide-content"><pre class="verbatim"><code>   ┌───────────────────────────────────┐
+   │  Application  ·  interface, UX    │   
+   ├───────────────────────────────────┤
+   │  Orchestration  ·  agents, flows  │  
+   ├───────────────────────────────────┤
+   │  Context  ·  prompts, memory      │   
+   ├───────────────────────────────────┤
+   │  Knowledge  ·  vectors, graph     │   
+   ├───────────────────────────────────┤
+   │  Model access  ·  API / SDK       │   
+   ├───────────────────────────────────┤
+   │  Foundation model                 │   
+   └───────────────────────────────────┘</code></pre></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">23</span></div></section><div class="notes-src" hidden><p>≈5 min. Two lists, one slide, deliberately paired row-for-row: the stack layer on the left, the weeks that build it on the right.</p>
+<p><strong>Present it bottom-up, against the reading order of the diagram.</strong> We start at the foundation — given, not built, Week 1 is just learning to call it — and by Week 12 we are at the top, a full application. The diagram's own shape does the work: bottom of the image is the beginning of the semester, top of the image is the end of it.</p>
+<p>Note we build every layer except the bottom one — the only layer most people think about when they hear "AI."</p>
+<p>The one row worth a sentence of caveat: <strong>Context spans Weeks 2 and 9</strong>, not because it is revisited but because it is never <em>not</em> being built — prompting (Week 2) and memory (Week 9) are both context mechanisms, just constructed at different points. This is the same wrinkle the syllabus's own phase table has; do not over-explain it, one sentence is enough.</p>
+<p>Map the labs onto it too: Lab 1 finishes the knowledge layer, Lab 2 deepens it, Lab 3 adds orchestration. By the final project, all six layers are theirs.</p>
+<p>Individual week-by-week topics (not just ranges) are on the earlier "rest of the semester" slide if a student wants that level of detail — this slide's job is the shape of the climb, not the roadmap.</p></div></div>
+<div class="frame" data-index="24"><section class="slide slide--content" aria-label="Slide 24"><div class="slide-body"><h2 class="slide-title">Weekly topics</h2><div class="slide-content"><ol><li><strong>Modern AI and the AI software stack</strong> — history to foundation models; project domain selection</li><li><strong>LLMs, tokens, context, reasoning, prompting</strong> — tokenization, structured output</li><li><strong>Embeddings and semantic search</strong> — chunking, vector stores</li><li><strong>Retrieval-Augmented Generation</strong> — RAG architecture, evaluation with a gold set → <strong>Lab 1 due</strong></li><li><strong>Knowledge graphs and Neo4j for AI</strong> — graph modeling, Cypher, vector vs. graph retrieval</li><li><strong>Graph RAG</strong> — combining vector and graph retrieval, when Graph RAG is (un)necessary</li><li><strong>Agents, tools, and integration</strong> — tool schemas, agent loop, MCP, prompt-injection/tool safety → <strong>Lab 2 due</strong></li><li><strong>Agent architectures, skills, and workflows</strong> — tools vs. skills vs. workflows vs. agents;</li><li><strong>Memory</strong> — short/long-term, explicit/retrieved memory, failure modes</li><li><strong>Advanced agentic systems</strong> — multi-agent patterns, architecture review → <strong>Lab 3 due</strong></li><li><strong>Reliable AI systems</strong> — evaluation methodology, LLM-as-judge, prompt injection, cost/rate limits</li><li><strong>Final AI systems</strong> — integrated project, lab-fair demo → <strong>Final project due</strong></li></ol></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">24</span></div></section></div>
+<div class="frame" data-index="25"><section class="slide slide--content" aria-label="Slide 25"><div class="slide-body"><h2 class="slide-title">The semester project</h2><div class="slide-content"><pre class="verbatim"><code>Domain → Knowledge → Embeddings → RAG
+       → Knowledge graph → Graph RAG → Tools → Agent → Memory
+       → Evaluation → Complete AI system</code></pre>
+<p>Pick a domain <strong>you actually care about.</strong></p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">25</span></div></section><div class="notes-src" hidden><p>≈3 min.</p>
+<p>Every practical session and every lab moves this one project forward. Nothing is throwaway.</p>
+<p>The "care about" part is not sentimental — it is a twelve-week commitment, and interest is what carries them through Lab 2, which is the hard one.</p>
+<p>You are not required to use every technique. Choosing deliberately, and justifying what you left out, is assessed in the final project.</p></div></div>
+<div class="frame" data-index="26"><section class="slide slide--content" aria-label="Slide 26"><div class="slide-body"><h2 class="slide-title">The domain gate — five criteria</h2><div class="slide-content"><ol><li>An accessible text source of reasonable size</li><li>Identifiable entities</li><li><strong>At least three meaningful relationship types</strong></li><li>At least two plausible tool actions</li><li>Some per-user information worth remembering</li></ol></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">26</span></div></section><div class="notes-src" hidden><p>≈4 min.</p>
+<p>State plainly: this is an approval gate, not a formality. A proposal failing any criterion gets redirected before Week 3.</p>
+<p>Walk each one with the test question from the practical plan §5 — "name five entities", "name three relationships as A —VERB→ B", "what would it <em>do</em>, not just answer".</p></div></div>
+<div class="frame" data-index="27"><section class="slide slide--content" aria-label="Slide 27"><div class="slide-body"><h2 class="slide-title">A couple of domains that work</h2><div class="slide-content"><div class="table-wrap"><table><thead><tr><th style="text-align:left">Domain</th><th style="text-align:left">Three relationships</th><th style="text-align:left">A tool action</th><th style="text-align:left">Worth remembering</th></tr></thead><tbody><tr><td style="text-align:left">A football club's history</td><td style="text-align:left"><code>PLAYED_FOR</code> · <code>MANAGED</code> · <code>TRANSFERRED_TO</code></td><td style="text-align:left"><em>Compare two seasons' stats</em></td><td style="text-align:left">Your favourite club — personalise answers</td></tr><tr><td style="text-align:left">A book series or game universe</td><td style="text-align:left"><code>ALLIED_WITH</code> · <code>RULES</code> · <code>LOCATED_IN</code></td><td style="text-align:left"><em>Timeline up to book 3</em></td><td style="text-align:left">Which books you've read — never spoil book 4</td></tr><tr><td style="text-align:left">Your university's course catalogue</td><td style="text-align:left"><code>PREREQUISITE_OF</code> · <code>TAUGHT_BY</code> · <code>PART_OF</code></td><td style="text-align:left"><em>Do I meet the prerequisites for X?</em></td><td style="text-align:left">Courses you've already completed</td></tr></tbody></table></div></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">27</span></div></section><div class="notes-src" hidden><p>≈3 min. Added so the clinic isn't the first time they see what "good" looks like.</p>
+<p>Walk one row properly — the book/game universe tends to land best, because the memory column is concrete rather than generic: "remember what you've read so it never spoils you" is a reason a real person would want that feature, not a textbook example of "personalisation."</p>
+<p>Point out that the <em>source</em> differs across all three — a stats site, a fan wiki or the books themselves, the university's own catalogue — but each one still produces real entities and real verbs between them. That is the only thing the five criteria are actually testing.</p>
+<p>If a student's own idea doesn't fit any of these shapes, that is not automatically a problem — but it is worth working through against the criteria in the clinic rather than assuming it is fine.</p></div></div>
+<div class="frame" data-index="28"><section class="slide slide--content" aria-label="Slide 28"><div class="slide-body"><h2 class="slide-title">Milestone 0 — Project Proposal</h2><div class="slide-content"><p>One page, due <strong>end of Week 2</strong>:</p>
+<p>domain · intended users · the problem · candidate AI functionality · knowledge sources · <strong>evidence against all five criteria</strong></p>
+<blockquote><p>Lab 1 is not accepted without an approved proposal.</p></blockquote></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">28</span></div></section><div class="notes-src" hidden><p>≈2 min.</p>
+<p>Drafted in the practical session <em>this</em> week, with the criteria sheet in hand and me circulating — so nobody writes it alone and discovers a problem in Week 6. Then a week to write it up properly.</p>
+<p>Be clear that the clinic is not merely drafting time: a domain is provisionally approved or redirected on the day. The Week 2 deadline is for the written page, not for finding out whether the domain works.</p>
+<p>Graded as part of Lab 1. The last line is not a threat, it is a schedule fact: an unapproved domain means Lab 1 has nothing to build on.</p></div></div>
+<div class="frame" data-index="29"><section class="slide slide--content" aria-label="Slide 29"><div class="slide-body"><h2 class="slide-title">Before the practical session</h2><div class="slide-content"><ul><li>Create a <strong>personal</strong> Google account — not a university Workspace account</li><li>Install Docker Desktop, VS Code, Python, Git</li><li>Bring a laptop <strong>and the charger</strong></li><li>Come with two or three candidate domains in mind</li></ul></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">29</span></div></section><div class="notes-src" hidden><p>≈2 min. Send this in writing too.</p>
+<p>Personal accounts matter: Workspace admins can disable AI Studio per organizational unit, and we are not debugging that in a 90-minute session.</p>
+<p>A student arriving without Docker installed cannot be fixed inside the session — the download is the slow part, which is exactly what the practical exists to get done on university bandwidth.</p></div></div>
+<div class="frame" data-index="30"><section class="slide slide--section" aria-label="Slide 30"><div class="slide-body"><h2 class="slide-title">Next session: we build the environment</h2><div class="slide-content"><p>Accounts · API keys · key hygiene · Docker · first model call · the domain clinic</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">30</span></div></section><div class="notes-src" hidden><p>≈1 min. Close here.</p>
+<p>Preview Week 2 in one line: what a token actually is, what the context window really costs, and why the model spent seven times more effort thinking than answering.</p>
+<p>That last detail is a real measurement from this course's own account, and it makes them curious. Save the number for Week 2.</p></div></div>
+<div class="frame" data-index="31"><section class="slide slide--content" aria-label="Slide 31"><div class="slide-body"><h2 class="slide-title">The diagram we will keep returning to</h2><div class="slide-content"><pre class="verbatim"><code>              User
+               ↓
+        AI Application
+               ↓
+     Context / Orchestration
+               │
+   ┌───────────┼───────────┐
+   ↓           ↓           ↓
+Knowledge    Tools      Memory
+   │        / Skills       │
+   └───────────┼───────────┘
+               ↓
+              LLM
+               ↓
+            Response</code></pre></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">31</span></div></section><div class="notes-src" hidden><p>≈2 min.</p>
+<p>Today only the outline is real; the branches fill in week by week. Tell them it will reappear most weeks and that by Week 12 it is their own architecture diagram.</p>
+<p>This week: everything except User → LLM → Response is empty. That is the honest starting point.</p></div></div></div>
+
+<aside id="notes" aria-label="Speaker notes">
+  <div class="notes-head"><span>Speaker notes</span><span id="timer">00:00</span></div>
+  <div id="notes-body"></div>
+</aside>
+
+<aside id="outline" aria-label="Slide list">
+  <div class="outline-head"><span>Slides</span><span id="outline-count">31</span></div>
+  <div id="outline-list"></div>
+</aside>
+
+<div id="hud">
+  <span id="counter">1 / 31</span>
+  <button type="button" data-act="prev" title="Previous (←)">‹</button>
+  <button type="button" data-act="next" title="Next (→)">›</button>
+  <button type="button" data-act="notes" title="Speaker notes (S)">S</button>
+  <button type="button" data-act="overview" title="Overview (O)">O</button>
+  <button type="button" data-act="outline" title="Slide list (L)">L</button>
+  <button type="button" data-act="theme" title="Light / dark (T)">T</button>
+  <button type="button" data-act="help" title="Help (?)">?</button>
+</div>
+
+<div id="overlay" role="dialog" aria-label="Keyboard shortcuts">
+  <dl>
+    <dt>← →</dt><dd>Previous / next slide</dd>
+    <dt>Space</dt><dd>Next slide</dd>
+    <dt>Home / End</dt><dd>First / last slide</dd>
+    <dt>1–9</dt><dd>Jump to slide number, then Enter</dd>
+    <dt>S</dt><dd>Speaker notes and lecture timer</dd>
+    <dt>R</dt><dd>Reset the timer</dd>
+    <dt>O</dt><dd>Slide overview — a visual grid, click a slide to jump</dd>
+    <dt>L</dt><dd>Slide list — titles only, click to jump</dd>
+    <dt>T</dt><dd>Light / dark, for the room you are in</dd>
+    <dt>F</dt><dd>Fullscreen</dd>
+    <dt>B</dt><dd>Blank the screen</dd>
+    <dt>Ctrl+P</dt><dd>Print / export a PDF handout</dd>
+    <dt>Esc</dt><dd>Close this, or leave overview</dd>
+  </dl>
+</div>
+<div id="blank"></div>
+
+<script>
+(function(){
+  "use strict";
+  var W = 1280, H = 720;
+  var stage = document.getElementById("stage");
+  var frames = Array.prototype.slice.call(stage.querySelectorAll(".frame"));
+  var notesPanel = document.getElementById("notes");
+  var notesBody = document.getElementById("notes-body");
+  var outlinePanel = document.getElementById("outline");
+  var outlineList = document.getElementById("outline-list");
+  var OUTLINE = [{"i": 1, "t": "Modern AI Systems", "k": "title"}, {"i": 2, "t": "How did we get here?", "k": "section"}, {"i": 3, "t": "Classical Algorithm", "k": "content"}, {"i": 4, "t": "Machine learning", "k": "content"}, {"i": 5, "t": "Deep learning", "k": "content"}, {"i": 6, "t": "Transformers, 2017", "k": "content"}, {"i": 7, "t": "What is an LLM?", "k": "content"}, {"i": 8, "t": "Foundation LLMs (Large Language Models)", "k": "content"}, {"i": 9, "t": "Why now?", "k": "content"}, {"i": 10, "t": "We are not building another ChatGPT", "k": "section"}, {"i": 11, "t": "Where AI earns its place", "k": "content"}, {"i": 12, "t": "Where it doesn't", "k": "content"}, {"i": 13, "t": "What this course is, and is not", "k": "content"}, {"i": 14, "t": "Course mechanics", "k": "content"}, {"i": 15, "t": "Assessment", "k": "content"}, {"i": 16, "t": "AI assistance is OK", "k": "content"}, {"i": 17, "t": "Context - a demonstration", "k": "content"}, {"i": 18, "t": "Round 1 — no context", "k": "content"}, {"i": 19, "t": "Round 2 — with context", "k": "content"}, {"i": 20, "t": "Which leaves one question", "k": "section"}, {"i": 21, "t": "So what is the developer's job now?", "k": "content"}, {"i": 22, "t": "The rest of the semester", "k": "content"}, {"i": 23, "t": "The AI Application Stack", "k": "content"}, {"i": 24, "t": "Weekly topics", "k": "content"}, {"i": 25, "t": "The semester project", "k": "content"}, {"i": 26, "t": "The domain gate — five criteria", "k": "content"}, {"i": 27, "t": "A couple of domains that work", "k": "content"}, {"i": 28, "t": "Milestone 0 — Project Proposal", "k": "content"}, {"i": 29, "t": "Before the practical session", "k": "content"}, {"i": 30, "t": "Next session: we build the environment", "k": "section"}, {"i": 31, "t": "The diagram we will keep returning to", "k": "content"}];
+  var counter = document.getElementById("counter");
+  var progress = document.getElementById("progress");
+  var overlay = document.getElementById("overlay");
+  var blank = document.getElementById("blank");
+  var total = frames.length;
+  var index = 0;
+  var overview = false;
+  var pending = "";
+  var pendingTimer = null;
+
+  function store(key, value){ try{ localStorage.setItem(key, value); }catch(e){} }
+  function load(key){ try{ return localStorage.getItem(key); }catch(e){ return null; } }
+
+  var savedTheme = load("deck-theme");
+  if(savedTheme === "light" || savedTheme === "dark"){
+    document.documentElement.setAttribute("data-theme", savedTheme);
+  }
+
+  /* Shrink a slide's type until its content fits the fixed 1280x720 box.
+     Content is never removed -- only scaled. */
+  function fit(frame){
+    var slide = frame.querySelector(".slide");
+    var body = frame.querySelector(".slide-body");
+    if(!slide || !body) return;
+    body.style.setProperty("--fit", 1);
+    if(body.scrollHeight <= body.clientHeight + 1) { frame.removeAttribute("data-overflow"); return; }
+    var lo = 0.55, hi = 1, best = 0.55;
+    for(var i = 0; i < 9; i++){
+      var mid = (lo + hi) / 2;
+      body.style.setProperty("--fit", mid);
+      if(body.scrollHeight <= body.clientHeight + 1){ best = mid; lo = mid; } else { hi = mid; }
+    }
+    body.style.setProperty("--fit", best);
+    if(best <= 0.56 && body.scrollHeight > body.clientHeight + 1){
+      frame.setAttribute("data-overflow", "1");
+    } else {
+      frame.removeAttribute("data-overflow");
+    }
+  }
+
+  function layout(){
+    if(overview){
+      document.body.classList.add("is-overview");
+      var pad = 24, gap = 18;
+      var cols = window.innerWidth > 1500 ? 4 : (window.innerWidth > 1000 ? 3 : 2);
+      var cellW = (window.innerWidth - pad * 2 - gap * (cols - 1)) / cols;
+      var scale = cellW / W;
+      var cellH = H * scale;
+      frames.forEach(function(frame, i){
+        var col = i % cols, row = Math.floor(i / cols);
+        frame.style.transform = "translate(" + (col * (cellW + gap)) + "px," +
+                                (row * (cellH + gap)) + "px) scale(" + scale + ")";
+      });
+      stage.style.height = (Math.ceil(total / cols) * (cellH + gap) + pad) + "px";
+    } else {
+      document.body.classList.remove("is-overview");
+      stage.style.height = "";
+      var s = Math.min(window.innerWidth / W, window.innerHeight / H);
+      var x = (window.innerWidth - W * s) / 2, y = (window.innerHeight - H * s) / 2;
+      frames.forEach(function(frame){
+        frame.style.transform = "translate(" + x + "px," + y + "px) scale(" + s + ")";
+      });
+    }
+  }
+
+  function renderNotes(){
+    var src = frames[index].querySelector(".notes-src");
+    notesBody.innerHTML = src ? src.innerHTML
+      : '<p class="notes-empty">No notes for this slide.</p>';
+  }
+
+  /* Built once: a plain list of slide titles, independent of the O overview
+     grid. textContent only -- a title is untrusted-ish authored text, and
+     this sidesteps ever needing to HTML-escape it. */
+  function buildOutline(){
+    OUTLINE.forEach(function(o){
+      var row = document.createElement("div");
+      row.className = "outline-item" + (o.k === "section" || o.k === "title" ? " is-section" : "");
+      row.setAttribute("data-index", o.i);
+      var num = document.createElement("span");
+      num.className = "outline-num";
+      num.textContent = o.i;
+      var t = document.createElement("span");
+      t.className = "outline-title";
+      t.textContent = o.t;
+      row.appendChild(num);
+      row.appendChild(t);
+      outlineList.appendChild(row);
+    });
+  }
+
+  function updateOutlineHighlight(){
+    var items = outlineList.querySelectorAll(".outline-item");
+    for(var i = 0; i < items.length; i++){
+      items[i].classList.toggle("is-current", i === index);
+    }
+  }
+
+  function show(next, push){
+    index = Math.max(0, Math.min(total - 1, next));
+    frames.forEach(function(frame, i){ frame.classList.toggle("is-active", i === index); });
+    counter.textContent = (index + 1) + " / " + total;
+    progress.style.width = (total > 1 ? (index / (total - 1)) * 100 : 100) + "%";
+    renderNotes();
+    if(outlinePanel.classList.contains("is-open")) updateOutlineHighlight();
+    if(push !== false){
+      try{ history.replaceState(null, "", "#" + (index + 1)); }catch(e){}
+    }
+    if(overview) frames[index].scrollIntoView({block:"nearest"});
+  }
+
+  /* Lecture timer -- starts on first use of the notes panel. */
+  var elapsed = 0, ticking = null, timerEl = document.getElementById("timer");
+  function paint(){
+    var m = Math.floor(elapsed / 60), s = elapsed % 60;
+    timerEl.textContent = (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s;
+  }
+  function startTimer(){
+    if(ticking) return;
+    ticking = setInterval(function(){ elapsed++; paint(); }, 1000);
+  }
+
+  function toggleNotes(){
+    var open = notesPanel.classList.toggle("is-open");
+    if(open) startTimer();
+  }
+  function toggleOutline(){
+    var open = outlinePanel.classList.toggle("is-open");
+    if(open){
+      updateOutlineHighlight();
+      var current = outlineList.querySelector(".outline-item.is-current");
+      if(current) current.scrollIntoView({block:"nearest"});
+    }
+  }
+  function toggleOverview(){
+    overview = !overview;
+    layout();
+    if(!overview) frames[index].scrollIntoView({block:"nearest"});
+  }
+  function toggleTheme(){
+    var root = document.documentElement;
+    var next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    root.setAttribute("data-theme", next);
+    store("deck-theme", next);
+  }
+
+  document.getElementById("hud").addEventListener("click", function(ev){
+    var act = ev.target.getAttribute && ev.target.getAttribute("data-act");
+    if(!act) return;
+    if(act === "prev") show(index - 1);
+    else if(act === "next") show(index + 1);
+    else if(act === "notes") toggleNotes();
+    else if(act === "overview") toggleOverview();
+    else if(act === "outline") toggleOutline();
+    else if(act === "theme") toggleTheme();
+    else if(act === "help") overlay.classList.toggle("is-open");
+  });
+
+  outlineList.addEventListener("click", function(ev){
+    var item = ev.target.closest ? ev.target.closest(".outline-item") : null;
+    if(!item) return;
+    show(parseInt(item.getAttribute("data-index"), 10) - 1);
+    outlinePanel.classList.remove("is-open");
+  });
+
+  stage.addEventListener("click", function(ev){
+    if(!overview) return;
+    var frame = ev.target.closest ? ev.target.closest(".frame") : null;
+    if(!frame) return;
+    show(frames.indexOf(frame));
+    toggleOverview();
+  });
+
+  overlay.addEventListener("click", function(){ overlay.classList.remove("is-open"); });
+  blank.addEventListener("click", function(){ blank.classList.remove("is-open"); });
+
+  document.addEventListener("keydown", function(ev){
+    if(ev.ctrlKey || ev.metaKey || ev.altKey) return;
+    var key = ev.key;
+
+    if(/^[0-9]$/.test(key)){
+      pending += key;
+      clearTimeout(pendingTimer);
+      pendingTimer = setTimeout(function(){ pending = ""; }, 1200);
+      return;
+    }
+    if(key === "Enter" && pending){
+      show(parseInt(pending, 10) - 1);
+      pending = "";
+      return;
+    }
+
+    switch(key){
+      case "ArrowRight": case "PageDown": case " ": case "Spacebar":
+        ev.preventDefault(); show(index + 1); break;
+      case "ArrowLeft": case "PageUp":
+        ev.preventDefault(); show(index - 1); break;
+      case "ArrowDown": ev.preventDefault(); show(index + 1); break;
+      case "ArrowUp": ev.preventDefault(); show(index - 1); break;
+      case "Home": ev.preventDefault(); show(0); break;
+      case "End": ev.preventDefault(); show(total - 1); break;
+      case "s": case "S": case "і": case "І": toggleNotes(); break;
+      case "o": case "O": case "щ": case "Щ": toggleOverview(); break;
+      case "l": case "L": case "д": case "Д": toggleOutline(); break;
+      case "t": case "T": case "е": case "Е": toggleTheme(); break;
+      case "r": case "R": case "к": case "К": elapsed = 0; paint(); break;
+      case "b": case "B": case "и": case "И": blank.classList.toggle("is-open"); break;
+      case "f": case "F": case "а": case "А":
+        if(document.fullscreenElement) document.exitFullscreen();
+        else if(document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+        break;
+      case "?": overlay.classList.toggle("is-open"); break;
+      case "Escape":
+        if(blank.classList.contains("is-open")) blank.classList.remove("is-open");
+        else if(overlay.classList.contains("is-open")) overlay.classList.remove("is-open");
+        else if(overview) toggleOverview();
+        else if(outlinePanel.classList.contains("is-open")) outlinePanel.classList.remove("is-open");
+        else notesPanel.classList.remove("is-open");
+        break;
+    }
+  });
+
+  var touchX = null;
+  document.addEventListener("touchstart", function(ev){ touchX = ev.touches[0].clientX; }, {passive:true});
+  document.addEventListener("touchend", function(ev){
+    if(touchX === null) return;
+    var dx = ev.changedTouches[0].clientX - touchX;
+    if(Math.abs(dx) > 60) show(index + (dx < 0 ? 1 : -1));
+    touchX = null;
+  }, {passive:true});
+
+  var resizeTimer = null;
+  window.addEventListener("resize", function(){
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(layout, 90);
+  });
+  window.addEventListener("beforeprint", function(){ frames.forEach(fit); });
+
+  function boot(){
+    buildOutline();
+    frames.forEach(fit);
+    layout();
+    var hash = parseInt((location.hash || "").replace("#", ""), 10);
+    show(isNaN(hash) ? 0 : hash - 1, false);
+    var bad = frames.filter(function(f){ return f.hasAttribute("data-overflow"); })
+                    .map(function(f){ return f.getAttribute("data-index"); });
+    if(bad.length){
+      console.warn("[deck] content still overflows after scaling on slide(s): " + bad.join(", ") +
+                   " -- split them in the source Markdown with an --- rule.");
+    }
+  }
+  if(document.readyState === "complete") boot();
+  else window.addEventListener("load", boot);
+})();
+</script>
+</body>
+</html>

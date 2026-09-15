@@ -209,6 +209,38 @@ instead.
 `docker-compose.yml` is here and ready, but it is not needed until **Week 4**. Leave it
 alone for now.
 
+## Slides
+
+Every lecture and practical deck is published from this repository:
+
+**https://slaviklavryk.github.io/modern-ai-systems-starter/**
+
+They are ordinary web pages — no install, and they work on a phone. Inside a deck:
+<kbd>→</kbd> next, <kbd>O</kbd> overview, <kbd>L</kbd> slide list, <kbd>S</kbd> speaker
+notes, <kbd>T</kbd> light or dark, <kbd>F</kbd> fullscreen, <kbd>Ctrl</kbd>+<kbd>P</kbd>
+to print a PDF handout.
+
+The speaker notes are published too, deliberately. They carry the reasoning behind each
+slide, the measured figures, and what the session was trying to achieve — useful when you
+are revising something that made sense in the room and does not on paper.
+
+### Publishing (instructor)
+
+The site is the `docs/` folder on `main`, served by GitHub Pages. Decks are built from the
+planning repository, not from here:
+
+```bash
+python publish_slides.py          # build every deck into starter-repo/docs/
+python publish_slides.py --check  # list what would be published, write nothing
+```
+
+That regenerates `docs/index.html` from whatever decks exist, so publishing a new week is
+one command plus a commit — there is no index to edit by hand. Then commit `docs/`.
+
+One-time setup: **Settings → Pages → Source: Deploy from a branch → `main` → `/docs`**.
+`docs/.nojekyll` is committed so Pages serves the files as-is rather than running Jekyll
+over them.
+
 ## Rules for the whole semester
 
 **Keys never leave `.env`.** Not into a source file, a notebook, a screenshot,

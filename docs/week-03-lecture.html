@@ -1,0 +1,633 @@
+<!doctype html>
+<html lang="uk" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Week 3 — Embeddings, Semantic Search, and RAG</title>
+<style>
+:root{
+  --w:1280px; --h:720px;
+  --bg:#fbfaf8; --panel:#ffffff; --ink:#1a1a1a; --ink-soft:#5b5b5b; --ink-faint:#8c8c8c;
+  --rule:#e2ded7; --accent:#1c5d99; --accent-soft:#e8f0f7; --mark:#f5efe3;
+  --code-bg:#f4f2ee; --code-ink:#26303a;
+  --tok-kw:#8a3d8f; --tok-str:#1f6f4a; --tok-com:#8c8c8c; --tok-num:#a35a1f;
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Consolas,"Liberation Mono",Menlo,monospace;
+}
+html[data-theme="dark"]{
+  --bg:#14161a; --panel:#1b1e24; --ink:#e9e6e1; --ink-soft:#a9a5a0; --ink-faint:#6f6b67;
+  --rule:#2c3138; --accent:#6fb3e8; --accent-soft:#1d2b38; --mark:#2a2620;
+  --code-bg:#1f242b; --code-ink:#d6dee7;
+  --tok-kw:#c99ae0; --tok-str:#7fd0a3; --tok-com:#7b7772; --tok-num:#e0a86a;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font-family:var(--font)}
+body.is-overview{overflow:auto}
+
+#stage{position:relative;width:100%;height:100%}
+.frame{position:absolute;top:0;left:0;width:var(--w);height:var(--h);transform-origin:top left}
+.slide{
+  position:absolute;inset:0;background:var(--panel);display:flex;flex-direction:column;
+  padding:56px 72px 40px;visibility:hidden;opacity:0;
+  transition:opacity .18s ease;overflow:hidden;
+}
+.frame.is-active .slide{visibility:visible;opacity:1}
+/* Inactive frames stay in the DOM (for the crossfade) stacked at the same
+   position as the active one. Without this they are invisible but still
+   catch the mouse, which silently blocks selecting text on the slide you
+   can actually see. Overview mode needs the opposite -- every thumbnail
+   must stay clickable -- so the rule is scoped to non-overview only. */
+body:not(.is-overview) .frame:not(.is-active){pointer-events:none}
+.slide-body{flex:1;min-height:0;font-size:calc(23px * var(--fit,1));line-height:1.5}
+
+.slide-title{margin:0 0 .7em;font-size:2.0em;line-height:1.15;font-weight:650;letter-spacing:-.015em}
+.slide--title{justify-content:center;padding:72px 96px}
+.slide--title .slide-body{display:flex;flex-direction:column;justify-content:center}
+.slide--title .slide-title{font-size:3.1em;margin-bottom:.35em}
+.slide-subtitle{margin:0;font-size:1.25em;color:var(--ink-soft);max-width:34em}
+.slide--section{justify-content:center}
+.slide--section .slide-body{display:flex;flex-direction:column;justify-content:center}
+.slide--section .slide-title{font-size:2.6em;margin-bottom:.5em}
+.slide--section .slide-title::after{
+  content:"";display:block;width:2.2em;height:3px;margin-top:.5em;background:var(--accent);border-radius:2px;
+}
+.slide--content .slide-title{
+  padding-bottom:.4em;border-bottom:2px solid var(--rule);
+}
+
+.slide-content h3{margin:1.1em 0 .45em;font-size:1.22em;font-weight:640;color:var(--accent)}
+.slide-content h4,.slide-content h5,.slide-content h6{margin:.9em 0 .35em;font-size:1.05em;font-weight:640}
+.slide-content>:first-child{margin-top:0}
+.slide-content p{margin:0 0 .7em;max-width:46em}
+.slide-content ul,.slide-content ol{margin:0 0 .7em;padding-left:1.35em}
+.slide-content li{margin:.3em 0}
+.slide-content li>ul,.slide-content li>ol{margin:.25em 0 .25em}
+.slide-content ul>li::marker{color:var(--accent)}
+.slide-content strong{font-weight:660}
+.slide-content a{color:var(--accent);text-decoration:none;border-bottom:1px solid var(--rule)}
+.slide-content hr{border:0;border-top:1px solid var(--rule);margin:1em 0}
+.slide-content code{
+  font-family:var(--mono);font-size:.88em;background:var(--code-bg);color:var(--code-ink);
+  padding:.12em .34em;border-radius:4px;
+}
+.slide-content pre{
+  margin:0 0 .75em;background:var(--code-bg);border:1px solid var(--rule);border-left:3px solid var(--accent);
+  border-radius:6px;padding:.7em .9em;overflow:auto;max-width:100%;
+}
+.slide-content pre code{
+  background:none;padding:0;font-size:.82em;line-height:1.45;color:var(--code-ink);
+  display:block;white-space:pre;
+}
+.slide-content pre.verbatim code{font-size:.78em;line-height:1.35}
+.tok-kw{color:var(--tok-kw)}.tok-str{color:var(--tok-str)}
+.tok-com{color:var(--tok-com);font-style:italic}.tok-num{color:var(--tok-num)}
+.slide-content blockquote{
+  margin:0 0 .8em;padding:.6em 1em;background:var(--accent-soft);border-left:3px solid var(--accent);
+  border-radius:0 6px 6px 0;
+}
+.slide-content blockquote p{margin:0;font-size:1.05em}
+.slide-content blockquote p+p{margin-top:.5em}
+.table-wrap{overflow-x:auto;margin:0 0 .8em;max-width:100%}
+.slide-content table{border-collapse:collapse;width:100%;font-size:.92em}
+.slide-content th,.slide-content td{padding:.4em .7em;border-bottom:1px solid var(--rule);vertical-align:top}
+.slide-content th{font-weight:660;color:var(--accent);border-bottom:2px solid var(--rule);white-space:nowrap}
+.slide-content tbody tr:last-child td{border-bottom:none}
+.slide-content img{max-width:100%;height:auto;border-radius:6px}
+
+.slide-foot{
+  display:flex;justify-content:space-between;align-items:flex-end;
+  font-size:13px;color:var(--ink-faint);padding-top:12px;flex:none;
+}
+.slide--title .slide-foot,.slide--section .slide-foot{opacity:.55}
+.foot-num{font-variant-numeric:tabular-nums}
+
+#progress{position:fixed;left:0;top:0;height:3px;background:var(--accent);width:0;z-index:40;transition:width .18s ease}
+#hud{
+  position:fixed;right:14px;bottom:12px;z-index:40;display:flex;gap:10px;align-items:center;
+  font-size:12px;color:var(--ink-faint);background:var(--bg);padding:4px 8px;border-radius:6px;opacity:.75;
+}
+#hud button{
+  font:inherit;color:inherit;background:none;border:1px solid var(--rule);border-radius:5px;
+  padding:2px 7px;cursor:pointer;
+}
+#hud button:hover{color:var(--accent);border-color:var(--accent)}
+
+#notes{
+  position:fixed;right:0;bottom:0;top:0;width:360px;z-index:50;background:var(--panel);
+  border-left:1px solid var(--rule);padding:18px 20px;overflow:auto;
+  font-size:15px;line-height:1.55;transform:translateX(100%);transition:transform .2s ease;
+}
+#notes.is-open{transform:none}
+#notes h3{margin:.9em 0 .3em;font-size:1em;color:var(--accent)}
+#notes p,#notes li{margin:.35em 0}
+#notes pre{background:var(--code-bg);padding:.5em .7em;border-radius:5px;overflow:auto;font-size:.85em}
+#notes code{font-family:var(--mono);font-size:.88em}
+.notes-head{
+  display:flex;justify-content:space-between;align-items:baseline;
+  border-bottom:1px solid var(--rule);padding-bottom:8px;margin-bottom:10px;
+  font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-faint);
+}
+#timer{font-variant-numeric:tabular-nums;font-size:15px;letter-spacing:0;color:var(--ink)}
+.notes-empty{color:var(--ink-faint);font-style:italic}
+
+/* Anchored to the L button in the HUD (bottom-right) horizontally, so
+   opening it is a small mouse/eye movement rather than a trip across the
+   screen -- but full page height, so a normal-length deck lists with no
+   internal scrolling. Closed state keeps pointer-events:none -- the same
+   fix as the inactive-slide-frame bug: an invisible-but-present fixed
+   element must not be able to catch clicks meant for whatever is under it. */
+#outline{
+  position:fixed;right:14px;top:16px;bottom:52px;z-index:50;background:var(--panel);
+  border:1px solid var(--rule);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.22);
+  width:320px;padding:12px 10px;overflow:auto;
+  transform-origin:bottom right;transform:scale(.97);opacity:0;pointer-events:none;
+  transition:transform .15s ease,opacity .15s ease;
+}
+#outline.is-open{transform:scale(1);opacity:1;pointer-events:auto}
+.outline-head{
+  display:flex;justify-content:space-between;align-items:baseline;
+  border-bottom:1px solid var(--rule);padding:0 8px 8px;margin:0 0 6px;
+  font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-faint);
+}
+.outline-item{
+  display:flex;gap:10px;align-items:baseline;padding:7px 8px;border-radius:5px;
+  cursor:pointer;font-size:14px;line-height:1.35;
+}
+.outline-item:hover{background:var(--accent-soft)}
+.outline-item.is-current{background:var(--accent-soft);color:var(--accent);font-weight:650}
+.outline-num{flex:none;width:2em;text-align:right;color:var(--ink-faint);font-variant-numeric:tabular-nums}
+.outline-item.is-current .outline-num{color:var(--accent)}
+.outline-item.is-section .outline-title{font-style:italic}
+
+#overlay{
+  position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.86);color:#fff;
+  display:none;align-items:center;justify-content:center;font-size:15px;line-height:1.7;
+}
+#overlay.is-open{display:flex}
+#overlay dl{display:grid;grid-template-columns:auto 1fr;gap:.4em 1.4em;margin:0}
+#overlay dt{font-family:var(--mono);color:#8fd0ff;text-align:right}
+#overlay dd{margin:0}
+#blank{position:fixed;inset:0;background:#000;z-index:70;display:none}
+#blank.is-open{display:block}
+
+body.is-overview #stage{height:auto;padding:24px}
+body.is-overview .slide{visibility:visible;opacity:1;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.12)}
+body.is-overview .frame{outline:2px solid transparent;border-radius:8px}
+body.is-overview .frame.is-active{outline-color:var(--accent)}
+body.is-overview #hud,body.is-overview #progress{opacity:.9}
+
+@media print{
+  html,body{overflow:visible;height:auto;background:#fff}
+  #progress,#hud,#notes,#outline,#overlay,#blank{display:none!important}
+  #stage{position:static;width:auto;height:auto}
+  .frame{position:static!important;transform:none!important;width:100%;height:auto;page-break-after:always}
+  .slide{
+    position:static;visibility:visible!important;opacity:1!important;
+    height:auto;min-height:0;border:1px solid #ddd;box-shadow:none;page-break-inside:avoid;
+  }
+  .slide-body{font-size:15px!important}
+  @page{size:landscape;margin:10mm}
+}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<div id="stage"><div class="frame" data-index="1"><section class="slide slide--title" aria-label="Slide 1"><div class="slide-body"><h1 class="slide-title">How can software find information by meaning, and hand what it finds to a model?</h1><p class="slide-subtitle">Modern AI Systems · Lecture 3</p><div class="slide-content"><p><em>Week 3 — embeddings, similarity, chunking, retrieval, and grounded generation</em></p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">1</span></div></section><div class="notes-src" hidden><p>≈90 min for the session. Run sheet: none. <code>week-03-lecture-plan.md</code> states each section's intent only, the format this course's plans follow. The per-slide timings below are the schedule.</p>
+<p>Organising principle, from the plan: Week 2 closed by naming what its own prompt skeleton could not remove — the sources block was still pasted in by hand, which required the developer to already know which passage answered the question. This session is not new material bolted onto that template. It is the automation of the one block of a context the students already understand, followed by the step that returns the filled template to the model.</p></div></div>
+<div class="frame" data-index="2"><section class="slide slide--section" aria-label="Slide 2"><div class="slide-body"><h2 class="slide-title">Why keyword search is not enough</h2></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">2</span></div></section><div class="notes-src" hidden><p>Section divider. Plan §1.</p>
+<p>The goal of this block: students should leave able to produce, from their own vocabulary, a case where exact-match search fails on a paraphrase or a synonym, and to state that this is a property of matching symbols rather than meaning, not a defect of any particular search engine.</p>
+<p>This opens the session because it is the honest motivating question, not a rhetorical one. Keyword search is not a weak technology awaiting replacement; it remains better at exact identifiers and rare terms. The session does not return to that point, since sparse retrieval and fusion are not part of this course. State the limitation as a property of symbol matching and do not promise a later resolution.</p></div></div>
+<div class="frame" data-index="3"><section class="slide slide--content" aria-label="Slide 3"><div class="slide-body"><h2 class="slide-title">The same idea, no shared words</h2><div class="slide-content"><blockquote><p>"How does the system find the right passage in a large document collection?"</p></blockquote>
+<blockquote><p>Corpus sentence: <em>"Neo4j stores information as nodes connected by edges."</em> Query: <em>"graph database"</em></p></blockquote>
+<p><strong>Zero words in common. The same topic.</strong></p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">3</span></div></section><div class="notes-src" hidden><p>≈3 min. Ask the class whether a plain keyword search would find this sentence. It would not: no shared token between query and passage.</p>
+<p>State the diagnosis precisely: this is not a bug in any particular search engine. Any system that matches on symbols rather than on meaning will miss this pairing, because the symbols genuinely do not overlap.</p></div></div>
+<div class="frame" data-index="4"><section class="slide slide--content" aria-label="Slide 4"><div class="slide-body"><h2 class="slide-title">Matching symbols is not matching meaning</h2><div class="slide-content"><p>Exact-match search compares <strong>strings</strong>.</p>
+<p>What a person means by a query is rarely the string they typed.</p>
+<p><strong>Synonyms, paraphrase, and translation</strong> all break a symbol match while leaving the meaning untouched.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">4</span></div></section><div class="notes-src" hidden><p>≈3 min. Land the reframing: the previous slide's failure generalises. Ask for one more example from the class — a paraphrase in their own domain that a keyword search would miss.</p>
+<p>Do not resolve this yet. The session's answer is built up over the next six sections; naming embeddings here would remove the reason to build the mechanism carefully.</p></div></div>
+<div class="frame" data-index="5"><section class="slide slide--section" aria-label="Slide 5"><div class="slide-body"><h2 class="slide-title">Text becomes a vector</h2></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">5</span></div></section><div class="notes-src" hidden><p>Section divider. Plan §2. ≈13 min for this block, including a live demonstration.</p>
+<p>This is the new mechanism the session introduces. Everything after it, from similarity to indexing, presupposes this mental model.</p></div></div>
+<div class="frame" data-index="6"><section class="slide slide--content" aria-label="Slide 6"><div class="slide-body"><h2 class="slide-title">One input, one fixed-length output</h2><div class="slide-content"><pre class="verbatim"><code>"The model can only work        [ embedding model ]      [-0.0175, 0.0323,
+ with what is in its                  encoder        --&gt;   0.0263, ...,
+ context."                                                  -0.0091]
+
+ any number of tokens                                    always the same length</code></pre>
+<p>An <strong>embedding model</strong> consumes a sequence of tokens — the same sub-word units from Week 2 — and produces one fixed-length vector, typically several hundred to a few thousand numbers, regardless of input length.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">6</span></div></section><div class="notes-src" hidden><p>≈3 min. The diagram is the point: variable-length text in, fixed-length vector out.</p>
+<p>Connect explicitly to Week 2: the input is still tokens, not raw text. Nothing new happens at that stage. What is new is what comes out — one vector representing the whole input, rather than a prediction for the next token.</p></div></div>
+<div class="frame" data-index="7"><section class="slide slide--content" aria-label="Slide 7"><div class="slide-body"><h2 class="slide-title">Why the numbers mean anything</h2><div class="slide-content"><p>The vector is <strong>not</strong> arbitrary. The model is trained with a <strong>contrastive objective</strong>: pairs of texts that share meaning are pushed toward nearby vectors; unrelated pairs are pushed apart.</p>
+<p><strong>"Nearby in this space" is a consequence of training, not an accident to be taken on faith.</strong></p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">7</span></div></section><div class="notes-src" hidden><p>≈4 min. This is the slide that prevents the rest of the session from sounding like magic. State plainly: nothing about a neural network guarantees that meaning maps to geometric closeness. That property exists because it was the explicit target of training, using pairs of related and unrelated texts as supervision.</p>
+<p>If asked what "related" means in training data: question-answer pairs, paraphrase pairs, and translation pairs are typical sources. The specifics vary by model and are not needed at this level of detail.</p></div></div>
+<div class="frame" data-index="8"><section class="slide slide--content" aria-label="Slide 8"><div class="slide-body"><h2 class="slide-title">Two kinds of model</h2><div class="slide-content"><div class="table-wrap"><table><thead><tr><th style="text-align:left"></th><th style="text-align:left">Consumes</th><th style="text-align:left">Produces</th></tr></thead><tbody><tr><td style="text-align:left"><strong>Generative model</strong></td><td style="text-align:left">Tokens</td><td style="text-align:left">The next token, repeatedly, producing text</td></tr><tr><td style="text-align:left"><strong>Embedding model</strong></td><td style="text-align:left">Tokens</td><td style="text-align:left">One static vector, once, for comparison</td></tr></tbody></table></div>
+<p><strong>A generative model is read. An embedding is compared.</strong></p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">8</span></div></section><div class="notes-src" hidden><p>≈3 min. This is the "embedding models versus generative models" distinction named directly in the syllabus core list.</p>
+<p>The comparison is deliberately one sentence per side. A generative model repeats its core operation once per output token; an embedding model runs once per input and stops. Neither is a restricted version of the other — they are built for different jobs.</p></div></div>
+<div class="frame" data-index="9"><section class="slide slide--content" aria-label="Slide 9"><div class="slide-body"><h2 class="slide-title">Our model, our numbers</h2><div class="slide-content"><pre class="verbatim"><code>cosine(relevant document, query)   = 0.7566
+cosine(unrelated document, query)  = 0.6135</code></pre>
+<p><code>python embedding_client.py</code></p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">9</span></div></section><div class="notes-src" hidden><p>≈4 min. Measured 2026-09-13 on <code>gemini-embedding-001</code>, using <code>embedding_client.py</code> from the starter repository. Run it live.</p>
+<p>The two documents: a sentence about context assembly (relevant to the query "what does the model see?") and an unrelated sentence about baking bread. Both compare against the same query.</p>
+<p>The point is not that 0.61 looks low — cosine similarity for unrelated short sentences from the same model is rarely close to zero, since general English or Ukrainian sentences share considerable structure. The point is the <strong>direction</strong>: relevant scores higher than unrelated, consistently, which is the property a retrieval system depends on. Absolute thresholds are a tuning question for later; relative ordering is the mechanism.</p></div></div>
+<div class="frame" data-index="10"><section class="slide slide--section" aria-label="Slide 10"><div class="slide-body"><h2 class="slide-title">Measuring similarity between vectors</h2></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">10</span></div></section><div class="notes-src" hidden><p>Section divider. Plan §3. ≈9 min.</p>
+<p>Depends directly on the previous block and is the mechanism every later section's ranking is built from.</p></div></div>
+<div class="frame" data-index="11"><section class="slide slide--content" aria-label="Slide 11"><div class="slide-body"><h2 class="slide-title">Two ways to compare two vectors</h2><div class="slide-content"><p><strong>Euclidean distance</strong> — the straight-line distance between two points. Sensitive to each vector's <strong>magnitude</strong> as well as its direction.</p>
+<p><strong>Cosine similarity</strong> — the angle between two vectors, ignoring their length entirely.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">11</span></div></section><div class="notes-src" hidden><p>≈3 min. State both before arguing for one. Euclidean distance is the intuitive case: literal distance in the space. It is not what this course uses, and the next slide states why.</p></div></div>
+<div class="frame" data-index="12"><section class="slide slide--content" aria-label="Slide 12"><div class="slide-body"><h2 class="slide-title">Cosine similarity, precisely</h2><div class="slide-content"><pre class="verbatim"><code>cosine similarity  =   A · B
+                      -------
+                     |A| · |B|</code></pre>
+<p><strong>Dot product, divided by the product of magnitudes.</strong> Ranges:</p>
+<ul><li><strong>1</strong> — identical direction</li><li><strong>0</strong> — unrelated</li><li><strong>−1</strong> — opposite</li></ul></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">12</span></div></section><div class="notes-src" hidden><p>≈4 min. Give the definition, then the reason to prefer it over Euclidean distance as a consequence of that definition, not a rule to memorise: cosine similarity discards magnitude and measures direction alone.</p>
+<p>That matters because an embedding's magnitude can vary with properties such as text length that have nothing to do with meaning, while its direction is exactly what training made meaningful. Two vectors pointing the same way but of different lengths are, for this course's purposes, the same result.</p>
+<p>If the class asks why magnitude varies at all: it is a side effect of how the network processes longer or shorter inputs, not a signal the training objective targets. Direction is the trained signal; magnitude is not.</p></div></div>
+<div class="frame" data-index="13"><section class="slide slide--content" aria-label="Slide 13"><div class="slide-body"><h2 class="slide-title">"Cosine distance"</h2><div class="slide-content"><p>Some vector stores report <strong>distance</strong> rather than similarity:</p>
+<pre class="verbatim"><code>cosine_distance = 1 − cosine_similarity</code></pre>
+<p><strong>Smaller number, closer match.</strong> The same quantity, inverted.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">13</span></div></section><div class="notes-src" hidden><p>≈2 min. A terminology note, not a new concept. Students will meet both conventions across different tools and should not be surprised by the inversion.</p></div></div>
+<div class="frame" data-index="14"><section class="slide slide--section" aria-label="Slide 14"><div class="slide-body"><h2 class="slide-title">Choosing a model</h2></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">14</span></div></section><div class="notes-src" hidden><p>Section divider. Plan §4. ≈9 min.</p>
+<p>The goal: students leave able to justify a choice of embedding model for their own project rather than treat the default as unexplained.</p></div></div>
+<div class="frame" data-index="15"><section class="slide slide--content" aria-label="Slide 15"><div class="slide-body"><h2 class="slide-title">Monolingual, or multilingual?</h2><div class="slide-content"><p>Not an academic distinction in this course. The corpus is Ukrainian.</p>
+<p>A model trained primarily on English text embeds Ukrainian text <strong>worse</strong>, not merely differently — the geometry that makes similarity meaningful was shaped by a different language's structure.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">15</span></div></section><div class="notes-src" hidden><p>≈3 min. State plainly: this is a real design decision for every project in this class, not a footnote. A multilingual or Ukrainian-specific model is the default choice here, not an optional upgrade.</p></div></div>
+<div class="frame" data-index="16"><section class="slide slide--section" aria-label="Slide 16"><div class="slide-body"><h2 class="slide-title">Chunking a corpus</h2></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">16</span></div></section><div class="notes-src" hidden><p>Section divider. Plan §5. ≈6 min.</p>
+<p>Necessary infrastructure before the pipeline section, since chunk size is a pipeline design decision rather than a detail of storage.</p></div></div>
+<div class="frame" data-index="17"><section class="slide slide--content" aria-label="Slide 17"><div class="slide-body"><h2 class="slide-title">Why not embed the whole document?</h2><div class="slide-content"><p>One vector represents one document, however long. A 40-page corpus file and a one-sentence answer would compress to the <strong>same-sized description.</strong></p>
+<p><strong>Retrieval needs to point at the part that answers the question</strong>, not confirm that the whole document is somewhat relevant.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">17</span></div></section><div class="notes-src" hidden><p>≈3 min. The failure mode to name: a single embedding for an entire document can only say "this document, broadly" is relevant. It cannot say which paragraph. Retrieval requires addressing pieces, not whole files, which is the entire reason a corpus is chunked before anything is embedded.</p></div></div>
+<div class="frame" data-index="18"><section class="slide slide--content" aria-label="Slide 18"><div class="slide-body"><h2 class="slide-title">The chunk-size trade-off</h2><div class="slide-content"><p><strong>Too small</strong> — a chunk loses the surrounding context that gave it meaning.</p>
+<p><strong>Too large</strong> — relevant material is diluted by unrelated text in the same chunk.</p>
+<p><strong>Overlap</strong> is a mitigation for information lost at a boundary, not a free parameter to maximise.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">18</span></div></section><div class="notes-src" hidden><p>≈3 min. State this as a genuine trade-off with no universally correct answer, rather than a parameter with one right value. The practical asks students to choose a chunk size for their own corpus and observe the effect, rather than supplying one.</p></div></div>
+<div class="frame" data-index="19"><section class="slide slide--section" aria-label="Slide 19"><div class="slide-body"><h2 class="slide-title">The retrieval pipeline</h2></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">19</span></div></section><div class="notes-src" hidden><p>Section divider. Plan §6. ≈7 min.</p></div></div>
+<div class="frame" data-index="20"><section class="slide slide--content" aria-label="Slide 20"><div class="slide-body"><h2 class="slide-title">Once, or on every call?</h2><div class="slide-content"><div class="table-wrap"><table><thead><tr><th style="text-align:left">Stage</th><th style="text-align:left">When</th><th style="text-align:left">Cost model</th></tr></thead><tbody><tr><td style="text-align:left">Ingest, chunk, embed, store</td><td style="text-align:left"><strong>Once</strong></td><td style="text-align:left">Paid once, ever</td></tr><tr><td style="text-align:left">Embed the query, search the index</td><td style="text-align:left"><strong>Every call</strong></td><td style="text-align:left">Paid on every question</td></tr></tbody></table></div>
+<p><strong>The same distinction Week 2 drew for context assembly, applied to retrieval.</strong></p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">20</span></div></section><div class="notes-src" hidden><p>≈3 min. Name this explicitly rather than let it pass as an incidental detail: Week 2's "changes every call versus never" table for context assembly is the identical idea. Static work is done once and can be reviewed; dynamic work runs per call and is where cost and correctness bugs actually live.</p></div></div>
+<div class="frame" data-index="21"><section class="slide slide--content" aria-label="Slide 21"><div class="slide-body"><h2 class="slide-title">The whole path, end to end</h2><div class="slide-content"><pre class="verbatim"><code>INGEST (once)
+  corpus --&gt; chunk --&gt; embed --&gt; store in a vector index
+
+QUERY (every call)
+  question --&gt; embed --&gt; search the index --&gt; ranked chunks</code></pre></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">21</span></div></section><div class="notes-src" hidden><p>≈4 min. Walk this left to right. Everything above the line runs once, when the corpus changes. Everything below runs for every question a user asks.</p>
+<p>This diagram is the skeleton the practical builds in code this week.</p></div></div>
+<div class="frame" data-index="22"><section class="slide slide--content" aria-label="Slide 22"><div class="slide-body"><h2 class="slide-title">Where the vector index actually lives</h2><div class="slide-content"><div class="table-wrap"><table><thead><tr><th style="text-align:left"></th><th style="text-align:left">Examples</th><th style="text-align:left">What you get</th></tr></thead><tbody><tr><td style="text-align:left"><strong>Dedicated vector databases</strong></td><td style="text-align:left">Chroma, Qdrant, Weaviate, Milvus</td><td style="text-align:left">Built for this one job — persistence, metadata filtering, an API</td></tr><tr><td style="text-align:left"><strong>General databases, vector added</strong></td><td style="text-align:left">PostgreSQL + <code>pgvector</code>, Redis, Elasticsearch, MongoDB</td><td style="text-align:left">Vectors beside the data you already hold; one system to operate</td></tr><tr><td style="text-align:left"><strong>Index libraries</strong></td><td style="text-align:left">FAISS, <code>hnswlib</code></td><td style="text-align:left">The search algorithm alone — no server, no persistence, no API</td></tr></tbody></table></div>
+<p>Most of them implement the <strong>same index: HNSW.</strong> You type its name yourself this week — <code>metadata={"hnsw:space": "cosine"}</code>.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">22</span></div></section><div class="notes-src" hidden><p>≈4 min. The purpose of this slide is that students choose a store for their own project rather than adopting this course's default without examining it. Keep this one to the taxonomy; the next slide unpacks HNSW, and the one after takes the middle row in detail.</p>
+<p>Give a decision heuristic rather than a ranking: start from the data platform the project is already committed to. A project already running PostgreSQL should reach for <code>pgvector</code> before adding a second system to operate. A project with no database at all and a corpus that fits in memory does not need a server in the first place.</p>
+<p>State plainly why this course uses Chroma: least operational overhead for a teaching setting, runs in-process with no server to administer, and is positioned by its own authors for prototyping rather than production scale. That is a reason, not an endorsement, and a student whose project outgrows it should say so in the Lab 1 discussion.</p>
+<p>The last line is the one to land. These products differ operationally — durability, filtering, who runs the server — far more than they differ mathematically, since most build the same graph index over the same distance metrics. Point at the line students already have in <code>vector_store.py</code>: <code>hnsw:space</code> is that algorithm named in their own code, and the reason it must be set explicitly is the measured finding that Chroma's unconfigured default is squared Euclidean rather than the cosine this course teaches.</p>
+<p>Deliberately no benchmark figures on this slide. Published vector-database comparisons are largely vendor-adjacent, and the numbers move between releases; a figure quoted here would be wrong by the next offering.</p></div></div>
+<div class="frame" data-index="23"><section class="slide slide--content" aria-label="Slide 23"><div class="slide-body"><h2 class="slide-title">HNSW, unpacked</h2><div class="slide-content"><p>Comparing a query against <strong>every</strong> stored vector is exact, and costs one comparison per chunk. Fine at a thousand chunks. Impossible at a billion.</p>
+<div class="table-wrap"><table><thead><tr><th style="text-align:left"></th><th style="text-align:left"></th></tr></thead><tbody><tr><td style="text-align:left"><strong>Hierarchical</strong></td><td style="text-align:left">A sparse top layer for long jumps, denser layers beneath — skim, then refine</td></tr><tr><td style="text-align:left"><strong>Navigable</strong></td><td style="text-align:left">Greedy search: move to whichever neighbour lies closer to the query, stop when none does</td></tr><tr><td style="text-align:left"><strong>Small world</strong></td><td style="text-align:left">Every vector links to its near neighbours and a few distant ones, so any two are a few hops apart</td></tr></tbody></table></div>
+<p><strong>It is approximate.</strong> It can miss the genuinely nearest chunk. That is what buys the speed.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">23</span></div></section><div class="notes-src" hidden><p>≈4 min. Build the name rather than defining the acronym and moving on. Taking the three words in the order printed works: the hierarchy is the first thing a search touches.</p>
+<p>Start from the cost argument at the top. Exact search is not wrong, it is linear, and linear is perfectly acceptable until it is not. Every product on the previous slide exists because that stops being acceptable somewhere between a thousand vectors and a billion.</p>
+<p>The small-world property deserves a sentence of intuition: this is the six-degrees-of-separation structure — mostly local links with a few long-range ones, which is exactly what keeps any two nodes a short path apart. Greedy movement on such a graph reaches the neighbourhood of the answer in very few steps, which is why the whole scheme works.</p>
+<p>The final line is the honest one, and it sets up Week 4. Approximate means a retrieval system can fail to return the chunk that was genuinely closest, with no error raised and no warning given. The <code>M</code> and <code>ef</code> parameters trade recall against speed and memory; name them, do not develop them.</p>
+<p>Pre-empt the wrong lesson. At this course's scale — a few thousand chunks — the approximation is essentially never what goes wrong. Bad chunking and a poorly matched embedding model are. A student who meets a bad result in the practical should not reach for index parameters first.</p>
+<p>One precision worth making, since students type this line themselves: <code>hnsw:space</code> configures which distance the graph is built and searched on. It does not select the algorithm. Chroma builds an HNSW graph either way.</p></div></div>
+<div class="frame" data-index="24"><section class="slide slide--content" aria-label="Slide 24"><div class="slide-body"><h2 class="slide-title">The database you already may use</h2><div class="slide-content"><div class="table-wrap"><table><thead><tr><th style="text-align:left"></th><th style="text-align:left">Vector search today</th></tr></thead><tbody><tr><td style="text-align:left"><strong>SQL Server 2025</strong></td><td style="text-align:left">Native <code>VECTOR</code> type and <code>VECTOR_DISTANCE()</code> — cosine, Euclidean, dot product</td></tr><tr><td style="text-align:left"><strong>MariaDB 11.7+</strong></td><td style="text-align:left"><code>VECTOR INDEX</code> using a modified HNSW; cosine or Euclidean</td></tr><tr><td style="text-align:left"><strong>Neo4j</strong></td><td style="text-align:left"><code>CREATE VECTOR INDEX</code>, cosine or Euclidean</td></tr><tr><td style="text-align:left"><strong>DynamoDB</strong></td><td style="text-align:left">Native vector search; up to 4096 dimensions, with filtering</td></tr></tbody></table></div></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">24</span></div></section><div class="notes-src" hidden><p>≈4 min. Two points to land, and the second is the one that changes a student's design.</p>
+<p>First: capability does not follow from a data type. MySQL Community can store a vector and parse one from a string, and offers no distance function, no index, and no nearest-neighbour query — so a project on MySQL that needs retrieval still needs something else. MariaDB, its fork, ships a genuine <code>VECTOR INDEX</code>. Two databases that look interchangeable on a CV are not interchangeable here, and reading the manual rather than the announcement is the transferable lesson.</p>
+<p>Second, and worth pausing on: <strong>Neo4j is on this list.</strong> The graph database this course installs in Week 5 and uses for Lab 2 holds vector indexes natively, with the same cosine metric taught today. A student whose project ends up on Neo4j can keep the embeddings and the graph in one system rather than operating two, and Week 6's vector-versus-graph comparison can then be made inside a single database rather than across two. Do not develop it here — Week 5 introduces the database and Week 6 makes the comparison — but name it, because students who have already chosen Chroma should know the option exists before Lab 2.</p>
+<p>Dates, for the instructor rather than the slide: SQL Server 2025 reached GA in November 2025, with its DiskANN approximate index still in preview at that point; MariaDB added vector indexes in 11.7; DynamoDB's vector search reached GA in August 2026, six weeks before this deck was written. This row of the landscape moves faster than any other material in the course. Re-check every entry before each offering, and expect at least one to have changed.</p>
+<p>No benchmark figures here either, for the reason given on the previous slide.</p></div></div>
+<div class="frame" data-index="25"><section class="slide slide--section" aria-label="Slide 25"><div class="slide-body"><h2 class="slide-title">Why a ranked list is not an answer</h2></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">25</span></div></section><div class="notes-src" hidden><p>Section divider. Plan §7. ≈12 min.</p>
+<p>The pivot of the session. Everything up to here produced a ranking; nothing has produced prose. State that plainly rather than letting generation arrive as an obvious next step nobody had to argue for.</p></div></div>
+<div class="frame" data-index="26"><section class="slide slide--content" aria-label="Slide 26"><div class="slide-body"><h2 class="slide-title">What the pipeline actually returns</h2><div class="slide-content"><pre class="verbatim"><code>QUESTION:  "What is assessed in Lab 2, and what is it worth?"
+
+RETURNED:
+  [0.81]  "Lab 2 marking: graph model quality 20%, Neo4j/Cypher..."
+  [0.74]  "Lab 2 - Knowledge graph and Graph RAG - due end of Week 7..."
+  [0.52]  "Lab 3 marking: agent correctness 25%, tool schema..."</code></pre>
+<p>A ranked list of chunks. <strong>Nobody asked for this.</strong> They asked a question.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">26</span></div></section><div class="notes-src" hidden><p>≈3 min. Put the question and the output side by side and let the mismatch stand for a moment before naming it.</p>
+<p>The list is not a failure — it is exactly what the previous six sections set out to build, and the third result being wrong is normal rather than a defect. The point is narrower: a ranking is the input to what the user wanted, not the thing itself. No part of this session so far produces a sentence.</p></div></div>
+<div class="frame" data-index="27"><section class="slide slide--content" aria-label="Slide 27"><div class="slide-body"><h2 class="slide-title">What the model alone does not have</h2><div class="slide-content"><ul><li><strong>Knowledge frozen at training time</strong> — it cannot know what changed last week</li><li><strong>No access to a private corpus</strong> — these documents were never in its training data</li><li><strong>No reliable signal that it does not know</strong> — Week 1, Experiment 4</li></ul>
+<p>Retrieval supplies precisely what is missing: <strong>the passage that answers the question, located at the moment it is needed.</strong></p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">27</span></div></section><div class="notes-src" hidden><p>≈4 min. These students have already met the third bullet as an experience rather than a claim: in Week 1's Experiment 4 the model answered a question about this course confidently and incorrectly, and in Week 2 they watched an exit clause suppress the invention without supplying the missing fact.</p>
+<p>State the division of labour explicitly. The model supplies fluency and the ability to follow an instruction; retrieval supplies the facts. Neither does the other's job, and a system that asks the model to do both is the one Week 1 showed failing.</p></div></div>
+<div class="frame" data-index="28"><section class="slide slide--content" aria-label="Slide 28"><div class="slide-body"><h2 class="slide-title">Week 2's template, one slot now filled by software</h2><div class="slide-content"><pre class="verbatim"><code>SYSTEM      standing rules            written once, by you
+EXAMPLES    demonstrations            written once, by you
+TASK        what to do                written once, by you
+FORMAT      shape of the answer       written once, by you
+SOURCES     the passages          &lt;-- RETRIEVAL FILLS THIS, every call
+QUESTION    what the user asked       supplied by the user</code></pre>
+<p><strong>This is the whole of RAG.</strong> The rest of the template is unchanged from Week 2.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">28</span></div></section><div class="notes-src" hidden><p>≈4 min. This is the payoff slide of the session and should be presented as such.</p>
+<p>Week 2 closed by naming the one block students could not automate: the sources, which had to be pasted in by someone who already knew which passage answered the question. Six sections of this session were spent building the thing that fills it.</p>
+<p>Resist presenting RAG as a new architecture. It is one slot of a template the class already wrote, now populated by a function instead of by hand. Students who believe they are learning a framework will look for complexity that is not there.</p></div></div>
+<div class="frame" data-index="29"><section class="slide slide--content" aria-label="Slide 29"><div class="slide-body"><h2 class="slide-title">The whole path, now with an answer at the end</h2><div class="slide-content"><pre class="verbatim"><code>INGEST (once)
+  corpus --&gt; chunk --&gt; embed --&gt; store in a vector index
+
+QUERY (every call)
+  question --&gt; embed --&gt; search --&gt; ranked chunks
+                                        |
+                                        v
+                              assemble into SOURCES
+                                        |
+                                        v
+                            model --&gt; grounded answer</code></pre></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">29</span></div></section><div class="notes-src" hidden><p>≈4 min. The same diagram from earlier in the session with three boxes appended. Show it as a continuation rather than redrawing it, so the class sees that retrieval was always the larger part of the work.</p>
+<p>Name what is cheap and what is not: ingestion runs once per corpus change, and the query path runs per question and is what the user waits for.</p></div></div>
+<div class="frame" data-index="30"><section class="slide slide--content" aria-label="Slide 30"><div class="slide-body"><h2 class="slide-title">Assembling the context is a design decision</h2><div class="slide-content"><div class="table-wrap"><table><thead><tr><th style="text-align:left">Decision</th><th style="text-align:left">Why it matters</th></tr></thead><tbody><tr><td style="text-align:left"><strong>How many chunks</strong></td><td style="text-align:left">Every one is paid for on every call, and Week 2 measured that</td></tr><tr><td style="text-align:left"><strong>In what order</strong></td><td style="text-align:left">Position affects what the model attends to</td></tr><tr><td style="text-align:left"><strong>Truncated how</strong></td><td style="text-align:left">A token budget cuts something; choose what</td></tr><tr><td style="text-align:left"><strong>Numbered how</strong></td><td style="text-align:left"><code>[1]</code>, <code>[2]</code> is what makes a citation checkable</td></tr></tbody></table></div></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">30</span></div></section><div class="notes-src" hidden><p>≈4 min. Each row is a decision the practical forces students to make in their own code, so present them as choices with consequences rather than as configuration.</p>
+<p>The first row connects directly to the token arithmetic of Week 2: retrieved chunks are prompt tokens, they are billed on every call, and retrieving ten chunks where three would do is a cost decision made by accident.</p>
+<p>The last row is the prerequisite for the next slide. Without numbering there is no mechanism by which an answer can be checked against its source.</p></div></div>
+<div class="frame" data-index="31"><section class="slide slide--content" aria-label="Slide 31"><div class="slide-body"><h2 class="slide-title">Grounding is requested, not guaranteed</h2><div class="slide-content"><p>The system instruction and the exit clause from Week 2 are what keep the model inside the supplied sources:</p>
+<blockquote><p><em>"Answer using only the sources given. If the sources do not answer the question, reply exactly: not stated."</em></p></blockquote>
+<p><strong>This is a request. The model can still answer beyond its sources, and sometimes does.</strong></p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">31</span></div></section><div class="notes-src" hidden><p>≈5 min. The honest slide of the section, and the one that sets up Week 4.</p>
+<p>Students have already seen both halves of this. In Week 2 they watched the exit clause work, and they watched the same question without it produce a fluent, formatted, cited answer that was invented. Nothing about retrieval removes that failure mode; retrieval makes it less likely by supplying the fact, and grounding instructions make it less likely again, but neither is a guarantee.</p>
+<p>Do not resolve this. The unresolved version is the motivation for Week 4: the only way to know how often the request is honoured is to measure it against a gold set, which is why the gold set is due at the end of this week rather than later.</p></div></div>
+<div class="frame" data-index="32"><section class="slide slide--content" aria-label="Slide 32"><div class="slide-body"><h2 class="slide-title">Due this week</h2><div class="slide-content"><p><strong>Ten representative queries, with expected properties, for your own domain.</strong></p>
+<p>This is the <strong>evaluation seed</strong> — the gold set every later retrieval improvement will be measured against, starting now rather than in Week 11.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">32</span></div></section><div class="notes-src" hidden><p>≈2 min. State why this begins here rather than later: a later improvement can only be measured against a gold set that already exists. Writing it after the fact would let every claim of improvement go unchecked.</p></div></div></div>
+
+<aside id="notes" aria-label="Speaker notes">
+  <div class="notes-head"><span>Speaker notes</span><span id="timer">00:00</span></div>
+  <div id="notes-body"></div>
+</aside>
+
+<aside id="outline" aria-label="Slide list">
+  <div class="outline-head"><span>Slides</span><span id="outline-count">32</span></div>
+  <div id="outline-list"></div>
+</aside>
+
+<div id="hud">
+  <span id="counter">1 / 32</span>
+  <button type="button" data-act="prev" title="Previous (←)">‹</button>
+  <button type="button" data-act="next" title="Next (→)">›</button>
+  <button type="button" data-act="notes" title="Speaker notes (S)">S</button>
+  <button type="button" data-act="overview" title="Overview (O)">O</button>
+  <button type="button" data-act="outline" title="Slide list (L)">L</button>
+  <button type="button" data-act="theme" title="Light / dark (T)">T</button>
+  <button type="button" data-act="help" title="Help (?)">?</button>
+</div>
+
+<div id="overlay" role="dialog" aria-label="Keyboard shortcuts">
+  <dl>
+    <dt>← →</dt><dd>Previous / next slide</dd>
+    <dt>Space</dt><dd>Next slide</dd>
+    <dt>Home / End</dt><dd>First / last slide</dd>
+    <dt>1–9</dt><dd>Jump to slide number, then Enter</dd>
+    <dt>S</dt><dd>Speaker notes and lecture timer</dd>
+    <dt>R</dt><dd>Reset the timer</dd>
+    <dt>O</dt><dd>Slide overview — a visual grid, click a slide to jump</dd>
+    <dt>L</dt><dd>Slide list — titles only, click to jump</dd>
+    <dt>T</dt><dd>Light / dark, for the room you are in</dd>
+    <dt>F</dt><dd>Fullscreen</dd>
+    <dt>B</dt><dd>Blank the screen</dd>
+    <dt>Ctrl+P</dt><dd>Print / export a PDF handout</dd>
+    <dt>Esc</dt><dd>Close this, or leave overview</dd>
+  </dl>
+</div>
+<div id="blank"></div>
+
+<script>
+(function(){
+  "use strict";
+  var W = 1280, H = 720;
+  var stage = document.getElementById("stage");
+  var frames = Array.prototype.slice.call(stage.querySelectorAll(".frame"));
+  var notesPanel = document.getElementById("notes");
+  var notesBody = document.getElementById("notes-body");
+  var outlinePanel = document.getElementById("outline");
+  var outlineList = document.getElementById("outline-list");
+  var OUTLINE = [{"i": 1, "t": "How can software find information by meaning, and hand what it finds to a model?", "k": "title"}, {"i": 2, "t": "Why keyword search is not enough", "k": "section"}, {"i": 3, "t": "The same idea, no shared words", "k": "content"}, {"i": 4, "t": "Matching symbols is not matching meaning", "k": "content"}, {"i": 5, "t": "Text becomes a vector", "k": "section"}, {"i": 6, "t": "One input, one fixed-length output", "k": "content"}, {"i": 7, "t": "Why the numbers mean anything", "k": "content"}, {"i": 8, "t": "Two kinds of model", "k": "content"}, {"i": 9, "t": "Our model, our numbers", "k": "content"}, {"i": 10, "t": "Measuring similarity between vectors", "k": "section"}, {"i": 11, "t": "Two ways to compare two vectors", "k": "content"}, {"i": 12, "t": "Cosine similarity, precisely", "k": "content"}, {"i": 13, "t": "\"Cosine distance\"", "k": "content"}, {"i": 14, "t": "Choosing a model", "k": "section"}, {"i": 15, "t": "Monolingual, or multilingual?", "k": "content"}, {"i": 16, "t": "Chunking a corpus", "k": "section"}, {"i": 17, "t": "Why not embed the whole document?", "k": "content"}, {"i": 18, "t": "The chunk-size trade-off", "k": "content"}, {"i": 19, "t": "The retrieval pipeline", "k": "section"}, {"i": 20, "t": "Once, or on every call?", "k": "content"}, {"i": 21, "t": "The whole path, end to end", "k": "content"}, {"i": 22, "t": "Where the vector index actually lives", "k": "content"}, {"i": 23, "t": "HNSW, unpacked", "k": "content"}, {"i": 24, "t": "The database you already may use", "k": "content"}, {"i": 25, "t": "Why a ranked list is not an answer", "k": "section"}, {"i": 26, "t": "What the pipeline actually returns", "k": "content"}, {"i": 27, "t": "What the model alone does not have", "k": "content"}, {"i": 28, "t": "Week 2's template, one slot now filled by software", "k": "content"}, {"i": 29, "t": "The whole path, now with an answer at the end", "k": "content"}, {"i": 30, "t": "Assembling the context is a design decision", "k": "content"}, {"i": 31, "t": "Grounding is requested, not guaranteed", "k": "content"}, {"i": 32, "t": "Due this week", "k": "content"}];
+  var counter = document.getElementById("counter");
+  var progress = document.getElementById("progress");
+  var overlay = document.getElementById("overlay");
+  var blank = document.getElementById("blank");
+  var total = frames.length;
+  var index = 0;
+  var overview = false;
+  var pending = "";
+  var pendingTimer = null;
+
+  function store(key, value){ try{ localStorage.setItem(key, value); }catch(e){} }
+  function load(key){ try{ return localStorage.getItem(key); }catch(e){ return null; } }
+
+  var savedTheme = load("deck-theme");
+  if(savedTheme === "light" || savedTheme === "dark"){
+    document.documentElement.setAttribute("data-theme", savedTheme);
+  }
+
+  /* Shrink a slide's type until its content fits the fixed 1280x720 box.
+     Content is never removed -- only scaled. */
+  function fit(frame){
+    var slide = frame.querySelector(".slide");
+    var body = frame.querySelector(".slide-body");
+    if(!slide || !body) return;
+    body.style.setProperty("--fit", 1);
+    if(body.scrollHeight <= body.clientHeight + 1) { frame.removeAttribute("data-overflow"); return; }
+    var lo = 0.55, hi = 1, best = 0.55;
+    for(var i = 0; i < 9; i++){
+      var mid = (lo + hi) / 2;
+      body.style.setProperty("--fit", mid);
+      if(body.scrollHeight <= body.clientHeight + 1){ best = mid; lo = mid; } else { hi = mid; }
+    }
+    body.style.setProperty("--fit", best);
+    if(best <= 0.56 && body.scrollHeight > body.clientHeight + 1){
+      frame.setAttribute("data-overflow", "1");
+    } else {
+      frame.removeAttribute("data-overflow");
+    }
+  }
+
+  function layout(){
+    if(overview){
+      document.body.classList.add("is-overview");
+      var pad = 24, gap = 18;
+      var cols = window.innerWidth > 1500 ? 4 : (window.innerWidth > 1000 ? 3 : 2);
+      var cellW = (window.innerWidth - pad * 2 - gap * (cols - 1)) / cols;
+      var scale = cellW / W;
+      var cellH = H * scale;
+      frames.forEach(function(frame, i){
+        var col = i % cols, row = Math.floor(i / cols);
+        frame.style.transform = "translate(" + (col * (cellW + gap)) + "px," +
+                                (row * (cellH + gap)) + "px) scale(" + scale + ")";
+      });
+      stage.style.height = (Math.ceil(total / cols) * (cellH + gap) + pad) + "px";
+    } else {
+      document.body.classList.remove("is-overview");
+      stage.style.height = "";
+      var s = Math.min(window.innerWidth / W, window.innerHeight / H);
+      var x = (window.innerWidth - W * s) / 2, y = (window.innerHeight - H * s) / 2;
+      frames.forEach(function(frame){
+        frame.style.transform = "translate(" + x + "px," + y + "px) scale(" + s + ")";
+      });
+    }
+  }
+
+  function renderNotes(){
+    var src = frames[index].querySelector(".notes-src");
+    notesBody.innerHTML = src ? src.innerHTML
+      : '<p class="notes-empty">No notes for this slide.</p>';
+  }
+
+  /* Built once: a plain list of slide titles, independent of the O overview
+     grid. textContent only -- a title is untrusted-ish authored text, and
+     this sidesteps ever needing to HTML-escape it. */
+  function buildOutline(){
+    OUTLINE.forEach(function(o){
+      var row = document.createElement("div");
+      row.className = "outline-item" + (o.k === "section" || o.k === "title" ? " is-section" : "");
+      row.setAttribute("data-index", o.i);
+      var num = document.createElement("span");
+      num.className = "outline-num";
+      num.textContent = o.i;
+      var t = document.createElement("span");
+      t.className = "outline-title";
+      t.textContent = o.t;
+      row.appendChild(num);
+      row.appendChild(t);
+      outlineList.appendChild(row);
+    });
+  }
+
+  function updateOutlineHighlight(){
+    var items = outlineList.querySelectorAll(".outline-item");
+    for(var i = 0; i < items.length; i++){
+      items[i].classList.toggle("is-current", i === index);
+    }
+  }
+
+  function show(next, push){
+    index = Math.max(0, Math.min(total - 1, next));
+    frames.forEach(function(frame, i){ frame.classList.toggle("is-active", i === index); });
+    counter.textContent = (index + 1) + " / " + total;
+    progress.style.width = (total > 1 ? (index / (total - 1)) * 100 : 100) + "%";
+    renderNotes();
+    if(outlinePanel.classList.contains("is-open")) updateOutlineHighlight();
+    if(push !== false){
+      try{ history.replaceState(null, "", "#" + (index + 1)); }catch(e){}
+    }
+    if(overview) frames[index].scrollIntoView({block:"nearest"});
+  }
+
+  /* Lecture timer -- starts on first use of the notes panel. */
+  var elapsed = 0, ticking = null, timerEl = document.getElementById("timer");
+  function paint(){
+    var m = Math.floor(elapsed / 60), s = elapsed % 60;
+    timerEl.textContent = (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s;
+  }
+  function startTimer(){
+    if(ticking) return;
+    ticking = setInterval(function(){ elapsed++; paint(); }, 1000);
+  }
+
+  function toggleNotes(){
+    var open = notesPanel.classList.toggle("is-open");
+    if(open) startTimer();
+  }
+  function toggleOutline(){
+    var open = outlinePanel.classList.toggle("is-open");
+    if(open){
+      updateOutlineHighlight();
+      var current = outlineList.querySelector(".outline-item.is-current");
+      if(current) current.scrollIntoView({block:"nearest"});
+    }
+  }
+  function toggleOverview(){
+    overview = !overview;
+    layout();
+    if(!overview) frames[index].scrollIntoView({block:"nearest"});
+  }
+  function toggleTheme(){
+    var root = document.documentElement;
+    var next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    root.setAttribute("data-theme", next);
+    store("deck-theme", next);
+  }
+
+  document.getElementById("hud").addEventListener("click", function(ev){
+    var act = ev.target.getAttribute && ev.target.getAttribute("data-act");
+    if(!act) return;
+    if(act === "prev") show(index - 1);
+    else if(act === "next") show(index + 1);
+    else if(act === "notes") toggleNotes();
+    else if(act === "overview") toggleOverview();
+    else if(act === "outline") toggleOutline();
+    else if(act === "theme") toggleTheme();
+    else if(act === "help") overlay.classList.toggle("is-open");
+  });
+
+  outlineList.addEventListener("click", function(ev){
+    var item = ev.target.closest ? ev.target.closest(".outline-item") : null;
+    if(!item) return;
+    show(parseInt(item.getAttribute("data-index"), 10) - 1);
+    outlinePanel.classList.remove("is-open");
+  });
+
+  stage.addEventListener("click", function(ev){
+    if(!overview) return;
+    var frame = ev.target.closest ? ev.target.closest(".frame") : null;
+    if(!frame) return;
+    show(frames.indexOf(frame));
+    toggleOverview();
+  });
+
+  overlay.addEventListener("click", function(){ overlay.classList.remove("is-open"); });
+  blank.addEventListener("click", function(){ blank.classList.remove("is-open"); });
+
+  document.addEventListener("keydown", function(ev){
+    if(ev.ctrlKey || ev.metaKey || ev.altKey) return;
+    var key = ev.key;
+
+    if(/^[0-9]$/.test(key)){
+      pending += key;
+      clearTimeout(pendingTimer);
+      pendingTimer = setTimeout(function(){ pending = ""; }, 1200);
+      return;
+    }
+    if(key === "Enter" && pending){
+      show(parseInt(pending, 10) - 1);
+      pending = "";
+      return;
+    }
+
+    switch(key){
+      case "ArrowRight": case "PageDown": case " ": case "Spacebar":
+        ev.preventDefault(); show(index + 1); break;
+      case "ArrowLeft": case "PageUp":
+        ev.preventDefault(); show(index - 1); break;
+      case "ArrowDown": ev.preventDefault(); show(index + 1); break;
+      case "ArrowUp": ev.preventDefault(); show(index - 1); break;
+      case "Home": ev.preventDefault(); show(0); break;
+      case "End": ev.preventDefault(); show(total - 1); break;
+      case "s": case "S": case "і": case "І": toggleNotes(); break;
+      case "o": case "O": case "щ": case "Щ": toggleOverview(); break;
+      case "l": case "L": case "д": case "Д": toggleOutline(); break;
+      case "t": case "T": case "е": case "Е": toggleTheme(); break;
+      case "r": case "R": case "к": case "К": elapsed = 0; paint(); break;
+      case "b": case "B": case "и": case "И": blank.classList.toggle("is-open"); break;
+      case "f": case "F": case "а": case "А":
+        if(document.fullscreenElement) document.exitFullscreen();
+        else if(document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+        break;
+      case "?": overlay.classList.toggle("is-open"); break;
+      case "Escape":
+        if(blank.classList.contains("is-open")) blank.classList.remove("is-open");
+        else if(overlay.classList.contains("is-open")) overlay.classList.remove("is-open");
+        else if(overview) toggleOverview();
+        else if(outlinePanel.classList.contains("is-open")) outlinePanel.classList.remove("is-open");
+        else notesPanel.classList.remove("is-open");
+        break;
+    }
+  });
+
+  var touchX = null;
+  document.addEventListener("touchstart", function(ev){ touchX = ev.touches[0].clientX; }, {passive:true});
+  document.addEventListener("touchend", function(ev){
+    if(touchX === null) return;
+    var dx = ev.changedTouches[0].clientX - touchX;
+    if(Math.abs(dx) > 60) show(index + (dx < 0 ? 1 : -1));
+    touchX = null;
+  }, {passive:true});
+
+  var resizeTimer = null;
+  window.addEventListener("resize", function(){
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(layout, 90);
+  });
+  window.addEventListener("beforeprint", function(){ frames.forEach(fit); });
+
+  function boot(){
+    buildOutline();
+    frames.forEach(fit);
+    layout();
+    var hash = parseInt((location.hash || "").replace("#", ""), 10);
+    show(isNaN(hash) ? 0 : hash - 1, false);
+    var bad = frames.filter(function(f){ return f.hasAttribute("data-overflow"); })
+                    .map(function(f){ return f.getAttribute("data-index"); });
+    if(bad.length){
+      console.warn("[deck] content still overflows after scaling on slide(s): " + bad.join(", ") +
+                   " -- split them in the source Markdown with an --- rule.");
+    }
+  }
+  if(document.readyState === "complete") boot();
+  else window.addEventListener("load", boot);
+})();
+</script>
+</body>
+</html>

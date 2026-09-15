@@ -1,0 +1,663 @@
+<!doctype html>
+<html lang="uk" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Week 2 — LLMs, Tokens, Context, and Prompting</title>
+<style>
+:root{
+  --w:1280px; --h:720px;
+  --bg:#fbfaf8; --panel:#ffffff; --ink:#1a1a1a; --ink-soft:#5b5b5b; --ink-faint:#8c8c8c;
+  --rule:#e2ded7; --accent:#1c5d99; --accent-soft:#e8f0f7; --mark:#f5efe3;
+  --code-bg:#f4f2ee; --code-ink:#26303a;
+  --tok-kw:#8a3d8f; --tok-str:#1f6f4a; --tok-com:#8c8c8c; --tok-num:#a35a1f;
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Consolas,"Liberation Mono",Menlo,monospace;
+}
+html[data-theme="dark"]{
+  --bg:#14161a; --panel:#1b1e24; --ink:#e9e6e1; --ink-soft:#a9a5a0; --ink-faint:#6f6b67;
+  --rule:#2c3138; --accent:#6fb3e8; --accent-soft:#1d2b38; --mark:#2a2620;
+  --code-bg:#1f242b; --code-ink:#d6dee7;
+  --tok-kw:#c99ae0; --tok-str:#7fd0a3; --tok-com:#7b7772; --tok-num:#e0a86a;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font-family:var(--font)}
+body.is-overview{overflow:auto}
+
+#stage{position:relative;width:100%;height:100%}
+.frame{position:absolute;top:0;left:0;width:var(--w);height:var(--h);transform-origin:top left}
+.slide{
+  position:absolute;inset:0;background:var(--panel);display:flex;flex-direction:column;
+  padding:56px 72px 40px;visibility:hidden;opacity:0;
+  transition:opacity .18s ease;overflow:hidden;
+}
+.frame.is-active .slide{visibility:visible;opacity:1}
+/* Inactive frames stay in the DOM (for the crossfade) stacked at the same
+   position as the active one. Without this they are invisible but still
+   catch the mouse, which silently blocks selecting text on the slide you
+   can actually see. Overview mode needs the opposite -- every thumbnail
+   must stay clickable -- so the rule is scoped to non-overview only. */
+body:not(.is-overview) .frame:not(.is-active){pointer-events:none}
+.slide-body{flex:1;min-height:0;font-size:calc(23px * var(--fit,1));line-height:1.5}
+
+.slide-title{margin:0 0 .7em;font-size:2.0em;line-height:1.15;font-weight:650;letter-spacing:-.015em}
+.slide--title{justify-content:center;padding:72px 96px}
+.slide--title .slide-body{display:flex;flex-direction:column;justify-content:center}
+.slide--title .slide-title{font-size:3.1em;margin-bottom:.35em}
+.slide-subtitle{margin:0;font-size:1.25em;color:var(--ink-soft);max-width:34em}
+.slide--section{justify-content:center}
+.slide--section .slide-body{display:flex;flex-direction:column;justify-content:center}
+.slide--section .slide-title{font-size:2.6em;margin-bottom:.5em}
+.slide--section .slide-title::after{
+  content:"";display:block;width:2.2em;height:3px;margin-top:.5em;background:var(--accent);border-radius:2px;
+}
+.slide--content .slide-title{
+  padding-bottom:.4em;border-bottom:2px solid var(--rule);
+}
+
+.slide-content h3{margin:1.1em 0 .45em;font-size:1.22em;font-weight:640;color:var(--accent)}
+.slide-content h4,.slide-content h5,.slide-content h6{margin:.9em 0 .35em;font-size:1.05em;font-weight:640}
+.slide-content>:first-child{margin-top:0}
+.slide-content p{margin:0 0 .7em;max-width:46em}
+.slide-content ul,.slide-content ol{margin:0 0 .7em;padding-left:1.35em}
+.slide-content li{margin:.3em 0}
+.slide-content li>ul,.slide-content li>ol{margin:.25em 0 .25em}
+.slide-content ul>li::marker{color:var(--accent)}
+.slide-content strong{font-weight:660}
+.slide-content a{color:var(--accent);text-decoration:none;border-bottom:1px solid var(--rule)}
+.slide-content hr{border:0;border-top:1px solid var(--rule);margin:1em 0}
+.slide-content code{
+  font-family:var(--mono);font-size:.88em;background:var(--code-bg);color:var(--code-ink);
+  padding:.12em .34em;border-radius:4px;
+}
+.slide-content pre{
+  margin:0 0 .75em;background:var(--code-bg);border:1px solid var(--rule);border-left:3px solid var(--accent);
+  border-radius:6px;padding:.7em .9em;overflow:auto;max-width:100%;
+}
+.slide-content pre code{
+  background:none;padding:0;font-size:.82em;line-height:1.45;color:var(--code-ink);
+  display:block;white-space:pre;
+}
+.slide-content pre.verbatim code{font-size:.78em;line-height:1.35}
+.tok-kw{color:var(--tok-kw)}.tok-str{color:var(--tok-str)}
+.tok-com{color:var(--tok-com);font-style:italic}.tok-num{color:var(--tok-num)}
+.slide-content blockquote{
+  margin:0 0 .8em;padding:.6em 1em;background:var(--accent-soft);border-left:3px solid var(--accent);
+  border-radius:0 6px 6px 0;
+}
+.slide-content blockquote p{margin:0;font-size:1.05em}
+.slide-content blockquote p+p{margin-top:.5em}
+.table-wrap{overflow-x:auto;margin:0 0 .8em;max-width:100%}
+.slide-content table{border-collapse:collapse;width:100%;font-size:.92em}
+.slide-content th,.slide-content td{padding:.4em .7em;border-bottom:1px solid var(--rule);vertical-align:top}
+.slide-content th{font-weight:660;color:var(--accent);border-bottom:2px solid var(--rule);white-space:nowrap}
+.slide-content tbody tr:last-child td{border-bottom:none}
+.slide-content img{max-width:100%;height:auto;border-radius:6px}
+
+.slide-foot{
+  display:flex;justify-content:space-between;align-items:flex-end;
+  font-size:13px;color:var(--ink-faint);padding-top:12px;flex:none;
+}
+.slide--title .slide-foot,.slide--section .slide-foot{opacity:.55}
+.foot-num{font-variant-numeric:tabular-nums}
+
+#progress{position:fixed;left:0;top:0;height:3px;background:var(--accent);width:0;z-index:40;transition:width .18s ease}
+#hud{
+  position:fixed;right:14px;bottom:12px;z-index:40;display:flex;gap:10px;align-items:center;
+  font-size:12px;color:var(--ink-faint);background:var(--bg);padding:4px 8px;border-radius:6px;opacity:.75;
+}
+#hud button{
+  font:inherit;color:inherit;background:none;border:1px solid var(--rule);border-radius:5px;
+  padding:2px 7px;cursor:pointer;
+}
+#hud button:hover{color:var(--accent);border-color:var(--accent)}
+
+#notes{
+  position:fixed;right:0;bottom:0;top:0;width:360px;z-index:50;background:var(--panel);
+  border-left:1px solid var(--rule);padding:18px 20px;overflow:auto;
+  font-size:15px;line-height:1.55;transform:translateX(100%);transition:transform .2s ease;
+}
+#notes.is-open{transform:none}
+#notes h3{margin:.9em 0 .3em;font-size:1em;color:var(--accent)}
+#notes p,#notes li{margin:.35em 0}
+#notes pre{background:var(--code-bg);padding:.5em .7em;border-radius:5px;overflow:auto;font-size:.85em}
+#notes code{font-family:var(--mono);font-size:.88em}
+.notes-head{
+  display:flex;justify-content:space-between;align-items:baseline;
+  border-bottom:1px solid var(--rule);padding-bottom:8px;margin-bottom:10px;
+  font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-faint);
+}
+#timer{font-variant-numeric:tabular-nums;font-size:15px;letter-spacing:0;color:var(--ink)}
+.notes-empty{color:var(--ink-faint);font-style:italic}
+
+/* Anchored to the L button in the HUD (bottom-right) horizontally, so
+   opening it is a small mouse/eye movement rather than a trip across the
+   screen -- but full page height, so a normal-length deck lists with no
+   internal scrolling. Closed state keeps pointer-events:none -- the same
+   fix as the inactive-slide-frame bug: an invisible-but-present fixed
+   element must not be able to catch clicks meant for whatever is under it. */
+#outline{
+  position:fixed;right:14px;top:16px;bottom:52px;z-index:50;background:var(--panel);
+  border:1px solid var(--rule);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.22);
+  width:320px;padding:12px 10px;overflow:auto;
+  transform-origin:bottom right;transform:scale(.97);opacity:0;pointer-events:none;
+  transition:transform .15s ease,opacity .15s ease;
+}
+#outline.is-open{transform:scale(1);opacity:1;pointer-events:auto}
+.outline-head{
+  display:flex;justify-content:space-between;align-items:baseline;
+  border-bottom:1px solid var(--rule);padding:0 8px 8px;margin:0 0 6px;
+  font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-faint);
+}
+.outline-item{
+  display:flex;gap:10px;align-items:baseline;padding:7px 8px;border-radius:5px;
+  cursor:pointer;font-size:14px;line-height:1.35;
+}
+.outline-item:hover{background:var(--accent-soft)}
+.outline-item.is-current{background:var(--accent-soft);color:var(--accent);font-weight:650}
+.outline-num{flex:none;width:2em;text-align:right;color:var(--ink-faint);font-variant-numeric:tabular-nums}
+.outline-item.is-current .outline-num{color:var(--accent)}
+.outline-item.is-section .outline-title{font-style:italic}
+
+#overlay{
+  position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.86);color:#fff;
+  display:none;align-items:center;justify-content:center;font-size:15px;line-height:1.7;
+}
+#overlay.is-open{display:flex}
+#overlay dl{display:grid;grid-template-columns:auto 1fr;gap:.4em 1.4em;margin:0}
+#overlay dt{font-family:var(--mono);color:#8fd0ff;text-align:right}
+#overlay dd{margin:0}
+#blank{position:fixed;inset:0;background:#000;z-index:70;display:none}
+#blank.is-open{display:block}
+
+body.is-overview #stage{height:auto;padding:24px}
+body.is-overview .slide{visibility:visible;opacity:1;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.12)}
+body.is-overview .frame{outline:2px solid transparent;border-radius:8px}
+body.is-overview .frame.is-active{outline-color:var(--accent)}
+body.is-overview #hud,body.is-overview #progress{opacity:.9}
+
+@media print{
+  html,body{overflow:visible;height:auto;background:#fff}
+  #progress,#hud,#notes,#outline,#overlay,#blank{display:none!important}
+  #stage{position:static;width:auto;height:auto}
+  .frame{position:static!important;transform:none!important;width:100%;height:auto;page-break-after:always}
+  .slide{
+    position:static;visibility:visible!important;opacity:1!important;
+    height:auto;min-height:0;border:1px solid #ddd;box-shadow:none;page-break-inside:avoid;
+  }
+  .slide-body{font-size:15px!important}
+  @page{size:landscape;margin:10mm}
+}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<div id="stage"><div class="frame" data-index="1"><section class="slide slide--title" aria-label="Slide 1"><div class="slide-body"><h1 class="slide-title">What actually happens when we send a prompt?</h1><p class="slide-subtitle">Modern AI Systems · Lecture 2</p><div class="slide-content"><p><em>Week 2 Lecture — tokens, context, parameters, and thinking</em></p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">1</span></div></section><div class="notes-src" hidden><p>≈90 min for the session. Run sheet: none. <code>week-02-lecture-plan.md</code> records the intent of each section and nothing further, which is the format that plan follows; the per-slide timings below are the only schedule.</p>
+<p>The organising principle for this session: last week the students had the experiences, and this week those experiences receive names. Almost every topic today corresponds to an experiment they ran themselves in the prompt lab.</p>
+<p>Delivered that way, the session is a discussion. Delivered as new material, it becomes the densest lecture of the term.</p></div></div>
+<div class="frame" data-index="2"><section class="slide slide--section" aria-label="Slide 2"><div class="slide-body"><h2 class="slide-title">Tokens</h2></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">2</span></div></section><div class="notes-src" hidden><p>Section divider. Plan §1.</p>
+<p>The goal of this block: students should leave understanding that the model operates on sub-word fragments rather than words, and that the vocabulary is the frozen result of frequency counting over a training corpus. That one mechanism accounts for Ukrainian text costing roughly a third more per page than English, for unreliable arithmetic, and for exact identifiers fragmenting.</p>
+<p>The block opens the session because everything after it is measured in tokens.</p></div></div>
+<div class="frame" data-index="3"><section class="slide slide--content" aria-label="Slide 3"><div class="slide-body"><h2 class="slide-title">The model does not see words</h2><div class="slide-content"><p>It sees <strong>tokens</strong> — fragments, from a fixed vocabulary.</p>
+<p><a href="https://platform.openai.com/tokenizer">https://platform.openai.com/tokenizer</a></p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">3</span></div></section><div class="notes-src" hidden><p>≈3 min. Use one of:</p>
+<p>https://platform.openai.com/tokenizer          (also shows token IDs) https://tiktokenizer.vercel.app/ https://huggingface.co/spaces/Xenova/the-tokenizer-playground</p>
+<p>State explicitly that these use a different tokeniser from Gemini, so their counts will not match the students' own <code>usage_metadata</code>. They serve to show the split. The figures that apply to the students' work appear on the next slide.</p>
+<p>The OpenAI tool additionally displays token IDs. Mention this briefly: it demonstrates that a token is ultimately a row number in a lookup table, which the explanation of sub-word vocabularies depends on.</p></div></div>
+<div class="frame" data-index="4"><section class="slide slide--content" aria-label="Slide 4"><div class="slide-body"><h2 class="slide-title">Why tokens and not words?</h2><div class="slide-content"><p><strong>One token per word?</strong> The vocabulary is a fixed table with one row per token. It cannot hold every word, name, typo and identifier in every language. Anything absent becomes <em>unrepresentable.</em></p>
+<p><strong>One token per character?</strong> Nothing is ever absent, but sequences become long, and attention compares every token with every other, so cost grows with approximately the <strong>square</strong> of length.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">4</span></div></section><div class="notes-src" hidden><p>≈3 min. Present this as a design problem with two evident answers, both of which fail. The compromise appears on the following slide.</p>
+<p>The per-word approach also wastes the table: <code>run</code>, <code>runs</code> and <code>running</code> would occupy three unrelated rows sharing nothing.</p>
+<p>The per-character approach also consumes model capacity on reconstructing that c-o-n-t-e-x-t spells a word, before any reasoning can begin.</p>
+<p>Remain at this level of detail. BPE internals and vocabulary sizes are unnecessary detail, and nothing later in the course depends on them.</p></div></div>
+<div class="frame" data-index="5"><section class="slide slide--content" aria-label="Slide 5"><div class="slide-body"><h2 class="slide-title">Sub-word pieces — the compromise</h2><div class="slide-content"><blockquote><p>Start from characters. Repeatedly merge the <strong>most frequent adjacent pair</strong> in a large training corpus. Stop when the vocabulary is full.</p></blockquote>
+<p><strong>Common sequences earned their own token. Rare ones did not.</strong></p>
+<p>Nothing is ever unrepresentable, since anything unfamiliar is spelled out from smaller pieces.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">5</span></div></section><div class="notes-src" hidden><p>≈3 min. This is byte-pair encoding, although the mechanism matters more than the name.</p>
+<p>The significant word is <strong>frequent</strong>. The vocabulary is the fixed result of a counting exercise over a particular training corpus.</p>
+<p>That single fact accounts for every row of the table on the following slide.</p></div></div>
+<div class="frame" data-index="6"><section class="slide slide--content" aria-label="Slide 6"><div class="slide-body"><h2 class="slide-title">Our model, our numbers</h2><div class="slide-content"><pre class="verbatim"><code>                 chars  words  tokens  tok/word
+  English           52     11      13      1.18
+  Ukrainian         54     11      17      1.55
+  Common word        7      1       2      2.00
+  Rare word         28      1       6      6.00
+  A long number     22      1      23     23.00
+  An identifier     16      1       9      9.00</code></pre>
+<p><code>python tokens.py "anything you like"</code></p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">6</span></div></section><div class="notes-src" hidden><p>≈4 min. Measured on <code>gemini-3.5-flash</code> using <code>tokens.py</code> from the starter repository.</p>
+<p>Run this live and accept suggestions from the class. <code>count_tokens</code> does not draw on the approximately 6 requests per minute generation budget: 10 calls completed in 2.1 seconds with no rate limiting. It can therefore be called repeatedly without consequence.</p>
+<p>The two sentences are the course's recurring statement, in English and in Ukrainian.</p>
+<p>Three rows to identify, in this order:</p>
+<ol><li>Ukrainian 17 against English 13. The same meaning and a near-identical character count produce 31% more tokens.</li><li>The long number: 23 tokens for 22 characters, approximately one per digit.</li><li>The identifier: <code>gemini-3.5-flash</code> divides into 9 tokens.</li></ol>
+<p>Return to the number row once the cause has been given. A digit sequence is rare in the corpus, so it survives as many small pieces rather than one, and the model performs arithmetic over those fragments rather than over a quantity. That is the mechanism behind the unreliable arithmetic the students will meet later, and it is the same mechanism as the Ukrainian and identifier rows rather than a separate defect.</p>
+<p>Do not explain the cause yet. Allow the table to remain unexplained for a short period.</p></div></div>
+<div class="frame" data-index="7"><section class="slide slide--content" aria-label="Slide 7"><div class="slide-body"><h2 class="slide-title">Three counters, not two</h2><div class="slide-content"><pre class="lang-python"><code><span class="tok-kw">print</span>(response.usage_metadata)
+
+prompt_token_count      = <span class="tok-num">7</span>      <span class="tok-com"># what you sent</span>
+thoughts_token_count    = <span class="tok-num">95</span>     <span class="tok-com"># ???</span>
+candidates_token_count  = <span class="tok-num">2</span>      <span class="tok-com"># what you got back</span></code></pre>
+<p>Two of these are self-explanatory. <strong>The third requires an explanation.</strong></p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">7</span></div></section><div class="notes-src" hidden><p>≈2 min. This slide opens the reasoning block by posing the question the next three slides answer. Display it, ask the question, and move on to Stage 1 rather than explaining it here.</p>
+<p>The students saw this output in Week 1, Step 4, without explanation. Identify that: it has been present in their terminal since last week and nobody asked about it.</p>
+<p>The question to pose: a plain language model requires two figures to describe a call, and this response requires three. What is the third one for?</p>
+<p>This also connects the block to the preceding one. The section just completed established what a token is; this establishes that there are three distinct categories of them.</p></div></div>
+<div class="frame" data-index="8"><section class="slide slide--content" aria-label="Slide 8"><div class="slide-body"><h2 class="slide-title">Stage 1 — tokens in, tokens out</h2><div class="slide-content"><pre class="verbatim"><code>prompt ─────────────────────────▶ answer
+ (in)                              (out)</code></pre>
+<p>Two counters. The whole transaction is visible.</p>
+<p><strong>This is the model introduced in Week 1.</strong></p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">8</span></div></section><div class="notes-src" hidden><p>≈2 min. Establish the baseline deliberately, since the contrast carries the lesson.</p>
+<p>A single pass: the model predicts the answer directly, token by token, and everything it produces is readable.</p></div></div>
+<div class="frame" data-index="9"><section class="slide slide--content" aria-label="Slide 9"><div class="slide-body"><h2 class="slide-title">Stage 2 — "think step by step"</h2><div class="slide-content"><p>Asking a model to <strong>reason before answering</strong> improves its performance on difficult problems.</p>
+<p><em>Wei et al., "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models," Google, 2022</em></p>
+<p><strong>The reasoning was ordinary visible output.</strong> The user requested it, paid output rates for it, and read past it to reach the answer.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">9</span></div></section><div class="notes-src" hidden><p>≈3 min. arXiv 2201.11903.</p>
+<p>Note the pattern: this originated at Google, as did the attention paper discussed last week. Both mechanisms were published openly and subsequently built upon across the industry.</p>
+<p>The framing required for the next slide: chain-of-thought was a prompting technique. The user was responsible for requesting it, and the reasoning obscured the answer.</p>
+<p>Then pose the question and pause: if this reliably improves results, why require the user to ask for it?</p></div></div>
+<div class="frame" data-index="10"><section class="slide slide--content" aria-label="Slide 10"><div class="slide-body"><h2 class="slide-title">Stage 3 — the loop moved inside</h2><div class="slide-content"><pre class="verbatim"><code>prompt ──▶ [ internal reasoning ] ──▶ answer
+ (in)        (thinking — hidden)       (out)</code></pre>
+<p>Three counters. The thinking is <strong>absent from <code>response.text</code></strong>, billed at output rates, and, unlike the prompting technique, <strong>controllable</strong>.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">10</span></div></section><div class="notes-src" hidden><p>≈3 min. This resolves the sequence.</p>
+<p>The formulation to deliver:</p>
+<p>Chain-of-thought moved from something the user types into the prompt to something the model performs independently and does not display. The mechanism is unchanged; its location and visibility are not.</p>
+<p>Connect this to Week 1, which prevents the material from appearing to introduce new machinery: last week established that a model predicts the next token, appends it, and repeats. A reasoning model runs that same loop twice, once privately to reason and once publicly to answer.</p>
+<p>"Test-time compute" is the term for expending compute at answer time rather than during training.</p></div></div>
+<div class="frame" data-index="11"><section class="slide slide--content" aria-label="Slide 11"><div class="slide-body"><h2 class="slide-title">What it actually costs</h2><div class="slide-content"><p>Four runs. Identical trivial prompt — <em>"reply with exactly: setup complete"</em>:</p>
+<pre class="verbatim"><code>prompt=7   thinking=71    answer=2
+prompt=7   thinking=80    answer=2
+prompt=7   thinking=95    answer=2
+prompt=7   thinking=102   answer=2</code></pre>
+<p><strong>35–50× more thinking than answer</strong>, on a prompt requiring no reasoning.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">11</span></div></section><div class="notes-src" hidden><p>≈4 min. Measured on this course's key using <code>gemini-3.5-flash</code>. Run it live as well.</p>
+<p>Three points, in order:</p>
+<ol><li>These tokens are billed. They were present last week and went unnoticed.</li><li>They are invisible by default; <code>response.text</code> contains none of them.</li><li>The count varies by approximately one third between identical runs, so it cannot be budgeted by assumption.</li></ol>
+<p>Have a recorded run available. <code>503 UNAVAILABLE</code> responses are frequent enough on this API to warrant their own troubleshooting slide in the Week 1 practical, and should not be allowed to disrupt the central demonstration of the session.</p></div></div>
+<div class="frame" data-index="12"><section class="slide slide--content" aria-label="Slide 12"><div class="slide-body"><h2 class="slide-title">Billed as output</h2><div class="slide-content"><div class="table-wrap"><table><thead><tr><th style="text-align:left">Provider</th><th style="text-align:left">Input</th><th style="text-align:left">Output</th></tr></thead><tbody><tr><td style="text-align:left">Gemini 3.8 Flash</td><td style="text-align:left">$0.75 / 1M</td><td style="text-align:left"><strong>$3.75 / 1M</strong></td></tr><tr><td style="text-align:left">Claude Sonnet 5</td><td style="text-align:left">$2 / 1M</td><td style="text-align:left"><strong>$10 / 1M</strong></td></tr><tr><td style="text-align:left">GPT-4o</td><td style="text-align:left">$2.50 / 1M</td><td style="text-align:left"><strong>$10 / 1M</strong></td></tr></tbody></table></div>
+<p>Google's price list labels that column: <em>"Output price <strong>(including thinking tokens)</strong>."</em></p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">12</span></div></section><div class="notes-src" hidden><p>≈3 min. Open a price list during the session if connectivity permits:</p>
+<p>https://ai.google.dev/gemini-api/docs/pricing https://claude.com/pricing https://developers.openai.com/api/docs/pricing</p>
+<p>Two observations:</p>
+<p>Output costs four to five times input at every provider. This is the standard shape of LLM pricing, and thinking tokens are billed as output.</p>
+<p>Google states this explicitly. The other two providers do not mention reasoning tokens on their pricing pages. State this: it repeats the lesson of the demonstration at a higher level, in that the cost is absent from the response and largely absent from the documentation. A developer who never inspects <code>usage_metadata</code> has little reason to discover it before receiving an invoice.</p>
+<p>If the class requests an order of magnitude: approximately 1,500 calls per student per semester across 25 students is on the order of $10–15 of invisible reasoning at Flash rates. The figure is small, which is why the cost goes unnoticed. Week 11 treats it as a cost problem; today it requires only visibility.</p></div></div>
+<div class="frame" data-index="13"><section class="slide slide--content" aria-label="Slide 13"><div class="slide-body"><h2 class="slide-title">Temperature — Experiment 5, explained</h2><div class="slide-content"><p>The model produces a <strong>probability distribution</strong> over next tokens. Temperature rescales that distribution before sampling.</p>
+<ul><li><strong>Low</strong> → sharpened. The top candidate is selected reliably.</li><li><strong>High</strong> → flattened. Greater variety, greater risk.</li><li><strong>0</strong> → effectively always the most likely token.</li></ul></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">13</span></div></section><div class="notes-src" hidden><p>≈4 min.</p>
+<p>Re-run the students' Experiment 5 live, but not with the open-ended fact question. An open-ended prompt leaves several near-tied candidate tokens at each step, and floating-point non-determinism in Gemini's batched serving can still select different tokens at <code>temperature=0</code> (measured 2026-09-14 on <code>gemini-3.5-flash</code>: two <code>temperature=0</code> calls to "name one interesting fact about graph databases" returned different text). Use a closed-form prompt instead, one with a single correct answer, such as an arithmetic question. Run it three times at the default, then three times with <code>temperature=0</code>.</p>
+<p>config=types.GenerateContentConfig(temperature=0)</p>
+<p>The conclusion: last week's observation that the model is not a function described sampling, and sampling is adjustable. State the caveat explicitly if a student asks why their own open-ended re-run did not converge; it is not a broken demonstration.</p>
+<p>Keep the explanation mechanical. Avoid characterising temperature as creativity. It does not make the model imaginative; it makes the model less likely to select its highest-ranked candidate. Presenting it otherwise is the principal failure mode of this slide.</p>
+<p>Then pose the engineering question: which parts of a Lab 3 system require this value near zero? Classification, extraction and routing, and anything whose output will be parsed.</p></div></div>
+<div class="frame" data-index="14"><section class="slide slide--section" aria-label="Slide 14"><div class="slide-body"><h2 class="slide-title">Building a good context</h2></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">14</span></div></section><div class="notes-src" hidden><p>Section divider. <strong>≈30 min, the longest block in the session, deliberately so.</strong></p>
+<p>The preceding material covered mechanism: the nature of a token and the cost of reasoning. This block covers material the students will apply every week for the remainder of the course, and on which Lab 1 depends directly.</p>
+<p>The sequence: what the window is, what it costs, what belongs in it, and a template that can be copied.</p>
+<p>This connects to Experiment 4. The syllabus extract the students pasted in was context, assembled manually. This block concerns assembling it deliberately.</p></div></div>
+<div class="frame" data-index="15"><section class="slide slide--content" aria-label="Slide 15"><div class="slide-body"><h2 class="slide-title">The context window is everything it can see</h2><div class="slide-content"><p>System instructions · your question · conversation history · retrieved documents · tool results · memory</p>
+<p><strong>All of it, re-sent, on every call.</strong></p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">15</span></div></section><div class="notes-src" hidden><p>≈3 min.</p>
+<p>The re-sending is unexpected to most students. The model maintains no session. A conversation functions because the entire history is transmitted on each turn, which is also why extended conversations become slower and more expensive.</p>
+<p>Connect this to Experiment 4: pasting in the syllabus was manual retrieval. Weeks 3 and 4 automate precisely that operation and nothing further.</p>
+<p>State the constraint: the window is finite. When it fills, material must be removed, and determining what to remove is the engineering problem the remainder of the course addresses.</p></div></div>
+<div class="frame" data-index="16"><section class="slide slide--content" aria-label="Slide 16"><div class="slide-body"><h2 class="slide-title">Context is not free</h2><div class="slide-content"><p>Every token in the window is <strong>paid for on every call.</strong></p>
+<ul><li>Longer prompt → higher cost, higher latency</li><li>Irrelevant context is actively harmful, since it competes for attention</li></ul></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">16</span></div></section><div class="notes-src" hidden><p>≈3 min.</p>
+<p>Correct the assumption that a large window should simply be filled. This must happen before Week 3, when the students build retrieval and are inclined to supply as much material as possible.</p>
+<p>The second point is the less obvious one and merits emphasis: additional context can degrade an answer, because the relevant passage now competes with irrelevant material. Week 4 addresses this properly as a RAG failure mode. Today it is sufficient to establish that more is not better.</p>
+<p>Long context against retrieval is an unresolved engineering trade-off, and students will ask about it.</p></div></div>
+<div class="frame" data-index="17"><section class="slide slide--content" aria-label="Slide 17"><div class="slide-body"><h2 class="slide-title">What a good context is assembled from</h2><div class="slide-content"><div class="table-wrap"><table><thead><tr><th style="text-align:left">Part</th><th style="text-align:left">Changes</th><th style="text-align:left">Built in</th></tr></thead><tbody><tr><td style="text-align:left"><strong>System instructions</strong> — role, standing rules</td><td style="text-align:left">Never</td><td style="text-align:left">Today</td></tr><tr><td style="text-align:left"><strong>Examples</strong> — demonstrations of the task</td><td style="text-align:left">Never</td><td style="text-align:left">Today</td></tr><tr><td style="text-align:left"><strong>Tool definitions</strong> — what it may call</td><td style="text-align:left">Never</td><td style="text-align:left">Week 7</td></tr><tr><td style="text-align:left"><strong>Retrieved knowledge</strong> — passages for <em>this</em> question</td><td style="text-align:left">Every call</td><td style="text-align:left">Weeks 3–4</td></tr><tr><td style="text-align:left"><strong>Memory</strong> — what is known about <em>this</em> user</td><td style="text-align:left">Per user</td><td style="text-align:left">Week 9</td></tr><tr><td style="text-align:left"><strong>Conversation history</strong> — what was already said</td><td style="text-align:left">Per turn</td><td style="text-align:left">Week 9</td></tr><tr><td style="text-align:left"><strong>The request</strong> — what the user asked</td><td style="text-align:left">Every call</td><td style="text-align:left">—</td></tr></tbody></table></div>
+<blockquote><p>Only the lower rows change. Most of a context is determined once, by the developer.</p></blockquote></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">17</span></div></section><div class="notes-src" hidden><p>≈5 min. This slide explains the purpose of the remainder of the course.</p>
+<p>Read the right-hand column downwards: almost every row corresponds to a different week. Retrieval, tools and memory are not separate subjects. They are different parts of this one assembly, and each receives its own week because each is difficult to build well.</p>
+<p>State this directly: the table is the syllabus.</p>
+<p>Two points to develop:</p>
+<ul><li>The "Changes" column is the engineering distinction. Static parts are written once and tested. Dynamic parts are assembled per call by code, and that code is what the students will spend the semester writing. An error in a static part is a typographical error; an error in the assembly produces a system that passes testing and fails in production.</li><li>None of this is performed by the model. Every row is placed there by software the developer wrote. This is why the course uses the term context engineering rather than prompting.</li></ul>
+<p>If asked whether ordering matters: it does, to a measurable degree rather than as a matter of preference. That is a Week 11 evaluation question.</p></div></div>
+<div class="frame" data-index="18"><section class="slide slide--content" aria-label="Slide 18"><div class="slide-body"><h2 class="slide-title">Context template example</h2><div class="slide-content"><pre class="verbatim"><code>System     You answer questions about {domain} using only the
+           sources below. If they do not answer it, reply
+           exactly: not stated.
+
+Sources    [1] {retrieved passage}
+           [2] {retrieved passage}
+
+Task       Answer the question using only the sources above.
+
+Format     Three bullets maximum. Cite [n] after each claim.
+
+Question   {whatever the user typed}</code></pre></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">18</span></div></section><div class="notes-src" hidden><p>≈5 min. The most directly applicable slide in the session. Advise the students to photograph it.</p>
+<p>This is the preceding table instantiated. Work through it block by block, naming the part each one represents.</p>
+<p>This is the Lab 1 prompt skeleton. In Week 3 the <code>Sources</code> block ceases to be pasted manually and is populated by retrieval, which is the only change. State this now, since it presents retrieval as the automation of one block of a prompt the students already understand rather than as a new subject.</p>
+<p>Three details to identify:</p>
+<ul><li>"using only the sources below" — without this instruction the model combines its training data with the supplied sources, and the two become indistinguishable.</li><li>"reply exactly: not stated" — the exit clause from Experiment 4. A single line distinguishes a system that reports insufficient information from one that invents an answer.</li><li>Numbered sources with "cite [n]" — this makes the answer auditable. A claim without a citation becomes visibly suspect, both to the user and to the tests written in Week 11.</li></ul>
+<p>Identify what is absent: no tools, no memory, no conversation history. This is the smallest context that performs useful work, and the course spends ten weeks adding the remainder.</p></div></div>
+<div class="frame" data-index="19"><section class="slide slide--content" aria-label="Slide 19"><div class="slide-body"><h2 class="slide-title">The System block — the standing brief</h2><div class="slide-content"><p>Everything true of every call, written once by the developer and never per request:</p>
+<ul><li><strong>Role and scope</strong> — what the system is for, and what it declines to do</li><li><strong>Standing rules</strong> — use only the sources; cite every claim</li><li><strong>Output policy</strong> — format, length, and the exit clause</li><li><strong>Tone and audience</strong> — who reads the answer</li></ul>
+<p><strong>Not here:</strong> the question, the retrieved passages, or anything else that differs between one call and the next.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">19</span></div></section><div class="notes-src" hidden><p>≈3 min. This expands the first block of the template on the preceding slide, and the first row of the assembly table before that — the row whose "Changes" column reads <em>Never</em>.</p>
+<p>The definition to give: the system instruction is the part of the context that does not depend on what the user asked. If a line would have to be rewritten for the next question, it is not a standing rule and belongs in the request.</p>
+<p>The common error is placing per-request material here and regenerating the instruction on every call. That defeats the static and dynamic distinction the assembly table established, and it also defeats provider-side prompt caching, which requires a stable prefix. Week 11 treats caching as a cost mechanism; today it is a reason to keep this block fixed.</p>
+<p>Note where the exit clause sits. "If the sources do not answer, reply: not stated" is a standing policy rather than a property of any one question, so it belongs here rather than in the user turn, and it then applies to every call the system makes.</p>
+<p>The engineering consequence to state: a system instruction is written once and can be reviewed and tested like any other artefact the developer controls. The remainder of the context cannot be, since it is assembled at run time by code.</p>
+<p>Then bridge to the next slide. This slide covers what the block contains; where it is actually set is not the prompt text.</p></div></div>
+<div class="frame" data-index="20"><section class="slide slide--content" aria-label="Slide 20"><div class="slide-body"><h2 class="slide-title">Zero-shot and few-shot</h2><div class="slide-content"><p><strong>Zero-shot</strong> — describe the task, demonstrate nothing. <strong>Few-shot</strong> — place several solved instances in the context before the request.</p>
+<div class="table-wrap"><table><thead><tr><th style="text-align:left"></th><th style="text-align:left">Cost</th><th style="text-align:left">Appropriate when</th></tr></thead><tbody><tr><td style="text-align:left"><strong>Zero-shot</strong></td><td style="text-align:left">Lower</td><td style="text-align:left">The task is stated adequately in a sentence</td></tr><tr><td style="text-align:left"><strong>Few-shot</strong></td><td style="text-align:left">Higher, on every call</td><td style="text-align:left">The rule, its edge cases, or the output format are awkward to state</td></tr></tbody></table></div>
+<p><em>A "shot" is one worked example. Three examples is 3-shot.</em></p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">20</span></div></section><div class="notes-src" hidden><p>≈3 min. The terms are introduced here because the students have used one of them without the name. Every one of the five Week 1 experiments was zero-shot: each described a task and supplied no example.</p>
+<p>The misconception to address directly, since it is the common one: few-shot is not training. No weights change, nothing is learned, and the examples are discarded with the rest of the context when the call returns. They are ordinary context, re-sent and re-paid for on every call. The standard term is <em>in-context learning</em>, and the word "learning" in it is misleading.</p>
+<p>That is also the cost argument. Three short examples are inexpensive. Twenty long ones are a permanent addition to every request the system ever makes, which is the same point the "Context is not free" slide established, applied to a technique that appears free.</p>
+<p>If asked how many examples: more assists up to a point and then ceases to. The ordering of the examples and the balance of categories among them both affect the result measurably. That is a Week 11 evaluation question rather than a matter of preference.</p>
+<p>Then bridge to the next slide, which is the worked instance: why demonstrating the rule is more effective than describing it.</p></div></div>
+<div class="frame" data-index="21"><section class="slide slide--content" aria-label="Slide 21"><div class="slide-body"><h2 class="slide-title">Examples beat descriptions</h2><div class="slide-content"><p>Describing the rule is difficult. Demonstrating it is straightforward.</p>
+<pre class="verbatim"><code>Classify this support ticket.
+
+  "card declined"        → billing
+  "can't log in"         → account
+  "app crashes on save"  → technical
+
+  "invoice shows wrong VAT" →</code></pre>
+<p><strong>Decomposition:</strong> request the outline first, then each section, rather than the whole report at once.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">21</span></div></section><div class="notes-src" hidden><p>≈3 min. These are the two components the students could not have discovered in Week 1, since neither appeared in the five experiments.</p>
+<p>The preceding slide defined the technique; this one is the instance. Attempting to state in prose the rule separating those three categories is awkward, and a model reading such a rule would have to infer the edge cases. Three examples accomplish it without explanation. This is the highest-value technique for classification and extraction, which constitutes most of what the Lab 3 tools will perform.</p>
+<p>Note that the examples also fix the output format: one word, lower case, no sentence. That requirement was never stated.</p>
+<p>Decomposition. Long single-pass outputs lose structure. Several smaller calls each address a limited task, can be checked individually, and fail visibly rather than subtly. The cost is additional calls, which at approximately 6 requests per minute is a constraint the students will encounter in Lab 3.</p>
+<p>Both techniques are practised in this week's practical. Today the students need only know that they exist.</p></div></div>
+<div class="frame" data-index="22"><section class="slide slide--content" aria-label="Slide 22"><div class="slide-body"><h2 class="slide-title">Hallucination has causes</h2><div class="slide-content"><blockquote><p><strong>Hallucination</strong> — a fluent, confidently stated claim that is not supported by the sources or by fact. It is indistinguishable in form from a correct answer, so it cannot be identified by inspecting the output alone.</p></blockquote>
+<div class="table-wrap"><table><thead><tr><th style="text-align:left">Cause</th><th style="text-align:left">What it looks like</th></tr></thead><tbody><tr><td style="text-align:left"><strong>Nothing in context</strong></td><td style="text-align:left">Confident invention, as in Experiment 4, round one</td></tr><tr><td style="text-align:left"><strong>Wrong material retrieved</strong></td><td style="text-align:left">A fluent answer grounded in the wrong source</td></tr><tr><td style="text-align:left"><strong>Stale training data</strong></td><td style="text-align:left">Formerly true, no longer</td></tr><tr><td style="text-align:left"><strong>Conflicting sources</strong></td><td style="text-align:left">One is selected, the conflict is not reported</td></tr><tr><td style="text-align:left"><strong>Plausible-shape completion</strong></td><td style="text-align:left">A citation, URL or method name that appears correct and does not exist</td></tr></tbody></table></div>
+<p>No setting disables hallucination.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">22</span></div></section><div class="notes-src" hidden><p>≈5 min.</p>
+<p>Give the definition before the table, and state what it does not say. It does not say the model lied, and it does not say the model was mistaken in the way a person is mistaken. The output is unsupported rather than dishonest, and the mechanism behind that is the closing slide of this block.</p>
+<p>The second sentence carries the weight. If a false statement announced itself, the problem would be trivial. Every remedy on the next slide exists because it does not: grounding supplies something to check the answer against, citation makes the check possible, and measurement performs it over a sample.</p>
+<p>Terminology, if it is raised: the word is contested, and <em>confabulation</em> is argued to be the more accurate term since nothing is perceived. Answer in one sentence and continue. The causes matter here; the label does not.</p>
+<p>The final row is the one this audience recognises from experience, having encountered a model inventing a library method that appears as though it should exist. Explain it mechanically: the model has learned the shape of an API call, a DOI and a URL. Producing a well-formed instance is precisely what next-token prediction performs well. Producing a correct instance requires information the model was never given.</p>
+<p>The reframing to establish: these are distinct problems with distinct remedies. Absent context is addressed by retrieval in Week 3. Incorrectly retrieved material is addressed by improved retrieval and evaluation in Weeks 4 and 11. Plausible-shape completion is barely addressed at all, and requires verification against a genuine source.</p>
+<p>Treating hallucination as a single undifferentiated defect is what leads people to expect that a better model will resolve it.</p></div></div></div>
+
+<aside id="notes" aria-label="Speaker notes">
+  <div class="notes-head"><span>Speaker notes</span><span id="timer">00:00</span></div>
+  <div id="notes-body"></div>
+</aside>
+
+<aside id="outline" aria-label="Slide list">
+  <div class="outline-head"><span>Slides</span><span id="outline-count">22</span></div>
+  <div id="outline-list"></div>
+</aside>
+
+<div id="hud">
+  <span id="counter">1 / 22</span>
+  <button type="button" data-act="prev" title="Previous (←)">‹</button>
+  <button type="button" data-act="next" title="Next (→)">›</button>
+  <button type="button" data-act="notes" title="Speaker notes (S)">S</button>
+  <button type="button" data-act="overview" title="Overview (O)">O</button>
+  <button type="button" data-act="outline" title="Slide list (L)">L</button>
+  <button type="button" data-act="theme" title="Light / dark (T)">T</button>
+  <button type="button" data-act="help" title="Help (?)">?</button>
+</div>
+
+<div id="overlay" role="dialog" aria-label="Keyboard shortcuts">
+  <dl>
+    <dt>← →</dt><dd>Previous / next slide</dd>
+    <dt>Space</dt><dd>Next slide</dd>
+    <dt>Home / End</dt><dd>First / last slide</dd>
+    <dt>1–9</dt><dd>Jump to slide number, then Enter</dd>
+    <dt>S</dt><dd>Speaker notes and lecture timer</dd>
+    <dt>R</dt><dd>Reset the timer</dd>
+    <dt>O</dt><dd>Slide overview — a visual grid, click a slide to jump</dd>
+    <dt>L</dt><dd>Slide list — titles only, click to jump</dd>
+    <dt>T</dt><dd>Light / dark, for the room you are in</dd>
+    <dt>F</dt><dd>Fullscreen</dd>
+    <dt>B</dt><dd>Blank the screen</dd>
+    <dt>Ctrl+P</dt><dd>Print / export a PDF handout</dd>
+    <dt>Esc</dt><dd>Close this, or leave overview</dd>
+  </dl>
+</div>
+<div id="blank"></div>
+
+<script>
+(function(){
+  "use strict";
+  var W = 1280, H = 720;
+  var stage = document.getElementById("stage");
+  var frames = Array.prototype.slice.call(stage.querySelectorAll(".frame"));
+  var notesPanel = document.getElementById("notes");
+  var notesBody = document.getElementById("notes-body");
+  var outlinePanel = document.getElementById("outline");
+  var outlineList = document.getElementById("outline-list");
+  var OUTLINE = [{"i": 1, "t": "What actually happens when we send a prompt?", "k": "title"}, {"i": 2, "t": "Tokens", "k": "section"}, {"i": 3, "t": "The model does not see words", "k": "content"}, {"i": 4, "t": "Why tokens and not words?", "k": "content"}, {"i": 5, "t": "Sub-word pieces — the compromise", "k": "content"}, {"i": 6, "t": "Our model, our numbers", "k": "content"}, {"i": 7, "t": "Three counters, not two", "k": "content"}, {"i": 8, "t": "Stage 1 — tokens in, tokens out", "k": "content"}, {"i": 9, "t": "Stage 2 — \"think step by step\"", "k": "content"}, {"i": 10, "t": "Stage 3 — the loop moved inside", "k": "content"}, {"i": 11, "t": "What it actually costs", "k": "content"}, {"i": 12, "t": "Billed as output", "k": "content"}, {"i": 13, "t": "Temperature — Experiment 5, explained", "k": "content"}, {"i": 14, "t": "Building a good context", "k": "section"}, {"i": 15, "t": "The context window is everything it can see", "k": "content"}, {"i": 16, "t": "Context is not free", "k": "content"}, {"i": 17, "t": "What a good context is assembled from", "k": "content"}, {"i": 18, "t": "Context template example", "k": "content"}, {"i": 19, "t": "The System block — the standing brief", "k": "content"}, {"i": 20, "t": "Zero-shot and few-shot", "k": "content"}, {"i": 21, "t": "Examples beat descriptions", "k": "content"}, {"i": 22, "t": "Hallucination has causes", "k": "content"}];
+  var counter = document.getElementById("counter");
+  var progress = document.getElementById("progress");
+  var overlay = document.getElementById("overlay");
+  var blank = document.getElementById("blank");
+  var total = frames.length;
+  var index = 0;
+  var overview = false;
+  var pending = "";
+  var pendingTimer = null;
+
+  function store(key, value){ try{ localStorage.setItem(key, value); }catch(e){} }
+  function load(key){ try{ return localStorage.getItem(key); }catch(e){ return null; } }
+
+  var savedTheme = load("deck-theme");
+  if(savedTheme === "light" || savedTheme === "dark"){
+    document.documentElement.setAttribute("data-theme", savedTheme);
+  }
+
+  /* Shrink a slide's type until its content fits the fixed 1280x720 box.
+     Content is never removed -- only scaled. */
+  function fit(frame){
+    var slide = frame.querySelector(".slide");
+    var body = frame.querySelector(".slide-body");
+    if(!slide || !body) return;
+    body.style.setProperty("--fit", 1);
+    if(body.scrollHeight <= body.clientHeight + 1) { frame.removeAttribute("data-overflow"); return; }
+    var lo = 0.55, hi = 1, best = 0.55;
+    for(var i = 0; i < 9; i++){
+      var mid = (lo + hi) / 2;
+      body.style.setProperty("--fit", mid);
+      if(body.scrollHeight <= body.clientHeight + 1){ best = mid; lo = mid; } else { hi = mid; }
+    }
+    body.style.setProperty("--fit", best);
+    if(best <= 0.56 && body.scrollHeight > body.clientHeight + 1){
+      frame.setAttribute("data-overflow", "1");
+    } else {
+      frame.removeAttribute("data-overflow");
+    }
+  }
+
+  function layout(){
+    if(overview){
+      document.body.classList.add("is-overview");
+      var pad = 24, gap = 18;
+      var cols = window.innerWidth > 1500 ? 4 : (window.innerWidth > 1000 ? 3 : 2);
+      var cellW = (window.innerWidth - pad * 2 - gap * (cols - 1)) / cols;
+      var scale = cellW / W;
+      var cellH = H * scale;
+      frames.forEach(function(frame, i){
+        var col = i % cols, row = Math.floor(i / cols);
+        frame.style.transform = "translate(" + (col * (cellW + gap)) + "px," +
+                                (row * (cellH + gap)) + "px) scale(" + scale + ")";
+      });
+      stage.style.height = (Math.ceil(total / cols) * (cellH + gap) + pad) + "px";
+    } else {
+      document.body.classList.remove("is-overview");
+      stage.style.height = "";
+      var s = Math.min(window.innerWidth / W, window.innerHeight / H);
+      var x = (window.innerWidth - W * s) / 2, y = (window.innerHeight - H * s) / 2;
+      frames.forEach(function(frame){
+        frame.style.transform = "translate(" + x + "px," + y + "px) scale(" + s + ")";
+      });
+    }
+  }
+
+  function renderNotes(){
+    var src = frames[index].querySelector(".notes-src");
+    notesBody.innerHTML = src ? src.innerHTML
+      : '<p class="notes-empty">No notes for this slide.</p>';
+  }
+
+  /* Built once: a plain list of slide titles, independent of the O overview
+     grid. textContent only -- a title is untrusted-ish authored text, and
+     this sidesteps ever needing to HTML-escape it. */
+  function buildOutline(){
+    OUTLINE.forEach(function(o){
+      var row = document.createElement("div");
+      row.className = "outline-item" + (o.k === "section" || o.k === "title" ? " is-section" : "");
+      row.setAttribute("data-index", o.i);
+      var num = document.createElement("span");
+      num.className = "outline-num";
+      num.textContent = o.i;
+      var t = document.createElement("span");
+      t.className = "outline-title";
+      t.textContent = o.t;
+      row.appendChild(num);
+      row.appendChild(t);
+      outlineList.appendChild(row);
+    });
+  }
+
+  function updateOutlineHighlight(){
+    var items = outlineList.querySelectorAll(".outline-item");
+    for(var i = 0; i < items.length; i++){
+      items[i].classList.toggle("is-current", i === index);
+    }
+  }
+
+  function show(next, push){
+    index = Math.max(0, Math.min(total - 1, next));
+    frames.forEach(function(frame, i){ frame.classList.toggle("is-active", i === index); });
+    counter.textContent = (index + 1) + " / " + total;
+    progress.style.width = (total > 1 ? (index / (total - 1)) * 100 : 100) + "%";
+    renderNotes();
+    if(outlinePanel.classList.contains("is-open")) updateOutlineHighlight();
+    if(push !== false){
+      try{ history.replaceState(null, "", "#" + (index + 1)); }catch(e){}
+    }
+    if(overview) frames[index].scrollIntoView({block:"nearest"});
+  }
+
+  /* Lecture timer -- starts on first use of the notes panel. */
+  var elapsed = 0, ticking = null, timerEl = document.getElementById("timer");
+  function paint(){
+    var m = Math.floor(elapsed / 60), s = elapsed % 60;
+    timerEl.textContent = (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s;
+  }
+  function startTimer(){
+    if(ticking) return;
+    ticking = setInterval(function(){ elapsed++; paint(); }, 1000);
+  }
+
+  function toggleNotes(){
+    var open = notesPanel.classList.toggle("is-open");
+    if(open) startTimer();
+  }
+  function toggleOutline(){
+    var open = outlinePanel.classList.toggle("is-open");
+    if(open){
+      updateOutlineHighlight();
+      var current = outlineList.querySelector(".outline-item.is-current");
+      if(current) current.scrollIntoView({block:"nearest"});
+    }
+  }
+  function toggleOverview(){
+    overview = !overview;
+    layout();
+    if(!overview) frames[index].scrollIntoView({block:"nearest"});
+  }
+  function toggleTheme(){
+    var root = document.documentElement;
+    var next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    root.setAttribute("data-theme", next);
+    store("deck-theme", next);
+  }
+
+  document.getElementById("hud").addEventListener("click", function(ev){
+    var act = ev.target.getAttribute && ev.target.getAttribute("data-act");
+    if(!act) return;
+    if(act === "prev") show(index - 1);
+    else if(act === "next") show(index + 1);
+    else if(act === "notes") toggleNotes();
+    else if(act === "overview") toggleOverview();
+    else if(act === "outline") toggleOutline();
+    else if(act === "theme") toggleTheme();
+    else if(act === "help") overlay.classList.toggle("is-open");
+  });
+
+  outlineList.addEventListener("click", function(ev){
+    var item = ev.target.closest ? ev.target.closest(".outline-item") : null;
+    if(!item) return;
+    show(parseInt(item.getAttribute("data-index"), 10) - 1);
+    outlinePanel.classList.remove("is-open");
+  });
+
+  stage.addEventListener("click", function(ev){
+    if(!overview) return;
+    var frame = ev.target.closest ? ev.target.closest(".frame") : null;
+    if(!frame) return;
+    show(frames.indexOf(frame));
+    toggleOverview();
+  });
+
+  overlay.addEventListener("click", function(){ overlay.classList.remove("is-open"); });
+  blank.addEventListener("click", function(){ blank.classList.remove("is-open"); });
+
+  document.addEventListener("keydown", function(ev){
+    if(ev.ctrlKey || ev.metaKey || ev.altKey) return;
+    var key = ev.key;
+
+    if(/^[0-9]$/.test(key)){
+      pending += key;
+      clearTimeout(pendingTimer);
+      pendingTimer = setTimeout(function(){ pending = ""; }, 1200);
+      return;
+    }
+    if(key === "Enter" && pending){
+      show(parseInt(pending, 10) - 1);
+      pending = "";
+      return;
+    }
+
+    switch(key){
+      case "ArrowRight": case "PageDown": case " ": case "Spacebar":
+        ev.preventDefault(); show(index + 1); break;
+      case "ArrowLeft": case "PageUp":
+        ev.preventDefault(); show(index - 1); break;
+      case "ArrowDown": ev.preventDefault(); show(index + 1); break;
+      case "ArrowUp": ev.preventDefault(); show(index - 1); break;
+      case "Home": ev.preventDefault(); show(0); break;
+      case "End": ev.preventDefault(); show(total - 1); break;
+      case "s": case "S": case "і": case "І": toggleNotes(); break;
+      case "o": case "O": case "щ": case "Щ": toggleOverview(); break;
+      case "l": case "L": case "д": case "Д": toggleOutline(); break;
+      case "t": case "T": case "е": case "Е": toggleTheme(); break;
+      case "r": case "R": case "к": case "К": elapsed = 0; paint(); break;
+      case "b": case "B": case "и": case "И": blank.classList.toggle("is-open"); break;
+      case "f": case "F": case "а": case "А":
+        if(document.fullscreenElement) document.exitFullscreen();
+        else if(document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+        break;
+      case "?": overlay.classList.toggle("is-open"); break;
+      case "Escape":
+        if(blank.classList.contains("is-open")) blank.classList.remove("is-open");
+        else if(overlay.classList.contains("is-open")) overlay.classList.remove("is-open");
+        else if(overview) toggleOverview();
+        else if(outlinePanel.classList.contains("is-open")) outlinePanel.classList.remove("is-open");
+        else notesPanel.classList.remove("is-open");
+        break;
+    }
+  });
+
+  var touchX = null;
+  document.addEventListener("touchstart", function(ev){ touchX = ev.touches[0].clientX; }, {passive:true});
+  document.addEventListener("touchend", function(ev){
+    if(touchX === null) return;
+    var dx = ev.changedTouches[0].clientX - touchX;
+    if(Math.abs(dx) > 60) show(index + (dx < 0 ? 1 : -1));
+    touchX = null;
+  }, {passive:true});
+
+  var resizeTimer = null;
+  window.addEventListener("resize", function(){
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(layout, 90);
+  });
+  window.addEventListener("beforeprint", function(){ frames.forEach(fit); });
+
+  function boot(){
+    buildOutline();
+    frames.forEach(fit);
+    layout();
+    var hash = parseInt((location.hash || "").replace("#", ""), 10);
+    show(isNaN(hash) ? 0 : hash - 1, false);
+    var bad = frames.filter(function(f){ return f.hasAttribute("data-overflow"); })
+                    .map(function(f){ return f.getAttribute("data-index"); });
+    if(bad.length){
+      console.warn("[deck] content still overflows after scaling on slide(s): " + bad.join(", ") +
+                   " -- split them in the source Markdown with an --- rule.");
+    }
+  }
+  if(document.readyState === "complete") boot();
+  else window.addEventListener("load", boot);
+})();
+</script>
+</body>
+</html>

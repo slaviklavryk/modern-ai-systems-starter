@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Modern AI Systems — Slides</title>
+<style>
+  :root {
+    --bg: #fbfbfa; --fg: #1a1a18; --muted: #6b6b66;
+    --card: #ffffff; --line: #e4e4e0; --accent: #2f5d50;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16181a; --fg: #ececea; --muted: #9a9a94;
+      --card: #1e2124; --line: #2e3236; --accent: #7fb9a6;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 3rem 1.25rem 4rem; background: var(--bg); color: var(--fg);
+    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  main { max-width: 54rem; margin: 0 auto; }
+  header { margin-bottom: 2.5rem; }
+  h1 { font-size: 1.9rem; margin: 0 0 .4rem; letter-spacing: -.01em; }
+  .sub { color: var(--muted); margin: 0; }
+  .weeks { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); }
+  .week {
+    background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 1rem 1.15rem;
+  }
+  .week h2 { font-size: .8rem; text-transform: uppercase; letter-spacing: .08em;
+              color: var(--muted); margin: 0 0 .75rem; }
+  .session { display: block; text-decoration: none; color: var(--fg); padding: .45rem 0; }
+  /* Separator between sessions only. Adjacent-sibling rather than :first-of-type,
+     because a missing session is a <span> and would count as its own first type. */
+  .session + .session { border-top: 1px solid var(--line); }
+  .session .kind { display: block; font-size: .72rem; text-transform: uppercase;
+                    letter-spacing: .06em; color: var(--accent); }
+  .session .name { display: block; font-size: .95rem; }
+  .session:hover .name { text-decoration: underline; }
+  .missing { color: var(--muted); }
+  .missing .kind { color: var(--muted); }
+  footer { margin-top: 3rem; padding-top: 1.25rem; border-top: 1px solid var(--line);
+            color: var(--muted); font-size: .85rem; }
+  footer a { color: inherit; }
+  kbd { font: inherit; font-size: .85em; border: 1px solid var(--line);
+         border-bottom-width: 2px; border-radius: 4px; padding: 0 .35em; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Modern AI Systems</h1>
+    <p class="sub">Lecture and practical slides · twelve weeks · fourth-year Applied Mathematics and Computer Science</p>
+  </header>
+
+  <div class="weeks">
+    <article class="week">
+      <h2>Week 1</h2>
+      <a class="session" href="week-01-lecture.html"><span class="kind">Lecture</span><span class="name">Modern AI and the AI Software Stack</span></a>
+      <a class="session" href="week-01-practical.html"><span class="kind">Practical</span><span class="name">First Calls and the Prompt Lab</span></a>
+    </article>
+    <article class="week">
+      <h2>Week 2</h2>
+      <a class="session" href="week-02-lecture.html"><span class="kind">Lecture</span><span class="name">LLMs, Tokens, Context, and Prompting</span></a>
+      <span class="session missing"><span class="kind">Practical</span><span class="name">not yet published</span></span>
+    </article>
+    <article class="week">
+      <h2>Week 3</h2>
+      <a class="session" href="week-03-lecture.html"><span class="kind">Lecture</span><span class="name">Embeddings, Semantic Search, and RAG</span></a>
+      <a class="session" href="week-03-practical.html"><span class="kind">Practical</span><span class="name">From a Folder of Documents to a Grounded Answer</span></a>
+    </article>
+  </div>
+
+  <footer>
+    <p>Inside a deck: <kbd>→</kbd> next · <kbd>O</kbd> overview · <kbd>L</kbd> slide list ·
+       <kbd>S</kbd> speaker notes · <kbd>T</kbd> light or dark · <kbd>F</kbd> fullscreen ·
+       <kbd>Ctrl</kbd>+<kbd>P</kbd> print to PDF.</p>
+    <p>Code and setup instructions: <a href="https://github.com/slaviklavryk/modern-ai-systems-starter">https://github.com/slaviklavryk/modern-ai-systems-starter</a><br>
+       Built 2026-09-15.</p>
+  </footer>
+</main>
+</body>
+</html>
