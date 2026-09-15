@@ -76,7 +76,133 @@ helpers work the same from a plain script.
 
 You will hit `429` if you run them all at once: the free tier allows about 6 requests
 per minute. That is expected, and `ask()` reports it in plain language rather than
-crashing.
+crashing. If the limit becomes an obstacle rather than a minor wait, see
+`LLM_CLIENT.md` — every notebook can be switched to run on Lightning AI instead with a
+one-line change to `.env`, no code changes required.
+
+### Week 3: the vector store
+
+Chroma is where your embedded corpus lives.
+
+**There is no Docker here, and no server to start.** `pip install` is the entire
+installation. `vector_store.py` uses Chroma's `PersistentClient`, which runs *inside your
+Python process* and keeps everything in a folder: SQLite for the metadata, plain files
+for the vector index. The relationship is the same as SQLite against PostgreSQL — one is
+a library your program calls, the other is a service you run and connect to. Chroma, as
+this course uses it, is the library.
+
+Do not confuse this with **Neo4j**, which arrives in Week 4 and genuinely does need
+Docker. That is why `docker-compose.yml` has an entry for Neo4j and none for Chroma.
+
+Chroma does also offer a server mode (`chroma run`, then `HttpClient`) and an official
+Docker image. This course uses neither, and you do not need them for any lab.
+
+**1. Install it.** With `.venv` active, from the repo folder:
+
+```bash
+pip install -r requirements.txt
+```
+
+`chromadb` is in `requirements.txt`, so if you set up in Week 1 you already have it and
+this is a no-op — run it anyway, it is safe to repeat. There is no model download and no
+PyTorch; embeddings come from the API, so the install is small. On Windows the long-path
+rule from step 1 still applies: if `pip` fails with `OSError` or "long path", your
+project folder is too deep. Move it to `C:\dev\modern-ai` and recreate the venv.
+
+Check it landed:
+
+```bash
+python -c "import chromadb; print(chromadb.__version__)"
+```
+
+**2. Embed your corpus, once.** Put your documents in a folder as `.txt` or `.md`, then:
+
+```bash
+python ingest.py corpus/
+```
+
+This is the slow step, and it is slow for a reason: embeddings are limited to about
+**100 texts per minute**, counted per text rather than per request, so batching cannot
+speed it up. A 3,000-chunk corpus takes roughly half an hour. `ingest.py` paces itself
+and prints an estimate before it starts, so leave it running.
+
+You only pay this once. The result is written to `./chroma/` on disk and survives
+restarts, reboots, and closing VS Code.
+
+**3. Use it.** Anywhere in a notebook or script:
+
+```python
+from vector_store import VectorStore
+
+store = VectorStore(name="chunks")        # opens what ingest.py built
+print(store.count())                       # 0 means you have not ingested yet
+results = store.search("your question", n_results=5)
+```
+
+`search()` returns `[{"chunk": str, "distance": float}]`, nearest first, where
+`distance` is 1 − cosine similarity. The collection is created with
+`hnsw:space="cosine"` deliberately — Chroma's default is squared Euclidean, which is not
+the metric this course teaches.
+
+**4. Re-ingest only when the chunking changes.**
+
+```bash
+python ingest.py corpus/ --chunk-size 300 --overlap 60 --reset
+```
+
+`--reset` clears the collection first. Use it when you change chunk size, because that
+invalidates every boundary already stored. Without it, new chunks are added alongside
+the old ones.
+
+`./chroma/` is in `.gitignore`. Do not commit it — it is rebuildable, and it is large.
+
+### Looking at what you stored
+
+`search()` tells you what is *relevant to a question*. It cannot tell you what is
+actually in the collection — which is what you need when a chunk boundary looks wrong or
+a retrieved chunk is not what you expected.
+
+**From Python.** This is the route to use, and the one the notebook uses:
+
+```python
+from vector_store import VectorStore
+
+store = VectorStore(name="chunks")
+print(store.count())          # how many chunks are indexed
+print(store.collections())    # every collection at this path
+for row in store.peek(3):     # the first few, without searching
+    print(row["id"], row["chunk"][:80])
+```
+
+`collections()` is the one to reach for when `count()` returns 0 after a successful
+ingest: the name you opened and the name you ingested under are almost certainly
+different.
+
+**From the terminal**, if you want to page through the whole collection rather than the
+first few:
+
+```bash
+chroma browse chunks --path ./chroma
+```
+
+`chunks` is the collection name — the default used by both `ingest.py` and
+`VectorStore`. You get a table of record IDs and documents: arrow keys to move, `Return`
+to expand a cell, `s` to open a query editor, `q` to quit.
+
+Two things to know. It starts a Chroma server behind the scenes pointed at your folder,
+so it needs a real terminal — and that server can outlive the command, which is why a
+second run sometimes reports the folder is busy. Quit with `q` rather than closing the
+window, and if a later command complains the path is in use, end any stray `chroma`
+process. `store.peek()` above needs none of this.
+
+**There is no admin GUI in this course.** The ones that exist — chromadb-admin,
+chroma-peek, VectorAdmin — all connect over HTTP and therefore need you to run and manage
+a Chroma server. The CLI above covers the same need with nothing to set up.
+
+**Do not edit `./chroma/chroma.sqlite3` by hand.** It opens in any SQLite browser, but the
+schema is Chroma's own and the vectors live in separate binary files beside it. Look if
+you are curious; change it and you will corrupt the index. Rebuild with `ingest.py`
+instead.
 
 ### Later: Neo4j
 
@@ -106,8 +232,18 @@ terms, and a suspended account costs you your personal email too.
 | `ModuleNotFoundError` | The venv is not active — no `(.venv)` in your prompt |
 | `KeyError: 'GEMINI_API_KEY'` | `.env` missing, misspelled variable, or `load_dotenv()` not called |
 | `API key not valid` | Trailing space on the key, or the key belongs to a different Cloud project |
-| `429 RESOURCE_EXHAUSTED` | Per-minute limit. It is a fixed window — wait a minute, do not hammer it |
+| `429 RESOURCE_EXHAUSTED` | Per-minute limit. It is a fixed window — wait a minute, do not hammer it. To stop hitting it altogether, see `LLM_CLIENT.md` |
 | `503 UNAVAILABLE` | Transient server load. Just run it again |
+| `ModuleNotFoundError: chromadb` | Week 3 dependencies not installed. `pip install -r requirements.txt` with `.venv` active |
+| `store.count()` returns 0 | Nothing ingested yet, or you opened a different collection. `store.collections()` lists what is actually at that path |
+| `chroma: command not found` | `.venv` is not active, or `chromadb` is not installed |
+| `chroma browse` will not open the path | Something still holds the store: a notebook kernel, or a stray `chroma` server left by an earlier browse. Restart the kernel, and end any leftover `chroma` process |
+| `chroma browse` shows "Failed to load records" | It needs a real terminal and a free port for the server it starts. Use `store.peek()` instead — it needs neither |
+| `429` while embedding | You are embedding outside `ingest.py`, which paces itself. The limit counts texts, not requests: about 100 a minute. Wait a minute |
+| Changed `--chunk-size`, results unchanged | You did not pass `--reset`, so the old chunks are still in the collection alongside the new ones |
+| Ingest looks frozen | It is waiting out the per-minute quota. It prints how long it is waiting; a large corpus takes tens of minutes |
+| Want to start the corpus over | `python ingest.py corpus/ --reset`, or delete the `./chroma/` folder |
+| Looking for a Chroma container or `chroma run` | There is none. Chroma runs inside your Python process; only Neo4j uses Docker |
 | AFC warning on every call | Harmless SDK noise. Ignore it |
 | Port 7474 or 7687 in use | Something else is running — usually Neo4j Desktop. Stop it, then `docker compose up -d` |
 | Machine becomes unusable | Do not raise the heap caps in `docker-compose.yml`; they are low on purpose |
@@ -121,5 +257,16 @@ requirements.txt     Week 1 dependencies, pinned
 hello.py             Your first model call
 prompt_lab.ipynb     The five Week 1 experiments — start here
 prompt_lab.py        ask() and repeat(), used by the notebook
+tokens.py            Week 2 — how text splits into tokens
+thinking_levels.py   Week 2 — how much reasoning a task actually needs
+context_lab.ipynb    Week 2 — building a context one part at a time
+context_lab.py       ask(), show() and counttokens(), used by that notebook
+llm_client.py        Switches every notebook between Gemini and Lightning AI
+LLM_CLIENT.md        How that switch works, and what does and does not carry over
+retrieval_lab.ipynb  Week 3 — corpus to grounded answer, on your own material
+ingest.py            Week 3 — embed a corpus once into ./chroma/. Run this first
+embedding_client.py  Week 3 — embeddings: Gemini (default) or OpenRouter
+chunking.py          Week 3 — splitting a corpus into overlapping chunks
+vector_store.py      Week 3 — dense retrieval, persistent Chroma, cosine
 docker-compose.yml   Neo4j, pinned and memory-capped — not needed until Week 4
 ```

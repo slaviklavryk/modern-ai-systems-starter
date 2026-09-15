@@ -6,66 +6,39 @@ uses, so there is one copy of them rather than two:
     from prompt_lab import ask, repeat
 
 Everything here is deliberately short enough to read. Open it.
+
+Runs on Gemini by default. Set `LLM_PROVIDER=lightning` in `.env` to run this
+same notebook against Lightning AI instead -- see `llm_client.py` for what
+that does and does not carry over between the two.
 """
 
-import os
-import time
+from llm_client import LLMClient
 
-from dotenv import load_dotenv
-from google import genai
-from google.genai import errors
-
-load_dotenv()
-
-MODEL = "gemini-3.5-flash"
-_client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
+_llm = LLMClient()
+MODEL = _llm.model
 
 
 def ask(prompt: str, *, label: str = "", show_tokens: bool = True) -> str:
     """Send one prompt. Print the answer, return it.
 
-    Handles the two failures you will actually hit:
-      429  the free tier allows ~6 requests per minute, in a fixed window
-      503  transient server load, unrelated to you
+    Rate limits and transient server errors are handled inside LLMClient.
     """
     if label:
         print(f"\n=== {label} " + "=" * max(0, 60 - len(label)))
     print(f"> {prompt.strip()[:200]}")
 
-    attempts = 6
-    for attempt in range(1, attempts + 1):
-        try:
-            response = _client.models.generate_content(model=MODEL, contents=prompt)
-            break
-        except errors.ClientError as exc:
-            if exc.code != 429:
-                raise
-            # A fixed per-minute window, not a backoff -- waiting 2s does nothing.
-            print(f"  [rate limited: ~6 requests/minute. waiting 25s, attempt {attempt}]")
-            time.sleep(25)
-        except errors.ServerError:
-            # Server-side load. Back off exponentially: the model is busy for
-            # everyone, and retrying hard makes it worse.
-            wait = min(4 * 2 ** (attempt - 1), 60)
-            print(f"  [503, model busy. waiting {wait}s, attempt {attempt}/{attempts}]")
-            time.sleep(wait)
-    else:
-        raise RuntimeError(
-            f"{MODEL} stayed unavailable across {attempts} attempts. "
-            "This is server-side load, not your key or your quota -- try again shortly."
-        )
+    result = _llm.chat(prompt)
 
-    text = (response.text or "").strip()
-    print(f"\n{text}\n")
+    print(f"\n{result.text}\n")
 
     if show_tokens:
-        usage = response.usage_metadata
+        u = result.usage
         print(
-            f"  [tokens] prompt={usage.prompt_token_count} "
-            f"thinking={usage.thoughts_token_count} "
-            f"answer={usage.candidates_token_count}"
+            f"  [tokens] prompt={u.prompt_tokens} "
+            f"thinking={u.thinking_tokens} "
+            f"answer={u.answer_tokens}"
         )
-    return text
+    return result.text
 
 
 def repeat(prompt: str, n: int = 3, *, label: str = "") -> list[str]:

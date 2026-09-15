@@ -3,12 +3,18 @@
 # Pinned so the whole class is on one version, for the same reason the Neo4j
 # image tag is pinned: when we debug together, we debug the same thing.
 #
-# Weeks 3+ add chromadb, sentence-transformers, rank_bm25, a Ukrainian
-# lemmatiser, the neo4j driver, and deepeval. Not needed yet — installing them
-# now costs a long download for something Week 1 does not use.
+# Week 1 needs only the first two. The Week 3 block below is already listed so
+# the class installs one pinned set rather than drifting apart mid-semester;
+# it is small and has no model download. Weeks 5+ add the neo4j driver and
+# deepeval, which are not here yet.
 
 google-genai==2.22.0
 python-dotenv==1.2.3
+
+# Week 3 — chunking, semantic search, and a persistent vector store on disk.
+# Embeddings come from the API (see embedding_client.py), so there is no model
+# download here and no torch.
+chromadb==1.5.9
 
 # Runs prompt_lab.ipynb inside VS Code. Not full JupyterLab -- VS Code has the
 # notebook UI built in, so this is only the kernel.
