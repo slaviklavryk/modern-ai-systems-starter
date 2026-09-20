@@ -27,3 +27,6 @@ models/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Crash dumps (Cygwin/Git-Bash on Windows)
+*.stackdump

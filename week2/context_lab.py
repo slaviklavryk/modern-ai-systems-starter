@@ -41,6 +41,13 @@ uses `count_tokens`, which does NOT consume that budget (measured: 10 calls in
 are scarce. This does not hold on Lightning; see `counttokens()` below.
 """
 
+import pathlib
+import sys
+
+# `llm_client` lives in ../common (shared by Week 1 and Week 2). Put that folder
+# on the path so `from llm_client import ...` works from this week's folder.
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent / "common"))
+
 from llm_client import LLMClient
 
 _llm = LLMClient()

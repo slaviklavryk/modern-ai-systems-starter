@@ -58,9 +58,21 @@ def main() -> None:
 
     documents = read_corpus(args.source)
     chunks: list[str] = []
+    metadatas: list[dict] = []
+    step = args.chunk_size - args.overlap  # words advanced per chunk; see chunking.py
     for filename, text in documents:
         pieces = chunk_text(text, chunk_size=args.chunk_size, overlap=args.overlap)
-        chunks.extend(pieces)
+        for j, piece in enumerate(pieces):
+            chunks.append(piece)
+            # Provenance travels with each chunk: which document, which chunk of
+            # it, and roughly where (word offset) it starts. search() hands this
+            # back so an answer can cite its sources.
+            metadatas.append({
+                "source": filename,
+                "chunk_index": j,
+                "n_chunks": len(pieces),
+                "start_word": j * step,
+            })
         print(f"  {filename:<40} {len(text.split()):>6} words -> {len(pieces):>4} chunks")
 
     if not chunks:
@@ -79,11 +91,11 @@ def main() -> None:
     print("Leave this running.\n")
 
     started = time.time()
-    store.add(chunks)
+    store.add(chunks, metadatas=metadatas)
     elapsed = time.time() - started
 
     print(f"\nDone. {store.count()} chunks indexed in {elapsed / 60:.1f} minutes.")
-    print(f"Stored in ./chroma/ -- open it from a notebook with VectorStore(name={args.name!r}).")
+    print(f"Stored in {store.path} -- open it from a notebook with VectorStore(name={args.name!r}).")
 
 
 if __name__ == "__main__":

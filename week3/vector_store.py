@@ -30,6 +30,7 @@ below is created with `metadata={"hnsw:space": "cosine"}` explicitly. Without th
 line, `search()`'s scores would not be the metric taught in the lecture, silently.
 """
 
+import pathlib
 from typing import Optional
 
 import chromadb
@@ -43,10 +44,18 @@ class VectorStore:
         embedder: Optional[EmbeddingClient] = None,
         name: str = "chunks",
         *,
-        path: str = "./chroma",
+        path: Optional[str] = None,
         reset: bool = False,
     ):
         self.embedder = embedder or EmbeddingClient()
+        # Anchored to this file's folder (week3/chroma), NOT the current working
+        # directory. So `ingest.py` and the notebook agree on where the store is
+        # whether you run them from week3/ or from the repo root -- a cwd-relative
+        # "./chroma" would put them in different places and the notebook would
+        # read an empty collection. Pass `path=` to override.
+        if path is None:
+            path = str(pathlib.Path(__file__).resolve().parent / "chroma")
+        self.path = path
         self._client = chromadb.PersistentClient(path=path)
         if reset:
             try:
@@ -76,8 +85,12 @@ class VectorStore:
         "what is actually in there" -- which is the one you want when a chunk
         boundary looks wrong, or when a retrieved chunk is not what you expected.
         """
-        got = self._collection.get(limit=n)
-        return [{"id": i, "chunk": d} for i, d in zip(got["ids"], got["documents"])]
+        got = self._collection.get(limit=n, include=["documents", "metadatas"])
+        metas = got.get("metadatas") or [None] * len(got["documents"])
+        return [
+            {"id": i, "chunk": d, "metadata": m or {}}
+            for i, d, m in zip(got["ids"], got["documents"], metas)
+        ]
 
     def collections(self) -> list[str]:
         """Every collection name stored at this path.
@@ -87,29 +100,48 @@ class VectorStore:
         """
         return [c.name for c in self._client.list_collections()]
 
-    def add(self, chunks: list[str]) -> None:
+    def add(self, chunks: list[str], metadatas: Optional[list[dict]] = None) -> None:
         """Embed every chunk once and store it. Ingestion-time work.
 
         Slow and rate-limited on first run -- see the module docstring. Call it
         from `ingest.py`, not from a notebook cell you will re-run.
+
+        `metadatas`, if given, is one dict per chunk -- e.g. its source document
+        and position -- stored beside it and handed back by `search()` and
+        `peek()`. This is how provenance ("which document did this come from, and
+        where in it") travels with a chunk. Values must be str/int/float/bool.
         """
+        if metadatas is not None and len(metadatas) != len(chunks):
+            raise ValueError(f"{len(chunks)} chunks but {len(metadatas)} metadatas")
         vectors = self.embedder.embed_batch(chunks, task_type="RETRIEVAL_DOCUMENT")
         start = self._collection.count()
         ids = [str(start + i) for i in range(len(chunks))]
-        self._collection.add(ids=ids, embeddings=vectors, documents=chunks)
+        self._collection.add(ids=ids, embeddings=vectors, documents=chunks, metadatas=metadatas)
 
     def search(self, query: str, *, n_results: int = 5) -> list[dict]:
         """Embed the question and search the index. Query-time work.
 
-        Returns a list of {"chunk": str, "distance": float} ordered nearest
-        first, where distance is 1 − cosine similarity (0 = identical, larger
-        = less similar -- see week-03-lecture-plan.md §3 for the definition).
+        Returns a list of {"chunk": str, "distance": float, "metadata": dict}
+        ordered nearest first, where distance is 1 − cosine similarity (0 =
+        identical, larger = less similar -- see week-03-lecture-plan.md §3).
+
+        `metadata` carries whatever `ingest.py` stored with the chunk -- its
+        source document, chunk index, and word offset -- so an answer can cite
+        where each retrieved passage came from. It is `{}` for chunks that were
+        indexed before provenance existed; re-ingest with `--reset` to populate it.
         """
         query_vector = self.embedder.embed(query, task_type="RETRIEVAL_QUERY")
-        result = self._collection.query(query_embeddings=[query_vector], n_results=n_results)
+        result = self._collection.query(
+            query_embeddings=[query_vector],
+            n_results=n_results,
+            include=["documents", "distances", "metadatas"],
+        )
+        metas = result.get("metadatas") or [[None] * len(result["documents"][0])]
         return [
-            {"chunk": doc, "distance": dist}
-            for doc, dist in zip(result["documents"][0], result["distances"][0])
+            {"chunk": doc, "distance": dist, "metadata": meta or {}}
+            for doc, dist, meta in zip(
+                result["documents"][0], result["distances"][0], metas[0]
+            )
         ]
 
 
@@ -117,10 +149,19 @@ if __name__ == "__main__":
     # Smoke test: three chunks, one clearly relevant to the question, one not.
     # Its own collection, reset each run, so it never pollutes a real corpus.
     store = VectorStore(name="smoke_test", reset=True)
-    store.add([
-        "The model can only work with what is in its context.",
-        "Everything in the context window is paid for on every call.",
-        "A recipe for making bread starts with mixing flour and water.",
-    ])
+    store.add(
+        [
+            "The model can only work with what is in its context.",
+            "Everything in the context window is paid for on every call.",
+            "A recipe for making bread starts with mixing flour and water.",
+        ],
+        metadatas=[
+            {"source": "context.md", "chunk_index": 0},
+            {"source": "context.md", "chunk_index": 1},
+            {"source": "cookbook.md", "chunk_index": 0},
+        ],
+    )
     for row in store.search("what does the model see?", n_results=3):
-        print(f"  distance={row['distance']:.4f}  {row['chunk']}")
+        m = row["metadata"]
+        cite = f"{m.get('source', '?')}#{m.get('chunk_index', '?')}"
+        print(f"  distance={row['distance']:.4f}  [{cite}]  {row['chunk']}")

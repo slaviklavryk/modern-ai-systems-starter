@@ -55,9 +55,25 @@ git status
 `.env` must **not** appear. If it does, `.gitignore` is missing or in the wrong
 directory — fix that before continuing.
 
+### The layout
+
+The material is organised by week. Run each week's commands from that week's folder,
+and open its notebook from there too:
+
+```
+common/   shared across weeks — the provider client (llm_client.py)
+week1/    hello.py, prompt_lab
+week2/    tokens.py, thinking_levels.py, context_lab
+week3/    chunking, embedding, the vector store, ingest, retrieval_lab, multimodal
+```
+
+Your `.env` stays at the repo root and is found from any week folder, so you fill it in
+once. The full file list is at the bottom of this README.
+
 ### 4. First model call
 
 ```bash
+cd week1
 python hello.py
 ```
 
@@ -65,14 +81,14 @@ You should see `setup complete` followed by token counts.
 
 ### 5. The prompt lab
 
-Open `prompt_lab.ipynb` in VS Code. When it asks for a kernel, choose the one in
+Open `week1/prompt_lab.ipynb` in VS Code. When it asks for a kernel, choose the one in
 `.venv`.
 
 Run the cells **one at a time**, and fill in the ✍️ notes cell under each experiment.
 The notes are the point of the session — we use them in the discussion at the end.
 
-If you would rather not use a notebook, `python prompt_lab.py` runs a smoke test and the
-helpers work the same from a plain script.
+If you would rather not use a notebook, `python prompt_lab.py` (from `week1/`) runs a
+smoke test and the helpers work the same from a plain script.
 
 You will hit `429` if you run them all at once: the free tier allows about 6 requests
 per minute. That is expected, and `ask()` reports it in plain language rather than
@@ -97,7 +113,13 @@ Docker. That is why `docker-compose.yml` has an entry for Neo4j and none for Chr
 Chroma does also offer a server mode (`chroma run`, then `HttpClient`) and an official
 Docker image. This course uses neither, and you do not need them for any lab.
 
-**1. Install it.** With `.venv` active, from the repo folder:
+Work from the `week3/` folder for everything below:
+
+```bash
+cd week3
+```
+
+**1. Install it.** With `.venv` active:
 
 ```bash
 pip install -r requirements.txt
@@ -126,23 +148,32 @@ This is the slow step, and it is slow for a reason: embeddings are limited to ab
 speed it up. A 3,000-chunk corpus takes roughly half an hour. `ingest.py` paces itself
 and prints an estimate before it starts, so leave it running.
 
-You only pay this once. The result is written to `./chroma/` on disk and survives
-restarts, reboots, and closing VS Code.
+You only pay this once. The result is written to `week3/chroma/` and survives restarts,
+reboots, and closing VS Code. That location is fixed relative to the code, so it does not
+matter which folder you launched from — `ingest.py` and the notebook always agree.
 
-**3. Use it.** Anywhere in a notebook or script:
+**3. Use it.** From the `retrieval_lab.ipynb` notebook, or any script in `week3/`:
 
 ```python
 from vector_store import VectorStore
 
 store = VectorStore(name="chunks")        # opens what ingest.py built
 print(store.count())                       # 0 means you have not ingested yet
-results = store.search("your question", n_results=5)
+for row in store.search("your question", n_results=5):
+    src = row["metadata"].get("source", "?")   # which document it came from
+    print(f'{row["distance"]:.3f}  [{src}]  {row["chunk"][:80]}')
 ```
 
-`search()` returns `[{"chunk": str, "distance": float}]`, nearest first, where
-`distance` is 1 − cosine similarity. The collection is created with
+`search()` returns `[{"chunk": str, "distance": float, "metadata": dict}]`, nearest first,
+where `distance` is 1 − cosine similarity. The collection is created with
 `hnsw:space="cosine"` deliberately — Chroma's default is squared Euclidean, which is not
 the metric this course teaches.
+
+**`metadata` is the provenance.** `ingest.py` records, for each chunk, the `source`
+document it came from, its `chunk_index` within that document, and the `start_word` offset
+— so an answer can cite where each passage came from, which is what Lab 1's grounded-
+answer requirement wants. Chunks indexed before this existed return `metadata = {}`;
+re-ingest with `--reset` to populate it.
 
 **4. Re-ingest only when the chunking changes.**
 
@@ -154,7 +185,7 @@ python ingest.py corpus/ --chunk-size 300 --overlap 60 --reset
 invalidates every boundary already stored. Without it, new chunks are added alongside
 the old ones.
 
-`./chroma/` is in `.gitignore`. Do not commit it — it is rebuildable, and it is large.
+`week3/chroma/` is in `.gitignore`. Do not commit it — it is rebuildable, and it is large.
 
 ### Looking at what you stored
 
@@ -203,6 +234,22 @@ a Chroma server. The CLI above covers the same need with nothing to set up.
 schema is Chroma's own and the vectors live in separate binary files beside it. Look if
 you are curious; change it and you will corrupt the index. Rebuild with `ingest.py`
 instead.
+
+### Optional: images and text in one space
+
+Everything above compares text to text. `multimodal_demo.py` shows the step past that —
+`gemini-embedding-2` maps an image and a sentence into the *same* space, so you can rank
+captions by how well they match a picture:
+
+```bash
+python multimodal_demo.py photo.jpg "a cat" "a dog" "a red car"
+python multimodal_demo.py                 # built-in shape demo (needs Pillow)
+```
+
+This is a different model from the one the practical pins — `gemini-embedding-2` is
+multimodal but has no `task_type`, the trade-off on the "Choosing a model" slide. The
+script calls the SDK directly rather than through `EmbeddingClient` for that reason, and
+is a starting point for the multimodal project extension, not part of the core labs.
 
 ### Later: Neo4j
 
@@ -260,7 +307,7 @@ terms, and a suspended account costs you your personal email too.
 |---|---|
 | `OSError` / "long path" during `pip install` | You cloned into too deep a folder. Move the project to `C:\dev\modern-ai` and recreate the venv |
 | Notebook has no kernel, or the wrong one | In VS Code, click the kernel picker top-right and choose the interpreter inside `.venv` |
-| `ModuleNotFoundError: prompt_lab` in the notebook | The notebook must be opened from inside the repo folder, next to `prompt_lab.py` |
+| `ModuleNotFoundError: prompt_lab` (or `context_lab`, `chunking`, …) | Open the notebook from its own week folder, so it sits next to the modules it imports. `retrieval_lab.ipynb` reaches into `week2/` and `common/` via a path cell at its top — run that cell first |
 | `ModuleNotFoundError` | The venv is not active — no `(.venv)` in your prompt |
 | `KeyError: 'GEMINI_API_KEY'` | `.env` missing, misspelled variable, or `load_dotenv()` not called |
 | `API key not valid` | Trailing space on the key, or the key belongs to a different Cloud project |
@@ -274,7 +321,7 @@ terms, and a suspended account costs you your personal email too.
 | `429` while embedding | You are embedding outside `ingest.py`, which paces itself. The limit counts texts, not requests: about 100 a minute. Wait a minute |
 | Changed `--chunk-size`, results unchanged | You did not pass `--reset`, so the old chunks are still in the collection alongside the new ones |
 | Ingest looks frozen | It is waiting out the per-minute quota. It prints how long it is waiting; a large corpus takes tens of minutes |
-| Want to start the corpus over | `python ingest.py corpus/ --reset`, or delete the `./chroma/` folder |
+| Want to start the corpus over | `python ingest.py corpus/ --reset`, or delete the `week3/chroma/` folder |
 | Looking for a Chroma container or `chroma run` | There is none. Chroma runs inside your Python process; only Neo4j uses Docker |
 | AFC warning on every call | Harmless SDK noise. Ignore it |
 | Port 7474 or 7687 in use | Something else is running — usually Neo4j Desktop. Stop it, then `docker compose up -d` |
@@ -283,22 +330,35 @@ terms, and a suspended account costs you your personal email too.
 ## What is here
 
 ```
-requirements.txt     Week 1 dependencies, pinned
-.env.example         Copy to .env and fill in
-.gitignore           Keeps .env out of git
-hello.py             Your first model call
-prompt_lab.ipynb     The five Week 1 experiments — start here
-prompt_lab.py        ask() and repeat(), used by the notebook
-tokens.py            Week 2 — how text splits into tokens
-thinking_levels.py   Week 2 — how much reasoning a task actually needs
-context_lab.ipynb    Week 2 — building a context one part at a time
-context_lab.py       ask(), show() and counttokens(), used by that notebook
-llm_client.py        Switches every notebook between Gemini and Lightning AI
-LLM_CLIENT.md        How that switch works, and what does and does not carry over
-retrieval_lab.ipynb  Week 3 — corpus to grounded answer, on your own material
-ingest.py            Week 3 — embed a corpus once into ./chroma/. Run this first
-embedding_client.py  Week 3 — embeddings: Gemini (default) or OpenRouter
-chunking.py          Week 3 — splitting a corpus into overlapping chunks
-vector_store.py      Week 3 — dense retrieval, persistent Chroma, cosine
-docker-compose.yml   Neo4j, pinned and memory-capped — not needed until Week 4
+requirements.txt          Dependencies, pinned. Install once, covers all weeks
+.env.example              Copy to .env (at the repo root) and fill in
+.gitignore               Keeps .env and week3/chroma/ out of git
+docker-compose.yml       Neo4j, pinned and memory-capped — not needed until Week 4
+
+common/
+  llm_client.py          Switches every notebook between Gemini and Lightning AI
+  LLM_CLIENT.md          How that switch works, and what does and does not carry over
+
+week1/
+  hello.py               Your first model call
+  prompt_lab.ipynb       The five Week 1 experiments — start here
+  prompt_lab.py          ask() and repeat(), used by the notebook
+
+week2/
+  tokens.py              How text splits into tokens
+  thinking_levels.py     How much reasoning a task actually needs
+  context_lab.ipynb      Building a context one part at a time
+  context_lab.py         ask(), show() and counttokens(), used by that notebook
+
+week3/
+  retrieval_lab.ipynb    Corpus to grounded answer, on your own material
+  ingest.py              Embed a corpus once into week3/chroma/. Run this first
+  embedding_client.py    Embeddings: Gemini (default) or OpenRouter
+  chunking.py            Splitting a corpus into overlapping chunks
+  vector_store.py        Dense retrieval, persistent Chroma, cosine
+  multimodal_demo.py     Optional — image and text in one embedding space
 ```
+
+Week 3 reuses `week2/context_lab.py`, and both weeks use `common/llm_client.py`; a short
+path line at the top of the files that reach across folders makes those imports resolve
+from any working directory.

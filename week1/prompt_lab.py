@@ -12,6 +12,13 @@ same notebook against Lightning AI instead -- see `llm_client.py` for what
 that does and does not carry over between the two.
 """
 
+import pathlib
+import sys
+
+# `llm_client` lives in ../common (shared by Week 1 and Week 2). Put that folder
+# on the path so `from llm_client import ...` works from this week's folder.
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent / "common"))
+
 from llm_client import LLMClient
 
 _llm = LLMClient()

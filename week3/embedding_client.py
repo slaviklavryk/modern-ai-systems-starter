@@ -75,8 +75,10 @@ of a clear failure), rather than confirming either source's number. Re-verify wi
 a controlled token count before teaching a specific input limit for this model.
 """
 
+import collections
 import math
 import os
+import re
 import time
 from typing import Optional
 
@@ -84,11 +86,24 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Measured 2026-09-14: ~100 texts per minute, counted per text rather than per
-# request. Held slightly under the observed ceiling so a normal ingest paces
-# itself instead of relying on retry-after-429.
-TEXTS_PER_WINDOW = 90
-WINDOW_SECONDS = 60
+# The free-tier embedding quota is ~100 items per minute (measured 2026-09-14,
+# reconfirmed by a 429 on 2026-09-19). The metric is named "...Requests..." but a
+# batched embed_content bills one unit PER TEXT, so batching does not raise it.
+#
+# Crucially it is a ROLLING 60-second window, not a fixed one. An earlier version
+# here reset a fixed window and burst the cap at the start of each -- two windows
+# back to back then put ~2x the cap inside one rolling minute and earned a 429.
+# `_throttle` now looks at the trailing 60 seconds. `_EMBED_SAFE` stays a margin
+# under the ceiling, and `_embed_batch_gemini` still retries on 429 as a backstop.
+_EMBED_ITEMS_PER_MIN = 100
+_EMBED_SAFE = 90
+_EMBED_WINDOW = 60.0
+
+
+def _retry_delay_seconds(exc) -> float:
+    """Seconds to wait after a 429, from the server's own 'retry in Ns' hint."""
+    m = re.search(r"retry in ([\d.]+)s", str(exc))
+    return float(m.group(1)) + 1.0 if m else 50.0
 
 
 class EmbeddingClient:
@@ -96,8 +111,7 @@ class EmbeddingClient:
         self.provider = (provider or os.environ.get("EMBEDDING_PROVIDER", "gemini")).lower()
         self.calls = 0
         self.texts_embedded = 0
-        self._window_start = time.time()
-        self._window_count = 0
+        self._recent: collections.deque = collections.deque()  # (timestamp, item_count)
 
         if self.provider == "gemini":
             self._init_gemini()
@@ -108,25 +122,30 @@ class EmbeddingClient:
                 f"Unknown EMBEDDING_PROVIDER {self.provider!r}. Use 'gemini' or 'openrouter'."
             )
 
-    def _throttle(self, n: int) -> None:
-        """Wait, if sending n more texts would cross the per-minute ceiling.
+    def _items_in_window(self) -> int:
+        """How many items were embedded in the trailing 60 seconds."""
+        cutoff = time.time() - _EMBED_WINDOW
+        while self._recent and self._recent[0][0] < cutoff:
+            self._recent.popleft()
+        return sum(count for _, count in self._recent)
 
-        The Gemini quota counts texts, not requests, so there is nothing to be
-        gained by batching harder -- the only thing that helps is waiting. This
-        keeps a long ingest running unattended rather than dying on a 429.
+    def _throttle(self, n: int) -> None:
+        """Wait until embedding n more items stays within the rolling per-minute cap.
+
+        The Gemini quota counts items, not requests, so batching harder does not
+        help -- only waiting does. This keeps a long ingest running unattended
+        rather than dying on a 429.
         """
         if self.provider != "gemini":
             return
-        elapsed = time.time() - self._window_start
-        if elapsed >= WINDOW_SECONDS:
-            self._window_start, self._window_count = time.time(), 0
-            return
-        if self._window_count + n > TEXTS_PER_WINDOW:
-            wait = WINDOW_SECONDS - elapsed
-            print(f"  [embedding quota: {self._window_count} texts this minute, "
-                  f"waiting {wait:.0f}s]")
+        while self._items_in_window() + n > _EMBED_SAFE and self._recent:
+            # Wait for the oldest batch to fall out of the trailing window.
+            wait = _EMBED_WINDOW - (time.time() - self._recent[0][0]) + 0.5
+            if wait <= 0:
+                continue
+            print(f"  [embedding quota: {self._items_in_window()} items in the last "
+                  f"minute, waiting {wait:.0f}s]")
             time.sleep(wait)
-            self._window_start, self._window_count = time.time(), 0
 
     # ------------------------------------------------------------ gemini
     def _init_gemini(self) -> None:
@@ -135,17 +154,30 @@ class EmbeddingClient:
         # Pinned over the newer gemini-embedding-2 specifically for task_type
         # support -- see the module docstring and week-03-lecture-plan.md's
         # "Notes for the syllabus". Not a default-to-latest choice.
-        self.model = "gemini-embedding-001"
+        self.model = "gemini-embedding-2"
         self._client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
 
     def _embed_batch_gemini(self, texts, task_type, output_dimensionality):
-        from google.genai import types
+        from google.genai import errors, types
 
         contents = [types.Content(parts=[types.Part(text=t)]) for t in texts]
         config = types.EmbedContentConfig(task_type=task_type, output_dimensionality=output_dimensionality)
-        response = self._client.models.embed_content(model=self.model, contents=contents, config=config)
-        self.calls += 1
-        return [e.values for e in response.embeddings]
+        # `_throttle` should keep us under the quota, but honour a 429 as a
+        # backstop -- other callers on the same key, or a window edge, can still
+        # trip it. Wait the server's stated delay and retry rather than crash.
+        for attempt in range(1, 6):
+            try:
+                response = self._client.models.embed_content(
+                    model=self.model, contents=contents, config=config
+                )
+                self.calls += 1
+                return [e.values for e in response.embeddings]
+            except errors.ClientError as exc:
+                if getattr(exc, "code", None) != 429 or attempt == 5:
+                    raise
+                delay = _retry_delay_seconds(exc)
+                print(f"  [429 embedding quota; waiting {delay:.0f}s, retry {attempt}/4]")
+                time.sleep(delay)
 
     # ---------------------------------------------------------- openrouter
     def _init_openrouter(self) -> None:
@@ -202,12 +234,12 @@ class EmbeddingClient:
     ) -> list[list[float]]:
         """Several texts in, one vector per text out, in the same order.
 
-        Splits into windows and waits when the per-minute text quota would be
-        crossed, so a corpus-sized call completes slowly rather than raising.
+        On Gemini this paces itself against the rolling per-minute item cap, so a
+        corpus-sized call completes slowly rather than raising.
         """
         vectors: list[list[float]] = []
-        for start in range(0, len(texts), TEXTS_PER_WINDOW):
-            window = texts[start : start + TEXTS_PER_WINDOW]
+        for start in range(0, len(texts), _EMBED_SAFE):
+            window = texts[start : start + _EMBED_SAFE]
             self._throttle(len(window))
 
             if self.provider == "gemini":
@@ -221,7 +253,8 @@ class EmbeddingClient:
                     "the batching call shape has changed; see the module docstring."
                 )
             vectors.extend(got)
-            self._window_count += len(window)
+            if self.provider == "gemini":
+                self._recent.append((time.time(), len(window)))
             self.texts_embedded += len(window)
 
         return vectors
@@ -242,11 +275,14 @@ if __name__ == "__main__":
     # demonstrates the query/document asymmetry where the backend supports it.
     emb = EmbeddingClient()
     doc = emb.embed("The model can only work with what is in its context.",
-                     task_type="RETRIEVAL_DOCUMENT")
-    query = emb.embed("what does the model see?", task_type="RETRIEVAL_QUERY")
-    unrelated = emb.embed("a recipe for making bread", task_type="RETRIEVAL_DOCUMENT")
+                     task_type="SEMANTIC_SIMILARITY")
+    query = emb.embed("Context is everything LLM can see", task_type="SEMANTIC_SIMILARITY")
+    query_ukr = emb.embed("Модель працює тільки з контекстом", task_type="SEMANTIC_SIMILARITY")
+        
+    unrelated = emb.embed("fox is an animal", task_type="SEMANTIC_SIMILARITY")
 
     print(f"embedding client ready -- provider={emb.provider}, model={emb.model}, dims={len(doc)}")
     print(f"cosine(relevant doc, query)   = {EmbeddingClient.cosine(doc, query):.4f}")
-    print(f"cosine(unrelated doc, query)  = {EmbeddingClient.cosine(unrelated, query):.4f}")
+    print(f"cosine(query_ukr, query)      = {EmbeddingClient.cosine(doc, query_ukr):.4f}")
+    print(f"cosine(unrelated doc, query)  = {EmbeddingClient.cosine(doc, unrelated):.4f}")
     print(f"calls made: {emb.calls}")

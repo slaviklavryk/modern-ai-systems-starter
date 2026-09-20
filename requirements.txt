@@ -16,6 +16,11 @@ python-dotenv==1.2.3
 # download here and no torch.
 chromadb==1.5.9
 
+# Optional, not installed by default. Only the built-in demo in multimodal_demo.py
+# draws its own images and needs this; that script works on your own image files
+# without it. Uncomment if you want the zero-argument demo. Verified with 10.0.1.
+# Pillow==10.0.1
+
 # Runs prompt_lab.ipynb inside VS Code. Not full JupyterLab -- VS Code has the
 # notebook UI built in, so this is only the kernel.
 #
