@@ -1,7 +1,9 @@
 # Modern AI Systems — course services
 #
 # One compose file for the whole semester (syllabus §11.2).
-# Week 1: `docker compose pull` then `docker compose up -d`.
+# Week 4 practical, on university bandwidth: `docker compose pull` then
+# `docker compose up -d`. Measured 2026-09-27: a 599 MB image, healthy ~30s after start.
+# `docker compose down` is safe; `docker compose down -v` DELETES the graph.
 #
 # Neo4j Browser: http://localhost:7474   ·   Bolt: bolt://localhost:7687
 

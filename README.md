@@ -164,7 +164,7 @@ for row in store.search("your question", n_results=5):
     print(f'{row["distance"]:.3f}  [{src}]  {row["chunk"][:80]}')
 ```
 
-`search()` returns `[{"chunk": str, "distance": float, "metadata": dict}]`, nearest first,
+`search()` returns `[{"chunk": str, "distance": float, "metadata": dict, "id": str}]`, nearest first,
 where `distance` is 1 − cosine similarity. The collection is created with
 `hnsw:space="cosine"` deliberately — Chroma's default is squared Euclidean, which is not
 the metric this course teaches.
@@ -251,10 +251,91 @@ multimodal but has no `task_type`, the trade-off on the "Choosing a model" slide
 script calls the SDK directly rather than through `EmbeddingClient` for that reason, and
 is a starting point for the multimodal project extension, not part of the core labs.
 
-### Later: Neo4j
+### Week 4: Neo4j
 
-`docker-compose.yml` is here and ready, but it is not needed until **Week 4**. Leave it
-alone for now.
+Neo4j is the one part of the course that runs as a separate service. Chroma runs inside
+your Python process; Neo4j is a server, running in Docker, that your code connects to.
+
+**Before the practical: install Docker Desktop.** Use the installer and the system
+requirements on
+[Docker's Windows install page](https://docs.docker.com/desktop/setup/install/windows-install/)
+(on macOS, the Mac installer from the same site). On Windows it runs on WSL 2. The two
+things that most often stop it working are hardware virtualisation switched off in the
+BIOS/UEFI settings, and WSL 2 not installed yet. Installing or updating WSL can ask you to
+restart. Do this at home, before the session. The Neo4j image itself is pulled in the
+session, on university bandwidth. Docker Desktop is free for education and personal use.
+
+**1. Pull the image and start Neo4j.** From the repository root:
+
+```bash
+docker compose pull
+docker compose up -d
+```
+
+The image is about 600 MB. Neo4j is ready roughly thirty seconds after `up`. Open Neo4j
+Browser at http://localhost:7474 and sign in as `neo4j` with the password `modernai`.
+
+**2. Check it from Python.** With `.venv` active:
+
+```bash
+cd week4
+python graph_db.py
+```
+
+You should see `Neo4j 5.26.x (community edition) is running`.
+
+**3. Load the Movies graph, twice.**
+
+```bash
+python load_graph.py --movies
+python load_graph.py --movies
+```
+
+This is Neo4j's standard example graph, used for the Cypher basics: 38 films, 133 people,
+253 relationships. The script is `week4/movies.cypher`, copied unchanged from Neo4j's
+[movies example](https://github.com/neo4j-graph-examples/movies) at commit `51cf90d1`, so
+no network is needed. The second run prints the same counts as the first: the script merges every node on
+a key, so re-running it changes nothing. Your own graph needs the same property from Week
+5, when a re-seedable `ingest.py` becomes mandatory. Neo4j Browser's `:play movies` guide
+loads the same graph.
+
+**4. Load the course graph, and embed its topics.**
+
+```bash
+python load_graph.py
+```
+
+A graph of this course (63 nodes, 141 relationships), used for vector search because every
+topic carries a description worth embedding. **Loading it removes the Movies graph.**
+Neo4j Community edition has one database, so the two graphs take turns in it:
+`python load_graph.py --movies` brings the Movies graph back and removes this one,
+embeddings included. Only the other graph is ever removed, so loading the same graph twice
+still shows unchanged counts. Then:
+
+```bash
+python graph_vectors.py
+```
+
+This embeds the 39 topic descriptions once (39 texts against the embedding quota) and
+creates a vector index over them. Running it again skips the topics that already have a
+vector. After moving back from the Movies graph it has to embed them again.
+
+**5. Work through `graph_lab.ipynb`.** It repeats steps 3 and 4 itself, so skipping them
+is fine.
+
+**Stopping Neo4j.** `docker compose down` stops the container and keeps your data.
+`docker compose down -v` also deletes the volume, **which deletes the whole graph.**
+`python load_graph.py --movies` or `python load_graph.py` rebuilds either graph; your own
+graph must be rebuildable the same way.
+
+**Cypher 5, not Cypher 25.** The course pins Neo4j 5.26, which runs Cypher 5 only. Most of
+Neo4j's current online documentation, and much of what an AI assistant writes, is Cypher
+25, and some of it fails here. The `SEARCH` clause, for one, does not exist on 5.26. Use
+the [Cypher 5 manual](https://neo4j.com/docs/cypher-manual/5/introduction/).
+
+**Vector scores are not Chroma's distances.** Neo4j reports a similarity between 0 and 1
+where higher is closer; Chroma reported a distance where lower is closer. Part 6 of the
+notebook works out the exact relationship. Convert before you compare the two stores.
 
 ## Slides
 
@@ -326,14 +407,22 @@ terms, and a suspended account costs you your personal email too.
 | AFC warning on every call | Harmless SDK noise. Ignore it |
 | Port 7474 or 7687 in use | Something else is running — usually Neo4j Desktop. Stop it, then `docker compose up -d` |
 | Machine becomes unusable | Do not raise the heap caps in `docker-compose.yml`; they are low on purpose |
-
+| `docker compose` fails with `open //./pipe/docker_engine: The system cannot find the file specified` | Docker Desktop is installed but not running. Start it, wait until it reports that it is running, then try again |
+| `python graph_db.py` prints "Cannot reach Neo4j" | The container is not up. `docker compose up -d` from the repository root, then wait about thirty seconds |
+| `ModuleNotFoundError: neo4j` | Week 4 dependency not installed. `pip install -r requirements.txt` with `.venv` active |
+| `CypherSyntaxError` on a query from the internet or an AI assistant | It is probably Cypher 25, for example the `SEARCH` clause. Rewrite it from the Cypher 5 manual |
+| `ConstraintValidationFailed` from a `MERGE` | You merged a whole pattern whose relationship did not exist, so `MERGE` tried to create nodes that already exist. Merge each node on its key first, then the relationship |
+| Vector search returns fewer rows than `k` | A `MATCH` or `WHERE` after `queryNodes` removed some of the k results. Ask for more, filter, then `LIMIT` |
+| A node never appears in vector search | Its vector has the wrong length, and the index silently ignores it. `graph_vectors.py` checks the length before writing; your own code should too |
+| Graph gone after restarting Docker | Someone ran `docker compose down -v`, which deletes the volume. `python load_graph.py --movies` or `python load_graph.py` rebuilds either graph |
+| The Movies graph (or the course graph) has disappeared | Loading one graph removes the other: Community edition has one database, so they take turns. Load the one you need; after the course graph, run `python graph_vectors.py` again |
 ## What is here
 
 ```
 requirements.txt          Dependencies, pinned. Install once, covers all weeks
 .env.example              Copy to .env (at the repo root) and fill in
 .gitignore               Keeps .env and week3/chroma/ out of git
-docker-compose.yml       Neo4j, pinned and memory-capped — not needed until Week 4
+docker-compose.yml       Neo4j, pinned and memory-capped — started in Week 4
 
 common/
   llm_client.py          Switches every notebook between Gemini and Lightning AI
@@ -357,6 +446,15 @@ week3/
   chunking.py            Splitting a corpus into overlapping chunks
   vector_store.py        Dense retrieval, persistent Chroma, cosine
   multimodal_demo.py     Optional — image and text in one embedding space
+
+week4/
+  graph_lab.ipynb        Cypher on the Movies graph, then vector search on the course graph
+  course_graph.cypher    This course as a graph: the one the vector index is built on
+  movies.cypher          Neo4j's Movies graph, unchanged from a pinned commit of neo4j-graph-examples/movies
+  load_graph.py          Load a .cypher script (--movies: Neo4j's Movies graph); run it twice, the counts do not change.
+                         Loading one of the two graphs removes the other
+  graph_db.py            Connect to Neo4j and run Cypher. `python graph_db.py` checks it is up
+  graph_vectors.py       Embeddings on nodes, the vector index, and copying chunks from Chroma
 ```
 
 Week 3 reuses `week2/context_lab.py`, and both weeks use `common/llm_client.py`; a short

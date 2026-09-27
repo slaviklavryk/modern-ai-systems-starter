@@ -1,0 +1,679 @@
+<!doctype html>
+<html lang="uk" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Week 4 — Neo4j: Graphs, Cypher, and Vector Search</title>
+<style>
+:root{
+  --w:1280px; --h:720px;
+  --bg:#fbfaf8; --panel:#ffffff; --ink:#1a1a1a; --ink-soft:#5b5b5b; --ink-faint:#8c8c8c;
+  --rule:#e2ded7; --accent:#1c5d99; --accent-soft:#e8f0f7; --mark:#f5efe3;
+  --code-bg:#f4f2ee; --code-ink:#26303a;
+  --tok-kw:#8a3d8f; --tok-str:#1f6f4a; --tok-com:#8c8c8c; --tok-num:#a35a1f;
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Consolas,"Liberation Mono",Menlo,monospace;
+}
+html[data-theme="dark"]{
+  --bg:#14161a; --panel:#1b1e24; --ink:#e9e6e1; --ink-soft:#a9a5a0; --ink-faint:#6f6b67;
+  --rule:#2c3138; --accent:#6fb3e8; --accent-soft:#1d2b38; --mark:#2a2620;
+  --code-bg:#1f242b; --code-ink:#d6dee7;
+  --tok-kw:#c99ae0; --tok-str:#7fd0a3; --tok-com:#7b7772; --tok-num:#e0a86a;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font-family:var(--font)}
+body.is-overview{overflow:auto}
+
+#stage{position:relative;width:100%;height:100%}
+.frame{position:absolute;top:0;left:0;width:var(--w);height:var(--h);transform-origin:top left}
+.slide{
+  position:absolute;inset:0;background:var(--panel);display:flex;flex-direction:column;
+  padding:56px 72px 40px;visibility:hidden;opacity:0;
+  transition:opacity .18s ease;overflow:hidden;
+}
+.frame.is-active .slide{visibility:visible;opacity:1}
+/* Inactive frames stay in the DOM (for the crossfade) stacked at the same
+   position as the active one. Without this they are invisible but still
+   catch the mouse, which silently blocks selecting text on the slide you
+   can actually see. Overview mode needs the opposite -- every thumbnail
+   must stay clickable -- so the rule is scoped to non-overview only. */
+body:not(.is-overview) .frame:not(.is-active){pointer-events:none}
+.slide-body{flex:1;min-height:0;font-size:calc(23px * var(--fit,1));line-height:1.5}
+
+.slide-title{margin:0 0 .7em;font-size:2.0em;line-height:1.15;font-weight:650;letter-spacing:-.015em}
+.slide--title{justify-content:center;padding:72px 96px}
+.slide--title .slide-body{display:flex;flex-direction:column;justify-content:center}
+.slide--title .slide-title{font-size:3.1em;margin-bottom:.35em}
+.slide-subtitle{margin:0;font-size:1.25em;color:var(--ink-soft);max-width:34em}
+.slide--section{justify-content:center}
+.slide--section .slide-body{display:flex;flex-direction:column;justify-content:center}
+.slide--section .slide-title{font-size:2.6em;margin-bottom:.5em}
+.slide--section .slide-title::after{
+  content:"";display:block;width:2.2em;height:3px;margin-top:.5em;background:var(--accent);border-radius:2px;
+}
+.slide--content .slide-title{
+  padding-bottom:.4em;border-bottom:2px solid var(--rule);
+}
+
+.slide-content h3{margin:1.1em 0 .45em;font-size:1.22em;font-weight:640;color:var(--accent)}
+.slide-content h4,.slide-content h5,.slide-content h6{margin:.9em 0 .35em;font-size:1.05em;font-weight:640}
+.slide-content>:first-child{margin-top:0}
+.slide-content p{margin:0 0 .7em;max-width:46em}
+.slide-content ul,.slide-content ol{margin:0 0 .7em;padding-left:1.35em}
+.slide-content li{margin:.3em 0}
+.slide-content li>ul,.slide-content li>ol{margin:.25em 0 .25em}
+.slide-content ul>li::marker{color:var(--accent)}
+.slide-content strong{font-weight:660}
+.slide-content a{color:var(--accent);text-decoration:none;border-bottom:1px solid var(--rule)}
+.slide-content hr{border:0;border-top:1px solid var(--rule);margin:1em 0}
+.slide-content code{
+  font-family:var(--mono);font-size:.88em;background:var(--code-bg);color:var(--code-ink);
+  padding:.12em .34em;border-radius:4px;
+}
+.slide-content pre{
+  margin:0 0 .75em;background:var(--code-bg);border:1px solid var(--rule);border-left:3px solid var(--accent);
+  border-radius:6px;padding:.7em .9em;overflow:auto;max-width:100%;
+}
+.slide-content pre code{
+  background:none;padding:0;font-size:.82em;line-height:1.45;color:var(--code-ink);
+  display:block;white-space:pre;
+}
+.slide-content pre.verbatim code{font-size:.78em;line-height:1.35}
+.tok-kw{color:var(--tok-kw)}.tok-str{color:var(--tok-str)}
+.tok-com{color:var(--tok-com);font-style:italic}.tok-num{color:var(--tok-num)}
+.slide-content blockquote{
+  margin:0 0 .8em;padding:.6em 1em;background:var(--accent-soft);border-left:3px solid var(--accent);
+  border-radius:0 6px 6px 0;
+}
+.slide-content blockquote p{margin:0;font-size:1.05em}
+.slide-content blockquote p+p{margin-top:.5em}
+.table-wrap{overflow-x:auto;margin:0 0 .8em;max-width:100%}
+.slide-content table{border-collapse:collapse;width:100%;font-size:.92em}
+.slide-content th,.slide-content td{padding:.4em .7em;border-bottom:1px solid var(--rule);vertical-align:top}
+.slide-content th{font-weight:660;color:var(--accent);border-bottom:2px solid var(--rule);white-space:nowrap}
+.slide-content tbody tr:last-child td{border-bottom:none}
+.slide-content img{max-width:100%;height:auto;border-radius:6px}
+
+.slide-foot{
+  display:flex;justify-content:space-between;align-items:flex-end;
+  font-size:13px;color:var(--ink-faint);padding-top:12px;flex:none;
+}
+.slide--title .slide-foot,.slide--section .slide-foot{opacity:.55}
+.foot-num{font-variant-numeric:tabular-nums}
+
+#progress{position:fixed;left:0;top:0;height:3px;background:var(--accent);width:0;z-index:40;transition:width .18s ease}
+#hud{
+  position:fixed;right:14px;bottom:12px;z-index:40;display:flex;gap:10px;align-items:center;
+  font-size:12px;color:var(--ink-faint);background:var(--bg);padding:4px 8px;border-radius:6px;opacity:.75;
+}
+#hud button{
+  font:inherit;color:inherit;background:none;border:1px solid var(--rule);border-radius:5px;
+  padding:2px 7px;cursor:pointer;
+}
+#hud button:hover{color:var(--accent);border-color:var(--accent)}
+
+#notes{
+  position:fixed;right:0;bottom:0;top:0;width:360px;z-index:50;background:var(--panel);
+  border-left:1px solid var(--rule);padding:18px 20px;overflow:auto;
+  font-size:15px;line-height:1.55;transform:translateX(100%);transition:transform .2s ease;
+}
+#notes.is-open{transform:none}
+#notes h3{margin:.9em 0 .3em;font-size:1em;color:var(--accent)}
+#notes p,#notes li{margin:.35em 0}
+#notes pre{background:var(--code-bg);padding:.5em .7em;border-radius:5px;overflow:auto;font-size:.85em}
+#notes code{font-family:var(--mono);font-size:.88em}
+.notes-head{
+  display:flex;justify-content:space-between;align-items:baseline;
+  border-bottom:1px solid var(--rule);padding-bottom:8px;margin-bottom:10px;
+  font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-faint);
+}
+#timer{font-variant-numeric:tabular-nums;font-size:15px;letter-spacing:0;color:var(--ink)}
+.notes-empty{color:var(--ink-faint);font-style:italic}
+
+/* Anchored to the L button in the HUD (bottom-right) horizontally, so
+   opening it is a small mouse/eye movement rather than a trip across the
+   screen -- but full page height, so a normal-length deck lists with no
+   internal scrolling. Closed state keeps pointer-events:none -- the same
+   fix as the inactive-slide-frame bug: an invisible-but-present fixed
+   element must not be able to catch clicks meant for whatever is under it. */
+#outline{
+  position:fixed;right:14px;top:16px;bottom:52px;z-index:50;background:var(--panel);
+  border:1px solid var(--rule);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.22);
+  width:320px;padding:12px 10px;overflow:auto;
+  transform-origin:bottom right;transform:scale(.97);opacity:0;pointer-events:none;
+  transition:transform .15s ease,opacity .15s ease;
+}
+#outline.is-open{transform:scale(1);opacity:1;pointer-events:auto}
+.outline-head{
+  display:flex;justify-content:space-between;align-items:baseline;
+  border-bottom:1px solid var(--rule);padding:0 8px 8px;margin:0 0 6px;
+  font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-faint);
+}
+.outline-item{
+  display:flex;gap:10px;align-items:baseline;padding:7px 8px;border-radius:5px;
+  cursor:pointer;font-size:14px;line-height:1.35;
+}
+.outline-item:hover{background:var(--accent-soft)}
+.outline-item.is-current{background:var(--accent-soft);color:var(--accent);font-weight:650}
+.outline-num{flex:none;width:2em;text-align:right;color:var(--ink-faint);font-variant-numeric:tabular-nums}
+.outline-item.is-current .outline-num{color:var(--accent)}
+.outline-item.is-section .outline-title{font-style:italic}
+
+#overlay{
+  position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.86);color:#fff;
+  display:none;align-items:center;justify-content:center;font-size:15px;line-height:1.7;
+}
+#overlay.is-open{display:flex}
+#overlay dl{display:grid;grid-template-columns:auto 1fr;gap:.4em 1.4em;margin:0}
+#overlay dt{font-family:var(--mono);color:#8fd0ff;text-align:right}
+#overlay dd{margin:0}
+#blank{position:fixed;inset:0;background:#000;z-index:70;display:none}
+#blank.is-open{display:block}
+
+body.is-overview #stage{height:auto;padding:24px}
+body.is-overview .slide{visibility:visible;opacity:1;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.12)}
+body.is-overview .frame{outline:2px solid transparent;border-radius:8px}
+body.is-overview .frame.is-active{outline-color:var(--accent)}
+body.is-overview #hud,body.is-overview #progress{opacity:.9}
+
+@media print{
+  html,body{overflow:visible;height:auto;background:#fff}
+  #progress,#hud,#notes,#outline,#overlay,#blank{display:none!important}
+  #stage{position:static;width:auto;height:auto}
+  .frame{position:static!important;transform:none!important;width:100%;height:auto;page-break-after:always}
+  .slide{
+    position:static;visibility:visible!important;opacity:1!important;
+    height:auto;min-height:0;border:1px solid #ddd;box-shadow:none;page-break-inside:avoid;
+  }
+  .slide-body{font-size:15px!important}
+  @page{size:landscape;margin:10mm}
+}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<div id="stage"><div class="frame" data-index="1"><section class="slide slide--title" aria-label="Slide 1"><div class="slide-body"><h1 class="slide-title">How does a graph database store connected information, and how do we find our way into it from a question?</h1><p class="slide-subtitle">Modern AI Systems · Lecture 4</p><div class="slide-content"><p><em>Week 4 — Neo4J</em></p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">1</span></div></section><div class="notes-src" hidden><p>≈90 min for the session. Run sheet: none. <code>week-04-lecture-plan.md</code> states each section's intent; the per-slide timings below are the schedule, and they sum to 86 minutes.</p>
+<p>Organising principle, from the plan: part of the class has not taken the earlier NoSQL course, so this is a primer that assumes no prior exposure to Neo4j or Cypher. It assumes relational databases, SQL, and graph theory, so SQL is the comparison throughout and a graph is never defined mathematically. The database comes first; the last section connects it to the retrieval built in Week 3. Nothing reaches the model this week.</p>
+<p>Two graphs, deliberately. Sections 2 to 7 use Neo4j's standard Movies graph. Section 8 changes to a graph of the course itself, and states why.</p>
+<p>The demonstration is live query-writing: in Neo4j Browser on the Movies graph for sections 4 to 6, and from Python on the course graph for section 8. The two graphs take turns in the one database that Community edition allows: loading either removes the other. Before the session, in <code>starter-repo/week4/</code>, run <code>python load_graph.py</code> and <code>python graph_vectors.py</code> once to confirm that the embedding call works, then <code>python load_graph.py --movies</code>, which leaves only the Movies graph for sections 2 to 7. Section 8 switches back (see its divider). Only section 8 calls the API; embed the demonstration questions before the session so that a <code>503</code> does not stop it.</p>
+<p>If the session runs long, shorten section 3: Week 5 returns to modelling on each student's own domain.</p></div></div>
+<div class="frame" data-index="2"><section class="slide slide--section" aria-label="Slide 2"><div class="slide-body"><h2 class="slide-title">Why a graph database</h2></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">2</span></div></section><div class="notes-src" hidden><p>Section divider. Plan §1. ≈8 min.</p>
+<p>The goal: students leave able to state the kind of question that motivates a graph database, and why the two stores they already use handle it poorly. Present it as a trade-off, not a claim of superiority.</p></div></div>
+<div class="frame" data-index="3"><section class="slide slide--content" aria-label="Slide 3"><div class="slide-body"><h2 class="slide-title">The question Week 3 could not answer</h2><div class="slide-content"><blockquote><p><em>"Does Lab 3 depend on anything taught in Week 3?"</em></p></blockquote>
+<p>The answer is <strong>not stated</strong>, although a person knowing the course plan can answer it.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">3</span></div></section><div class="notes-src" hidden><p>≈3 min. Refer to the Week 3 practical, where students were told to try a question whose answer needs two chunks at once if they could not find a fluent wrong answer. This is that failure class, stated for the course's own material.</p>
+<p>Ask the class what a vector search would return for this question before stating it. Measured 2026-09-27 on the Week 3 sample corpus (<code>week3_chunks</code>): the five nearest chunks are all from the Week 1 lecture's course overview, lists of weeks and of which lab follows which. They are similar to the question and relevant to the course, and none of them states what builds on what.</p>
+<p>The figure of seventeen is measured on the course graph used later in this session.</p></div></div>
+<div class="frame" data-index="4"><section class="slide slide--content" aria-label="Slide 4"><div class="slide-body"><h2 class="slide-title">A trade-off, not a replacement</h2><div class="slide-content"><div class="table-wrap"><table><thead><tr><th style="text-align:left">Store</th><th style="text-align:left">Answers well</th><th style="text-align:left">Answers badly</th></tr></thead><tbody><tr><td style="text-align:left"><strong>Vector index</strong></td><td style="text-align:left">What is <em>similar</em> to this?</td><td style="text-align:left">How is this <em>connected</em> to that?</td></tr><tr><td style="text-align:left"><strong>Relational</strong></td><td style="text-align:left">Which rows match? Aggregates, reports</td><td style="text-align:left">Connections of unknown depth</td></tr><tr><td style="text-align:left"><strong>Graph</strong></td><td style="text-align:left">How is this connected to that, however far?</td><td style="text-align:left">Aggregate, tabular workloads</td></tr></tbody></table></div>
+<p>A graph database stores each relationship <strong>as a record that points at the two nodes it joins</strong>. Following it needs no join.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">4</span></div></section><div class="notes-src" hidden><p>≈2 min. State the last row's second column explicitly: a graph database is the wrong tool for a monthly sales report, and the course does not claim otherwise. Each store is used for what it does well.</p>
+<p>The mechanism in one sentence: a relationship is a stored record that refers directly to its two nodes, so following it is a lookup rather than a join computed at query time.</p></div></div>
+<div class="frame" data-index="5"><section class="slide slide--section" aria-label="Slide 5"><div class="slide-body"><h2 class="slide-title">The property graph model</h2></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">5</span></div></section><div class="notes-src" hidden><p>Section divider. Plan §2. ≈10 min.</p>
+<p>The goal: students describe the model precisely and distinguish it from the mathematical graph they already know. Do not re-teach graph theory.</p></div></div>
+<div class="frame" data-index="6"><section class="slide slide--content" aria-label="Slide 6"><div class="slide-body"><h2 class="slide-title">Today's graph: films and the people who made them</h2><div class="slide-content"><p>Neo4j's standard <strong>Movies</strong> graph.</p>
+<ul><li><strong>38</strong> <code>Movie</code> nodes and <strong>133</strong> <code>Person</code> nodes</li><li><strong>253</strong> relationships: <code>ACTED_IN</code>, <code>DIRECTED</code>, <code>PRODUCED</code>, <code>WROTE</code>, <code>REVIEWED</code>, <code>FOLLOWS</code></li></ul>
+<p>The dataset of Neo4j's own documentation and Browser guide. <strong>You will find many more examples of it.</strong></p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">6</span></div></section><div class="notes-src" hidden><p>≈2 min. Measured 2026-09-27 on the pinned Neo4j 5.26: 171 nodes and 253 relationships, of which 172 are ACTED_IN, 44 DIRECTED, 15 PRODUCED, 10 WROTE, 9 REVIEWED and 3 FOLLOWS.</p>
+<p>Students load it in the practical with <code>python load_graph.py --movies</code>, or with <code>:play movies</code> in Neo4j Browser, which runs the same script.</p>
+<p>State the one caveat now rather than in the practical: because this graph is so widely published, an AI assistant will write any standard query about it instantly. The exercises teach only if the query is written before the assistant is asked.</p></div></div>
+<div class="frame" data-index="7"><section class="slide slide--content" aria-label="Slide 7"><div class="slide-body"><h2 class="slide-title">Nodes, relationships, properties</h2><div class="slide-content"><pre class="verbatim"><code>  (:Person {name: 'Keanu Reeves', born: 1964})
+                    |
+                    |  [:ACTED_IN {roles: ['Neo']}]
+                    v
+  (:Movie {title: 'The Matrix', released: 1999})</code></pre>
+<ul><li>A <strong>node</strong> carries zero or more <strong>labels</strong>: <code>Person</code>, <code>Movie</code></li><li>A <strong>relationship</strong> has exactly <strong>one type</strong>, <strong>one direction</strong>, and <strong>exactly two nodes</strong></li><li><strong>Properties</strong> are key–value pairs, on nodes <strong>and</strong> on relationships</li></ul></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">7</span></div></section><div class="notes-src" hidden><p>≈3 min. Read the diagram aloud, node, relationship, node. The two things students who know only relational tables tend to miss are on this slide: a relationship is a thing in its own right, with a type and properties, and a node's label is closer to a tag than to a table, since one node may carry several.</p>
+<p>The <code>roles</code> property sits on the relationship. Section 3 returns to why.</p></div></div>
+<div class="frame" data-index="8"><section class="slide slide--content" aria-label="Slide 8"><div class="slide-body"><h2 class="slide-title">What is new relative to graph theory</h2><div class="slide-content"><p>A mathematical graph is vertices and edges. A property graph adds four things:</p>
+<ol><li><strong>Labels</strong> on nodes</li><li><strong>Types</strong> on relationships</li><li><strong>Properties</strong> on both</li><li>Relationships as <strong>stored records</strong>, not an adjacency to be computed</li></ol>
+<p><strong>Direction is always stored, and may be ignored when querying.</strong></p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">8</span></div></section><div class="notes-src" hidden><p>≈2 min. These four additions are the whole of what is new. Do not define a graph.</p>
+<p>The direction point is practical: because a query can follow a relationship in either direction, the direction chosen when modelling is a convention for readability, not a restriction on what can be asked. <code>(:Person)-[:ACTED_IN]-&gt;(:Movie)</code> can be matched from the film's side as easily as from the actor's.</p></div></div>
+<div class="frame" data-index="9"><section class="slide slide--content" aria-label="Slide 9"><div class="slide-body"><h2 class="slide-title">No schema by default</h2><div class="slide-content"><p>Any node may carry <strong>any</strong> property. Neo4j checks nothing unless it is told to.</p>
+<ul><li><strong>Convenient</strong> while a model is being designed</li><li><strong>A source of silent inconsistency</strong> once data arrives from several places: <code>name</code> on one node, <code>Name</code> on another, and no error</li></ul>
+<p><strong>Constraints</strong> add the schema back. Section 6 shows how.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">9</span></div></section><div class="notes-src" hidden><p>≈2 min. Schema-optional is a design choice, not an omission. It suits exploratory modelling, which is what Week 5 asks students to do with their own domains, and it becomes a liability when a loader, a model, and a person all write to the same graph.</p></div></div>
+<div class="frame" data-index="10"><section class="slide slide--section" aria-label="Slide 10"><div class="slide-body"><h2 class="slide-title">Modelling: node, relationship, or property</h2></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">10</span></div></section><div class="notes-src" hidden><p>Section divider. Plan §3. ≈7 min. The first section to shorten if the session is running long.</p></div></div>
+<div class="frame" data-index="11"><section class="slide slide--content" aria-label="Slide 11"><div class="slide-body"><h2 class="slide-title">From tables to a graph</h2><div class="slide-content"><div class="table-wrap"><table><thead><tr><th style="text-align:left">Relational schema</th><th style="text-align:left">Property graph</th></tr></thead><tbody><tr><td style="text-align:left">A row of <code>person</code></td><td style="text-align:left">A <code>Person</code> node</td></tr><tr><td style="text-align:left">A foreign key</td><td style="text-align:left">A relationship</td></tr><tr><td style="text-align:left">A join table <code>acted_in(person_id, movie_id, roles)</code></td><td style="text-align:left">An <code>ACTED_IN</code> relationship</td></tr><tr><td style="text-align:left">A column of the join table (<code>roles</code>)</td><td style="text-align:left">A <strong>property of the relationship</strong></td></tr></tbody></table></div>
+<p>The role Keanu Reeves played belongs to <strong>neither</strong> the person <strong>nor</strong> the film. It belongs to the fact that one acted in the other.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">11</span></div></section><div class="notes-src" hidden><p>≈3 min. Start from what students know. Every row of this table is a translation they can perform mechanically on a schema they have designed before.</p>
+<p>The last row is the one to dwell on. In the relational schema, <code>roles</code> could only live in the join table, because it describes the pairing. The property graph has the same place for it: the relationship.</p></div></div>
+<div class="frame" data-index="12"><section class="slide slide--content" aria-label="Slide 12"><div class="slide-body"><h2 class="slide-title">One fact, two models</h2><div class="slide-content"><pre class="verbatim"><code>Director as a property:      (:Movie {title: 'Unforgiven', director: 'Clint Eastwood'})
+
+Director as a relationship:  (:Person {name: 'Clint Eastwood'})-[:DIRECTED]-&gt;(:Movie {title: 'Unforgiven'})</code></pre>
+<p><em>Who acted in a film they also directed?</em> The second model answers with a pattern:</p>
+<pre class="lang-cypher"><code><span class="tok-kw">MATCH</span> (p:Person)-[:ACTED_IN]-&gt;(m:Movie)&lt;-[:DIRECTED]-(p)
+<span class="tok-kw">RETURN</span> p.name, m.title</code></pre>
+<p><strong>A value that is only read is a property. Anything traversed through or shared is a node.</strong></p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">12</span></div></section><div class="notes-src" hidden><p>≈4 min. The heuristic, then the reason for it. With the director stored as a string, the question needs a comparison between a person's name and a film's property, which breaks on the first spelling variation and cannot follow the director anywhere else. With the director as a node, the question is a pattern in which the same variable <code>p</code> appears twice.</p>
+<p>On the Movies graph this query returns Tom Hanks (That Thing You Do), Clint Eastwood (Unforgiven), and Danny DeVito (Hoffa). It is exercise 2 in the practical, so show the query but not the result.</p>
+<p>State the general lesson: a graph model is designed backwards from the questions it must answer. This is the Lab 2 criterion that asks whether relationships reflect the domain's structure or are merely decorative.</p></div></div>
+<div class="frame" data-index="13"><section class="slide slide--section" aria-label="Slide 13"><div class="slide-body"><h2 class="slide-title">Cypher: querying by pattern</h2></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">13</span></div></section><div class="notes-src" hidden><p>Section divider. Plan §4. ≈15 min, most of it live in Neo4j Browser on the Movies graph.</p></div></div>
+<div class="frame" data-index="14"><section class="slide slide--content" aria-label="Slide 14"><div class="slide-body"><h2 class="slide-title">A query is a pattern</h2><div class="slide-content"><pre class="verbatim"><code>   (p:Person)  -[:ACTED_IN]-&gt;  (m:Movie)
+    a node       a relationship     a node
+   ( ) round      [ ] square        arrow = direction</code></pre>
+<p><code>MATCH</code> asks the database for <strong>every place this pattern occurs</strong>.</p>
+<p>Declarative, like SQL: you describe <strong>what</strong> to find, not <strong>how</strong> to find it.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">14</span></div></section><div class="notes-src" hidden><p>≈3 min. The notation is visual on purpose: parentheses look like nodes, the arrow looks like the relationship. Students who read the pattern aloud as a sentence, "a person who acted in a movie", are reading it correctly.</p>
+<p>Make the SQL comparison explicit: neither language states the order in which the database should do the work. The planner decides.</p></div></div>
+<div class="frame" data-index="15"><section class="slide slide--content" aria-label="Slide 15"><div class="slide-body"><h2 class="slide-title">MATCH, WHERE, RETURN</h2><div class="slide-content"><pre class="lang-cypher"><code><span class="tok-kw">MATCH</span> (p:Person {name: <span class="tok-str">'Tom Hanks'</span>})-[:ACTED_IN]-&gt;(m:Movie)
+<span class="tok-kw">WHERE</span> m.released &gt;= <span class="tok-num">2000</span>
+<span class="tok-kw">RETURN</span> m.title, m.released
+<span class="tok-kw">ORDER</span> <span class="tok-kw">BY</span> m.released</code></pre>
+<pre class="lang-sql"><code><span class="tok-kw">SELECT</span> m.title, m.released
+<span class="tok-kw">FROM</span> person p <span class="tok-kw">JOIN</span> acted_in a <span class="tok-kw">ON</span> a.person_id = p.id
+              <span class="tok-kw">JOIN</span> movie m    <span class="tok-kw">ON</span> m.id = a.movie_id
+<span class="tok-kw">WHERE</span> p.name = <span class="tok-str">'Tom Hanks'</span> <span class="tok-kw">AND</span> m.released &gt;= <span class="tok-num">2000</span>
+<span class="tok-kw">ORDER</span> <span class="tok-kw">BY</span> m.released;</code></pre></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">15</span></div></section><div class="notes-src" hidden><p>≈3 min. Run the Cypher live in Browser. Result on the Movies graph: Cast Away (2000), The Polar Express (2004), The Da Vinci Code (2006), Charlie Wilson's War (2007), Cloud Atlas (2012).</p>
+<p>Point at the two joins in the SQL and the one arrow in the Cypher. The join table <code>acted_in</code> has become the relationship, exactly as section 3 said.</p></div></div>
+<div class="frame" data-index="16"><section class="slide slide--content" aria-label="Slide 16"><div class="slide-body"><h2 class="slide-title">Two relationships, one pattern</h2><div class="slide-content"><pre class="lang-cypher"><code><span class="tok-kw">MATCH</span> (:Person {name: <span class="tok-str">'Keanu Reeves'</span>})-[:ACTED_IN]-&gt;(m:Movie)&lt;-[:DIRECTED]-(d:Person)
+<span class="tok-kw">RETURN</span> <span class="tok-kw">DISTINCT</span> d.name <span class="tok-kw">AS</span> director
+<span class="tok-kw">ORDER</span> <span class="tok-kw">BY</span> director</code></pre>
+<p>A pattern can be any shape. The arrows point <strong>in the direction stored</strong>, and the pattern reads left to right regardless.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">16</span></div></section><div class="notes-src" hidden><p>≈2 min. Run live. Six directors: Howard Deutch, Lana Wachowski, Lilly Wachowski, Nancy Meyers, Robert Longo, Taylor Hackford.</p>
+<p>Ask why DISTINCT is needed. The Wachowskis directed three Matrix films, so without it each appears once per film.</p></div></div>
+<div class="frame" data-index="17"><section class="slide slide--content" aria-label="Slide 17"><div class="slide-body"><h2 class="slide-title">Aggregation</h2><div class="slide-content"><pre class="lang-cypher"><code><span class="tok-kw">MATCH</span> (p:Person)-[:ACTED_IN]-&gt;(m:Movie)
+<span class="tok-kw">RETURN</span> p.name <span class="tok-kw">AS</span> actor, <span class="tok-kw">count</span>(m) <span class="tok-kw">AS</span> films          // Tom Hanks <span class="tok-num">12</span>, Keanu Reeves <span class="tok-num">7</span>, ...</code></pre>
+<pre class="lang-cypher"><code><span class="tok-kw">MATCH</span> (p:Person)-[:ACTED_IN]-&gt;(m:Movie)
+<span class="tok-kw">RETURN</span> p.name <span class="tok-kw">AS</span> actor, m.title <span class="tok-kw">AS</span> title, <span class="tok-kw">count</span>(m) <span class="tok-kw">AS</span> films     // every <span class="tok-kw">count</span> <span class="tok-kw">is</span> <span class="tok-num">1</span></code></pre>
+<p><strong>Every non-aggregated expression in <code>RETURN</code> is part of the grouping key.</strong></p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">17</span></div></section><div class="notes-src" hidden><p>≈3 min. Show the first, then add the one column and run it again. Ask the class why every count became 1 before explaining it.</p>
+<p>The explanation: Cypher has no GROUP BY clause. It groups by whatever non-aggregated expressions appear beside the aggregate, so adding <code>m.title</code> made each group a single actor–film pair. This is the point at which readers fluent in SQL most often misread a query, which is why the practical includes it.</p>
+<p>Measured on the Movies graph: Tom Hanks 12 films, Keanu Reeves 7, then Hugo Weaving, Jack Nicholson, and Meg Ryan with 5 each.</p></div></div>
+<div class="frame" data-index="18"><section class="slide slide--content" aria-label="Slide 18"><div class="slide-body"><h2 class="slide-title">WITH: one query, several stages</h2><div class="slide-content"><pre class="lang-cypher"><code><span class="tok-kw">MATCH</span> (p:Person)-[:ACTED_IN]-&gt;(m:Movie)
+<span class="tok-kw">WITH</span> p, <span class="tok-kw">count</span>(m) <span class="tok-kw">AS</span> films
+<span class="tok-kw">WHERE</span> films &gt;= <span class="tok-num">5</span>
+<span class="tok-kw">RETURN</span> p.name <span class="tok-kw">AS</span> actor, films</code></pre>
+<p><code>WITH</code> passes rows to the next stage. Filtering on an aggregate is what SQL's <code>HAVING</code> does.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">18</span></div></section><div class="notes-src" hidden><p>≈2 min. <code>WITH</code> is the clause that turns a single pattern into a pipeline. Students will need it in Week 6, where queries combine a search, a traversal, and an aggregation.</p>
+<p>Result: the five actors from the previous slide.</p></div></div>
+<div class="frame" data-index="19"><section class="slide slide--content" aria-label="Slide 19"><div class="slide-body"><h2 class="slide-title">OPTIONAL MATCH: the outer join</h2><div class="slide-content"><pre class="lang-cypher"><code><span class="tok-kw">MATCH</span> (p:Person)
+<span class="tok-kw">OPTIONAL</span> <span class="tok-kw">MATCH</span> (p)-[:ACTED_IN]-&gt;(m:Movie)
+<span class="tok-kw">WITH</span> p, <span class="tok-kw">count</span>(m) <span class="tok-kw">AS</span> films
+<span class="tok-kw">WHERE</span> films = <span class="tok-num">0</span>
+<span class="tok-kw">RETURN</span> p.name <span class="tok-kw">AS</span> person</code></pre>
+<p>People in the graph who <strong>never acted</strong>: directors, producers, writers, reviewers.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">19</span></div></section><div class="notes-src" hidden><p>≈1 min. With a plain MATCH, a person with no ACTED_IN relationship would simply not appear, which is an inner join. OPTIONAL MATCH keeps them, with <code>m</code> null, which is a left outer join. On the Movies graph the query returns 31 people.</p></div></div>
+<div class="frame" data-index="20"><section class="slide slide--content" aria-label="Slide 20"><div class="slide-body"><h2 class="slide-title">A query returns rows</h2><div class="slide-content"><p>Neo4j Browser draws a <strong>picture</strong>. A program receives a <strong>table</strong>.</p>
+<pre class="verbatim"><code>actor              films
+Tom Hanks          12
+Keanu Reeves        7
+Hugo Weaving        5</code></pre></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">20</span></div></section><div class="notes-src" hidden><p>≈1 min. In Browser, switch the last result between the graph view and the table view.</p>
+<p>The graph view is for people. Everything this course builds consumes the table, and in Week 6 the rows a graph query returns will be written into the SOURCES block of the Week 2 template, exactly as retrieved chunks were in Week 3.</p></div></div>
+<div class="frame" data-index="21"><section class="slide slide--section" aria-label="Slide 21"><div class="slide-body"><h2 class="slide-title">Traversal: paths of unknown length</h2></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">21</span></div></section><div class="notes-src" hidden><p>Section divider. Plan §5. ≈12 min, live in Browser.</p>
+<p>The capability that justifies a graph database. Do not compare it with vector retrieval; that is Week 6's demonstration.</p></div></div>
+<div class="frame" data-index="22"><section class="slide slide--content" aria-label="Slide 22"><div class="slide-body"><h2 class="slide-title">How is Kevin Bacon connected to Meg Ryan?</h2><div class="slide-content"><pre class="lang-cypher"><code><span class="tok-kw">MATCH</span> p = SHORTEST <span class="tok-num">1</span> (:Person {name: <span class="tok-str">'Kevin Bacon'</span>})-[]-+(:Person {name: <span class="tok-str">'Meg Ryan'</span>})
+<span class="tok-kw">RETURN</span> [n <span class="tok-kw">IN</span> nodes(p) | coalesce(n.name, n.title)] <span class="tok-kw">AS</span> route</code></pre>
+<pre class="verbatim"><code>Kevin Bacon → A Few Good Men → Rob Reiner → When Harry Met Sally → Meg Ryan</code></pre>
+<p><strong>No record in the graph states this connection.</strong> The traversal assembles it.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">22</span></div></section><div class="notes-src" hidden><p>≈3 min. Run live. Four hops, through a film, its director, and another of his films.</p>
+<p>This is the Week 3 failure class on the Movies graph: the answer lies in how facts are connected, not in any one of them. <code>-[]-+</code> means any relationship, either direction, one or more times.</p>
+<p>If time allows, show the Bacon-number distribution, which is also in the practical: following ACTED_IN only, 19 people are one film away from Kevin Bacon, 53 two, 20 three, and 9 four.</p></div></div>
+<div class="frame" data-index="23"><section class="slide slide--content" aria-label="Slide 23"><div class="slide-body"><h2 class="slide-title">Two syntaxes you will meet</h2><div class="slide-content"><div class="table-wrap"><table><thead><tr><th style="text-align:left">This course teaches (GQL standard)</th><th style="text-align:left">You will also see (older Cypher)</th></tr></thead><tbody><tr><td style="text-align:left"><code>-[:ACTED_IN]-{1,6}</code></td><td style="text-align:left"><code>-[:ACTED_IN*1..6]-</code></td></tr><tr><td style="text-align:left"><code>SHORTEST 1 (a)-[]-+(b)</code></td><td style="text-align:left"><code>shortestPath((a)-[*]-(b))</code></td></tr></tbody></table></div>
+<p><strong>Both run on the course's Neo4j 5.26.</strong> Read the <strong>Cypher 5</strong> manual.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">23</span></div></section><div class="notes-src" hidden><p>≈2 min. Verified 2026-09-27 against the Cypher 5 manual: quantified path patterns arrived in 5.9 and <code>SHORTEST</code> in 5.21, both conform to GQL, and the older forms remain supported but do not.</p>
+<p>Separately, and more important: most of Neo4j's current online documentation, and much of what an AI assistant writes, is Cypher 25, which does not run on 5.26. Direct students to https://neo4j.com/docs/cypher-manual/5/introduction/ and tell them that a syntax error on a copied query is most likely a version mismatch.</p></div></div>
+<div class="frame" data-index="24"><section class="slide slide--content" aria-label="Slide 24"><div class="slide-body"><h2 class="slide-title">Why the depth is always bounded</h2><div class="slide-content"><p>Paths from Keanu Reeves, any relationship, either direction:</p>
+<div class="table-wrap"><table><thead><tr><th style="text-align:left">Hops</th><th style="text-align:left">1</th><th style="text-align:left">2</th><th style="text-align:left">3</th><th style="text-align:left">4</th><th style="text-align:left">5</th><th style="text-align:left">6</th></tr></thead><tbody><tr><td style="text-align:left"><strong>Paths</strong></td><td style="text-align:left">7</td><td style="text-align:left">38</td><td style="text-align:left">111</td><td style="text-align:left">828</td><td style="text-align:left">2,938</td><td style="text-align:left"><strong>21,142</strong></td></tr></tbody></table></div>
+<p>A graph of <strong>171 nodes</strong>. Six hops already means tens of thousands of paths.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">24</span></div></section><div class="notes-src" hidden><p>≈2 min. Measured 2026-09-27 on the pinned Neo4j 5.26 with <code>MATCH p = (:Person {name: 'Keanu Reeves'})-[]-{1,6}(x) RETURN length(p), count(*)</code>.</p>
+<p>The rule: always state an upper bound. An unbounded pattern on a large, densely connected graph enumerates paths it can never finish listing.</p>
+<p>Allow a pause on the table before the next slide. Ask why the growth is uneven.</p></div></div>
+<div class="frame" data-index="25"><section class="slide slide--section" aria-label="Slide 25"><div class="slide-body"><h2 class="slide-title">Writing to the graph idempotently</h2></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">25</span></div></section><div class="notes-src" hidden><p>Section divider. Plan §6. ≈9 min, live in Browser.</p>
+<p>The section that matters most for the rest of the course: from Week 5, every student's graph must be rebuildable by a re-seedable <code>ingest.py</code>.</p></div></div>
+<div class="frame" data-index="26"><section class="slide slide--content" aria-label="Slide 26"><div class="slide-body"><h2 class="slide-title">CREATE adds; MERGE finds or creates</h2><div class="slide-content"><pre class="lang-cypher"><code><span class="tok-kw">CREATE</span> (p:Person {name: <span class="tok-str">'Keanu Reeves'</span>})       // always adds a node, even a duplicate
+
+<span class="tok-kw">MERGE</span> (p:Person {name: <span class="tok-str">'Keanu Reeves'</span>})        // finds it, <span class="tok-kw">or</span> creates it if absent
+<span class="tok-kw">ON</span> <span class="tok-kw">CREATE</span> <span class="tok-kw">SET</span> p.born = <span class="tok-num">1964</span></code></pre>
+<p><strong>Idempotent:</strong> running the load twice produces the same graph.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">26</span></div></section><div class="notes-src" hidden><p>≈2 min. The MERGE line is taken from Neo4j's own Movies script, which is written this way throughout. Measured: loading it twice leaves 171 nodes and 253 relationships unchanged.</p>
+<p><code>ON CREATE SET</code> runs only when MERGE creates the node; <code>SET</code> on its own runs every time. Name <code>DETACH DELETE</code> here as well, the operation that removes a node together with its relationships.</p></div></div>
+<div class="frame" data-index="27"><section class="slide slide--content" aria-label="Slide 27"><div class="slide-body"><h2 class="slide-title">The standard mistake</h2><div class="slide-content"><pre class="lang-cypher"><code>// WRONG: merges the whole pattern. If the relationship <span class="tok-kw">is</span> missing,
+// <span class="tok-kw">MERGE</span> creates all of it, including two new copies of existing nodes.
+<span class="tok-kw">MERGE</span> (:Person {name: <span class="tok-str">'Tom Hanks'</span>})-[:ACTED_IN]-&gt;(:Movie {title: <span class="tok-str">'The Matrix'</span>})</code></pre>
+<pre class="lang-cypher"><code>// RIGHT: <span class="tok-kw">merge</span> each node <span class="tok-kw">on</span> its key, then only the relationship.
+<span class="tok-kw">MERGE</span> (p:Person {name: <span class="tok-str">'Tom Hanks'</span>})
+<span class="tok-kw">MERGE</span> (m:Movie {title: <span class="tok-str">'The Matrix'</span>})
+<span class="tok-kw">MERGE</span> (p)-[:ACTED_IN]-&gt;(m)</code></pre></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">27</span></div></section><div class="notes-src" hidden><p>≈3 min. The single most common error in Cypher loading scripts. MERGE matches or creates the entire pattern as one unit. It does not look up the two nodes separately.</p>
+<p>Demonstrate the wrong form on a throwaway label with no constraint: it produces two copies of each node. The practical repeats this. The next slide shows what happens on the real, constrained labels.</p></div></div>
+<div class="frame" data-index="28"><section class="slide slide--content" aria-label="Slide 28"><div class="slide-body"><h2 class="slide-title">A constraint turns a silent error into a loud one</h2><div class="slide-content"><pre class="lang-cypher"><code><span class="tok-kw">CREATE</span> CONSTRAINT person_name IF <span class="tok-kw">NOT</span> EXISTS
+FOR (p:Person) REQUIRE p.name <span class="tok-kw">IS</span> UNIQUE</code></pre>
+<p>The wrong <code>MERGE</code>, run against constrained labels:</p>
+<pre class="verbatim"><code>ConstraintValidationFailed: Node(68) already exists with label `Person`
+and property `name` = 'Tom Hanks'</code></pre>
+<p>The constraint also gives <code>MERGE</code> an <strong>index</strong> to find the node by.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">28</span></div></section><div class="notes-src" hidden><p>≈2 min. Measured on the pinned 5.26: the Movies graph's own constraints turn the wrong MERGE into this error, and nothing is written.</p>
+<p>This is the schema that section 2 said Neo4j does not impose by default. Community edition supports uniqueness constraints only; existence, type and key constraints are Enterprise features. Do not present them as available.</p></div></div>
+<div class="frame" data-index="29"><section class="slide slide--section" aria-label="Slide 29"><div class="slide-body"><h2 class="slide-title">Neo4j from Python</h2></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">29</span></div></section><div class="notes-src" hidden><p>Section divider. Plan §7. ≈6 min.</p></div></div>
+<div class="frame" data-index="30"><section class="slide slide--content" aria-label="Slide 30"><div class="slide-body"><h2 class="slide-title">The driver, directly</h2><div class="slide-content"><pre class="lang-python"><code><span class="tok-kw">from</span> neo4j <span class="tok-kw">import</span> GraphDatabase
+
+driver = GraphDatabase.driver(<span class="tok-str">"bolt://localhost:7687"</span>, auth=(<span class="tok-str">"neo4j"</span>, <span class="tok-str">"modernai"</span>))
+records, summary, keys = driver.execute_query(
+    <span class="tok-str">"MATCH (m:Movie {title: $title})&lt;-[:ACTED_IN]-(p:Person) RETURN p.name AS actor"</span>,
+    title=<span class="tok-str">"The Matrix"</span>,
+)</code></pre>
+<p>The official driver, with <strong>no framework</strong> over it. <code>$title</code> is a <strong>parameter</strong>.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">30</span></div></section><div class="notes-src" hidden><p>≈2 min. The course policy from syllabus §4: build the mechanism before adopting an abstraction over it. <code>week4/graph_db.py</code> is a few lines around exactly this call, and the practical shows the call on its own.</p>
+<p>The password is the local development one from the compose file. It is never to be reused.</p></div></div>
+<div class="frame" data-index="31"><section class="slide slide--content" aria-label="Slide 31"><div class="slide-body"><h2 class="slide-title">Why every value is a parameter</h2><div class="slide-content"><pre class="lang-python"><code>title = <span class="tok-str">"One Flew Over the Cuckoo's Nest"</span>
+query = <span class="tok-str">"MATCH (m:Movie {title: '"</span> + title + <span class="tok-str">"'}) RETURN m"</span>   <span class="tok-com"># pasted into the text</span></code></pre>
+<pre class="verbatim"><code>CypherSyntaxError: Invalid input 's': expected an expression, ',' or '}'</code></pre>
+<p>The apostrophe broke the query. A value chosen by an attacker could <strong>change</strong> it. The parameterised version returns the cast.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">31</span></div></section><div class="notes-src" hidden><p>≈3 min. The title is in the Movies graph, so the failure is not contrived. Measured on the pinned 5.26: concatenation raises this syntax error; the parameterised query returns Danny DeVito and Jack Nicholson.</p>
+<p>The risk grows later in the course. From Week 5, some values reaching a query will have been written by a model, in LLM-assisted extraction, and in Week 7 untrusted text reaches tools. Parameters are also the route by which a query vector reaches the database in section 8.</p></div></div>
+<div class="frame" data-index="32"><section class="slide slide--section" aria-label="Slide 32"><div class="slide-body"><h2 class="slide-title">The vector index: finding the way in</h2></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">32</span></div></section><div class="notes-src" hidden><p>Section divider. Plan §8. ≈15 min, the last part of the demonstration, run from Python.</p>
+<p>The section that connects the database to Week 3. It stops at the returned rows.</p>
+<p>Switch graphs here, while introducing the section: <code>python load_graph.py</code>, which removes the Movies graph, then <code>python graph_vectors.py</code>, which embeds the 39 topic descriptions again, because their vectors were removed with the course graph. This is the one live embedding call in the session. If it returns <code>503</code>, retry once and then show the recorded output.</p></div></div>
+<div class="frame" data-index="33"><section class="slide slide--content" aria-label="Slide 33"><div class="slide-body"><h2 class="slide-title">A traversal needs a starting point</h2><div class="slide-content"><p>Every traversal so far began at a node <strong>named in the query</strong>: <code>'Keanu Reeves'</code>, <code>'Kevin Bacon'</code>.</p>
+<p>A user's question <strong>names none</strong>.</p>
+<p><strong>The vector index finds the starting nodes by meaning. The relationships supply what similarity could not.</strong></p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">33</span></div></section><div class="notes-src" hidden><p>≈2 min. This is the observation the whole session has been building towards. State it slowly.</p>
+<p>One query now does two things in sequence: the Week 3 retrieval, to find where to start, and the section 5 traversal, to follow the relationships from there.</p></div></div>
+<div class="frame" data-index="34"><section class="slide slide--content" aria-label="Slide 34"><div class="slide-body"><h2 class="slide-title">Vectors on nodes, an index over them</h2><div class="slide-content"><pre class="lang-cypher"><code><span class="tok-kw">CREATE</span> VECTOR INDEX topic_embeddings IF <span class="tok-kw">NOT</span> EXISTS
+FOR (t:Topic) <span class="tok-kw">ON</span> t.embedding
+OPTIONS {indexConfig: {`vector.dimensions`: <span class="tok-num">3072</span>,
+                       `vector.similarity_function`: <span class="tok-str">'cosine'</span>}}</code></pre>
+<pre class="lang-cypher"><code><span class="tok-kw">CALL</span> db.index.vector.queryNodes(<span class="tok-str">'topic_embeddings'</span>, <span class="tok-num">3</span>, $question_vector)
+<span class="tok-kw">YIELD</span> node, score</code></pre>
+<p>Vectors from <strong>Week 3's embedding client</strong>: document type for topics, query type for questions.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">34</span></div></section><div class="notes-src" hidden><p>≈3 min. Nothing here is new machinery. The index is the approximate nearest-neighbour structure (HNSW) that Week 3 said most vector stores share, and <code>vector.dimensions</code> must equal the embedding model's output, 3072 for the course's pinned model.</p>
+<p>Measured on the pinned 5.26: a vector of the wrong length is stored without any error and then silently left out of every search. <code>week4/graph_vectors.py</code> checks the length before writing for that reason.</p>
+<p><code>db.index.vector.queryNodes</code> is the only query interface on 5.26. Current Neo4j releases deprecate it in favour of a <code>SEARCH</code> clause, which belongs to Cypher 25 and does not run here. Students will find <code>SEARCH</code> in current documentation.</p></div></div>
+<div class="frame" data-index="35"><section class="slide slide--content" aria-label="Slide 35"><div class="slide-body"><h2 class="slide-title">Search, then traverse</h2><div class="slide-content"><pre class="lang-cypher"><code><span class="tok-kw">CALL</span> db.index.vector.queryNodes(<span class="tok-str">'topic_embeddings'</span>, <span class="tok-num">1</span>, $q) <span class="tok-kw">YIELD</span> node <span class="tok-kw">AS</span> topic, score
+<span class="tok-kw">MATCH</span> (topic)-[:BUILDS_ON]-&gt;{<span class="tok-num">1</span>,<span class="tok-num">4</span>}(first:Topic)&lt;-[:COVERS]-(w:Week)
+<span class="tok-kw">RETURN</span> topic.name, <span class="tok-kw">collect</span>(<span class="tok-kw">DISTINCT</span> first.name + <span class="tok-str">' (week '</span> + w.number + <span class="tok-str">')'</span>)</code></pre>
+<p><em>"How do I find text by meaning rather than keywords?"</em></p>
+<pre class="verbatim"><code>Vector search   0.9034
+  learn first:  Chunking (week 3), Cosine similarity (week 3), Context window (week 2),
+                Embeddings (week 3), Tokens (week 2), Foundation models (week 1)</code></pre></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">35</span></div></section><div class="notes-src" hidden><p>≈3 min. Run from Python, using a question vector embedded before the session.</p>
+<p>Measured 2026-09-27. The question names no topic. The vector search lands on Vector search; the traversal then follows BUILDS_ON to everything that topic depends on, and COVERS to the week that teaches each. The description of Vector search names none of those six topics, so every name in the second line came from relationships, not from similarity.</p>
+<p>A question in Ukrainian lands on the same topic: "Як знайти текст за змістом, а не за ключовими словами?" scores 0.8180 against Vector search.</p></div></div>
+<div class="frame" data-index="36"><section class="slide slide--section" aria-label="Slide 36"><div class="slide-body"><h2 class="slide-title">Before the practical</h2><div class="slide-content"><p><strong>Install Docker Desktop at home.</strong> Installing or updating WSL 2 can ask for a restart.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">36</span></div></section><div class="notes-src" hidden><p>≈1 min. The README's Week 4 section carries the instructions and a link to Docker's system requirements. Measured here: a 599 MB image, a healthy container about thirty seconds after start.</p>
+<p>The pull happens on campus for the reason syllabus §11.2 gives: a student who discovers an un-pulled image during an outage has lost the evening.</p></div></div></div>
+
+<aside id="notes" aria-label="Speaker notes">
+  <div class="notes-head"><span>Speaker notes</span><span id="timer">00:00</span></div>
+  <div id="notes-body"></div>
+</aside>
+
+<aside id="outline" aria-label="Slide list">
+  <div class="outline-head"><span>Slides</span><span id="outline-count">36</span></div>
+  <div id="outline-list"></div>
+</aside>
+
+<div id="hud">
+  <span id="counter">1 / 36</span>
+  <button type="button" data-act="prev" title="Previous (←)">‹</button>
+  <button type="button" data-act="next" title="Next (→)">›</button>
+  <button type="button" data-act="notes" title="Speaker notes (S)">S</button>
+  <button type="button" data-act="overview" title="Overview (O)">O</button>
+  <button type="button" data-act="outline" title="Slide list (L)">L</button>
+  <button type="button" data-act="theme" title="Light / dark (T)">T</button>
+  <button type="button" data-act="help" title="Help (?)">?</button>
+</div>
+
+<div id="overlay" role="dialog" aria-label="Keyboard shortcuts">
+  <dl>
+    <dt>← →</dt><dd>Previous / next slide</dd>
+    <dt>Space</dt><dd>Next slide</dd>
+    <dt>Home / End</dt><dd>First / last slide</dd>
+    <dt>1–9</dt><dd>Jump to slide number, then Enter</dd>
+    <dt>S</dt><dd>Speaker notes and lecture timer</dd>
+    <dt>R</dt><dd>Reset the timer</dd>
+    <dt>O</dt><dd>Slide overview — a visual grid, click a slide to jump</dd>
+    <dt>L</dt><dd>Slide list — titles only, click to jump</dd>
+    <dt>T</dt><dd>Light / dark, for the room you are in</dd>
+    <dt>F</dt><dd>Fullscreen</dd>
+    <dt>B</dt><dd>Blank the screen</dd>
+    <dt>Ctrl+P</dt><dd>Print / export a PDF handout</dd>
+    <dt>Esc</dt><dd>Close this, or leave overview</dd>
+  </dl>
+</div>
+<div id="blank"></div>
+
+<script>
+(function(){
+  "use strict";
+  var W = 1280, H = 720;
+  var stage = document.getElementById("stage");
+  var frames = Array.prototype.slice.call(stage.querySelectorAll(".frame"));
+  var notesPanel = document.getElementById("notes");
+  var notesBody = document.getElementById("notes-body");
+  var outlinePanel = document.getElementById("outline");
+  var outlineList = document.getElementById("outline-list");
+  var OUTLINE = [{"i": 1, "t": "How does a graph database store connected information, and how do we find our way into it from a question?", "k": "title"}, {"i": 2, "t": "Why a graph database", "k": "section"}, {"i": 3, "t": "The question Week 3 could not answer", "k": "content"}, {"i": 4, "t": "A trade-off, not a replacement", "k": "content"}, {"i": 5, "t": "The property graph model", "k": "section"}, {"i": 6, "t": "Today's graph: films and the people who made them", "k": "content"}, {"i": 7, "t": "Nodes, relationships, properties", "k": "content"}, {"i": 8, "t": "What is new relative to graph theory", "k": "content"}, {"i": 9, "t": "No schema by default", "k": "content"}, {"i": 10, "t": "Modelling: node, relationship, or property", "k": "section"}, {"i": 11, "t": "From tables to a graph", "k": "content"}, {"i": 12, "t": "One fact, two models", "k": "content"}, {"i": 13, "t": "Cypher: querying by pattern", "k": "section"}, {"i": 14, "t": "A query is a pattern", "k": "content"}, {"i": 15, "t": "MATCH, WHERE, RETURN", "k": "content"}, {"i": 16, "t": "Two relationships, one pattern", "k": "content"}, {"i": 17, "t": "Aggregation", "k": "content"}, {"i": 18, "t": "WITH: one query, several stages", "k": "content"}, {"i": 19, "t": "OPTIONAL MATCH: the outer join", "k": "content"}, {"i": 20, "t": "A query returns rows", "k": "content"}, {"i": 21, "t": "Traversal: paths of unknown length", "k": "section"}, {"i": 22, "t": "How is Kevin Bacon connected to Meg Ryan?", "k": "content"}, {"i": 23, "t": "Two syntaxes you will meet", "k": "content"}, {"i": 24, "t": "Why the depth is always bounded", "k": "content"}, {"i": 25, "t": "Writing to the graph idempotently", "k": "section"}, {"i": 26, "t": "CREATE adds; MERGE finds or creates", "k": "content"}, {"i": 27, "t": "The standard mistake", "k": "content"}, {"i": 28, "t": "A constraint turns a silent error into a loud one", "k": "content"}, {"i": 29, "t": "Neo4j from Python", "k": "section"}, {"i": 30, "t": "The driver, directly", "k": "content"}, {"i": 31, "t": "Why every value is a parameter", "k": "content"}, {"i": 32, "t": "The vector index: finding the way in", "k": "section"}, {"i": 33, "t": "A traversal needs a starting point", "k": "content"}, {"i": 34, "t": "Vectors on nodes, an index over them", "k": "content"}, {"i": 35, "t": "Search, then traverse", "k": "content"}, {"i": 36, "t": "Before the practical", "k": "section"}];
+  var counter = document.getElementById("counter");
+  var progress = document.getElementById("progress");
+  var overlay = document.getElementById("overlay");
+  var blank = document.getElementById("blank");
+  var total = frames.length;
+  var index = 0;
+  var overview = false;
+  var pending = "";
+  var pendingTimer = null;
+
+  function store(key, value){ try{ localStorage.setItem(key, value); }catch(e){} }
+  function load(key){ try{ return localStorage.getItem(key); }catch(e){ return null; } }
+
+  var savedTheme = load("deck-theme");
+  if(savedTheme === "light" || savedTheme === "dark"){
+    document.documentElement.setAttribute("data-theme", savedTheme);
+  }
+
+  /* Shrink a slide's type until its content fits the fixed 1280x720 box.
+     Content is never removed -- only scaled. */
+  function fit(frame){
+    var slide = frame.querySelector(".slide");
+    var body = frame.querySelector(".slide-body");
+    if(!slide || !body) return;
+    body.style.setProperty("--fit", 1);
+    if(body.scrollHeight <= body.clientHeight + 1) { frame.removeAttribute("data-overflow"); return; }
+    var lo = 0.55, hi = 1, best = 0.55;
+    for(var i = 0; i < 9; i++){
+      var mid = (lo + hi) / 2;
+      body.style.setProperty("--fit", mid);
+      if(body.scrollHeight <= body.clientHeight + 1){ best = mid; lo = mid; } else { hi = mid; }
+    }
+    body.style.setProperty("--fit", best);
+    if(best <= 0.56 && body.scrollHeight > body.clientHeight + 1){
+      frame.setAttribute("data-overflow", "1");
+    } else {
+      frame.removeAttribute("data-overflow");
+    }
+  }
+
+  function layout(){
+    if(overview){
+      document.body.classList.add("is-overview");
+      var pad = 24, gap = 18;
+      var cols = window.innerWidth > 1500 ? 4 : (window.innerWidth > 1000 ? 3 : 2);
+      var cellW = (window.innerWidth - pad * 2 - gap * (cols - 1)) / cols;
+      var scale = cellW / W;
+      var cellH = H * scale;
+      frames.forEach(function(frame, i){
+        var col = i % cols, row = Math.floor(i / cols);
+        frame.style.transform = "translate(" + (col * (cellW + gap)) + "px," +
+                                (row * (cellH + gap)) + "px) scale(" + scale + ")";
+      });
+      stage.style.height = (Math.ceil(total / cols) * (cellH + gap) + pad) + "px";
+    } else {
+      document.body.classList.remove("is-overview");
+      stage.style.height = "";
+      var s = Math.min(window.innerWidth / W, window.innerHeight / H);
+      var x = (window.innerWidth - W * s) / 2, y = (window.innerHeight - H * s) / 2;
+      frames.forEach(function(frame){
+        frame.style.transform = "translate(" + x + "px," + y + "px) scale(" + s + ")";
+      });
+    }
+  }
+
+  function renderNotes(){
+    var src = frames[index].querySelector(".notes-src");
+    notesBody.innerHTML = src ? src.innerHTML
+      : '<p class="notes-empty">No notes for this slide.</p>';
+  }
+
+  /* Built once: a plain list of slide titles, independent of the O overview
+     grid. textContent only -- a title is untrusted-ish authored text, and
+     this sidesteps ever needing to HTML-escape it. */
+  function buildOutline(){
+    OUTLINE.forEach(function(o){
+      var row = document.createElement("div");
+      row.className = "outline-item" + (o.k === "section" || o.k === "title" ? " is-section" : "");
+      row.setAttribute("data-index", o.i);
+      var num = document.createElement("span");
+      num.className = "outline-num";
+      num.textContent = o.i;
+      var t = document.createElement("span");
+      t.className = "outline-title";
+      t.textContent = o.t;
+      row.appendChild(num);
+      row.appendChild(t);
+      outlineList.appendChild(row);
+    });
+  }
+
+  function updateOutlineHighlight(){
+    var items = outlineList.querySelectorAll(".outline-item");
+    for(var i = 0; i < items.length; i++){
+      items[i].classList.toggle("is-current", i === index);
+    }
+  }
+
+  function show(next, push){
+    index = Math.max(0, Math.min(total - 1, next));
+    frames.forEach(function(frame, i){ frame.classList.toggle("is-active", i === index); });
+    counter.textContent = (index + 1) + " / " + total;
+    progress.style.width = (total > 1 ? (index / (total - 1)) * 100 : 100) + "%";
+    renderNotes();
+    if(outlinePanel.classList.contains("is-open")) updateOutlineHighlight();
+    if(push !== false){
+      try{ history.replaceState(null, "", "#" + (index + 1)); }catch(e){}
+    }
+    if(overview) frames[index].scrollIntoView({block:"nearest"});
+  }
+
+  /* Lecture timer -- starts on first use of the notes panel. */
+  var elapsed = 0, ticking = null, timerEl = document.getElementById("timer");
+  function paint(){
+    var m = Math.floor(elapsed / 60), s = elapsed % 60;
+    timerEl.textContent = (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s;
+  }
+  function startTimer(){
+    if(ticking) return;
+    ticking = setInterval(function(){ elapsed++; paint(); }, 1000);
+  }
+
+  function toggleNotes(){
+    var open = notesPanel.classList.toggle("is-open");
+    if(open) startTimer();
+  }
+  function toggleOutline(){
+    var open = outlinePanel.classList.toggle("is-open");
+    if(open){
+      updateOutlineHighlight();
+      var current = outlineList.querySelector(".outline-item.is-current");
+      if(current) current.scrollIntoView({block:"nearest"});
+    }
+  }
+  function toggleOverview(){
+    overview = !overview;
+    layout();
+    if(!overview) frames[index].scrollIntoView({block:"nearest"});
+  }
+  function toggleTheme(){
+    var root = document.documentElement;
+    var next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    root.setAttribute("data-theme", next);
+    store("deck-theme", next);
+  }
+
+  document.getElementById("hud").addEventListener("click", function(ev){
+    var act = ev.target.getAttribute && ev.target.getAttribute("data-act");
+    if(!act) return;
+    if(act === "prev") show(index - 1);
+    else if(act === "next") show(index + 1);
+    else if(act === "notes") toggleNotes();
+    else if(act === "overview") toggleOverview();
+    else if(act === "outline") toggleOutline();
+    else if(act === "theme") toggleTheme();
+    else if(act === "help") overlay.classList.toggle("is-open");
+  });
+
+  outlineList.addEventListener("click", function(ev){
+    var item = ev.target.closest ? ev.target.closest(".outline-item") : null;
+    if(!item) return;
+    show(parseInt(item.getAttribute("data-index"), 10) - 1);
+    outlinePanel.classList.remove("is-open");
+  });
+
+  stage.addEventListener("click", function(ev){
+    if(!overview) return;
+    var frame = ev.target.closest ? ev.target.closest(".frame") : null;
+    if(!frame) return;
+    show(frames.indexOf(frame));
+    toggleOverview();
+  });
+
+  overlay.addEventListener("click", function(){ overlay.classList.remove("is-open"); });
+  blank.addEventListener("click", function(){ blank.classList.remove("is-open"); });
+
+  document.addEventListener("keydown", function(ev){
+    if(ev.ctrlKey || ev.metaKey || ev.altKey) return;
+    var key = ev.key;
+
+    if(/^[0-9]$/.test(key)){
+      pending += key;
+      clearTimeout(pendingTimer);
+      pendingTimer = setTimeout(function(){ pending = ""; }, 1200);
+      return;
+    }
+    if(key === "Enter" && pending){
+      show(parseInt(pending, 10) - 1);
+      pending = "";
+      return;
+    }
+
+    switch(key){
+      case "ArrowRight": case "PageDown": case " ": case "Spacebar":
+        ev.preventDefault(); show(index + 1); break;
+      case "ArrowLeft": case "PageUp":
+        ev.preventDefault(); show(index - 1); break;
+      case "ArrowDown": ev.preventDefault(); show(index + 1); break;
+      case "ArrowUp": ev.preventDefault(); show(index - 1); break;
+      case "Home": ev.preventDefault(); show(0); break;
+      case "End": ev.preventDefault(); show(total - 1); break;
+      case "s": case "S": case "і": case "І": toggleNotes(); break;
+      case "o": case "O": case "щ": case "Щ": toggleOverview(); break;
+      case "l": case "L": case "д": case "Д": toggleOutline(); break;
+      case "t": case "T": case "е": case "Е": toggleTheme(); break;
+      case "r": case "R": case "к": case "К": elapsed = 0; paint(); break;
+      case "b": case "B": case "и": case "И": blank.classList.toggle("is-open"); break;
+      case "f": case "F": case "а": case "А":
+        if(document.fullscreenElement) document.exitFullscreen();
+        else if(document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+        break;
+      case "?": overlay.classList.toggle("is-open"); break;
+      case "Escape":
+        if(blank.classList.contains("is-open")) blank.classList.remove("is-open");
+        else if(overlay.classList.contains("is-open")) overlay.classList.remove("is-open");
+        else if(overview) toggleOverview();
+        else if(outlinePanel.classList.contains("is-open")) outlinePanel.classList.remove("is-open");
+        else notesPanel.classList.remove("is-open");
+        break;
+    }
+  });
+
+  var touchX = null;
+  document.addEventListener("touchstart", function(ev){ touchX = ev.touches[0].clientX; }, {passive:true});
+  document.addEventListener("touchend", function(ev){
+    if(touchX === null) return;
+    var dx = ev.changedTouches[0].clientX - touchX;
+    if(Math.abs(dx) > 60) show(index + (dx < 0 ? 1 : -1));
+    touchX = null;
+  }, {passive:true});
+
+  var resizeTimer = null;
+  window.addEventListener("resize", function(){
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(layout, 90);
+  });
+  window.addEventListener("beforeprint", function(){ frames.forEach(fit); });
+
+  function boot(){
+    buildOutline();
+    frames.forEach(fit);
+    layout();
+    var hash = parseInt((location.hash || "").replace("#", ""), 10);
+    show(isNaN(hash) ? 0 : hash - 1, false);
+    var bad = frames.filter(function(f){ return f.hasAttribute("data-overflow"); })
+                    .map(function(f){ return f.getAttribute("data-index"); });
+    if(bad.length){
+      console.warn("[deck] content still overflows after scaling on slide(s): " + bad.join(", ") +
+                   " -- split them in the source Markdown with an --- rule.");
+    }
+  }
+  if(document.readyState === "complete") boot();
+  else window.addEventListener("load", boot);
+})();
+</script>
+</body>
+</html>

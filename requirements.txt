@@ -5,8 +5,8 @@
 #
 # Week 1 needs only the first two. The Week 3 block below is already listed so
 # the class installs one pinned set rather than drifting apart mid-semester;
-# it is small and has no model download. Weeks 5+ add the neo4j driver and
-# deepeval, which are not here yet.
+# it is small and has no model download. Week 4 adds the neo4j driver below;
+# deepeval arrives later and is not here yet.
 
 google-genai==2.22.0
 python-dotenv==1.2.3
@@ -15,6 +15,10 @@ python-dotenv==1.2.3
 # Embeddings come from the API (see embedding_client.py), so there is no model
 # download here and no torch.
 chromadb==1.5.9
+
+# Week 4 — the official Neo4j driver. Verified 2026-09-27 against the pinned
+# neo4j:5.26-community server in docker-compose.yml.
+neo4j==6.3.1
 
 # Optional, not installed by default. Only the built-in demo in multimodal_demo.py
 # draws its own images and needs this; that script works on your own image files
