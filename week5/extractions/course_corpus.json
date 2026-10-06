@@ -1,0 +1,4722 @@
+{
+ "created": "2026-10-04",
+ "chunks": 183,
+ "corpus_fingerprint": "f0c1c3de6663cbfd",
+ "complete": true,
+ "provider": "lightning",
+ "model": "openai/gpt-5-nano",
+ "per_call": 3,
+ "thinking": "default",
+ "mentions": [
+  {
+   "name": "Laplace transform",
+   "type": "Topic",
+   "chunk": "IDE-BCA001-heat-hold-cool-laplace-derivation.md#0"
+  },
+  {
+   "name": "ramp function",
+   "type": "Topic",
+   "chunk": "IDE-BCA001-heat-hold-cool-laplace-derivation.md#0"
+  },
+  {
+   "name": "shifted ramp",
+   "type": "Topic",
+   "chunk": "IDE-BCA001-heat-hold-cool-laplace-derivation.md#0"
+  },
+  {
+   "name": "basic ramp",
+   "type": "Topic",
+   "chunk": "IDE-BCA001-heat-hold-cool-laplace-derivation.md#0"
+  },
+  {
+   "name": "shift rule",
+   "type": "Topic",
+   "chunk": "IDE-BCA001-heat-hold-cool-laplace-derivation.md#0"
+  },
+  {
+   "name": "heat–hold–cool boundary history",
+   "type": "Topic",
+   "chunk": "IDE-BCA001-heat-hold-cool-laplace-derivation.md#0"
+  },
+  {
+   "name": "Laplace transform",
+   "type": "Topic",
+   "chunk": "IDE-BCA001-heat-hold-cool-laplace-derivation.md#3"
+  },
+  {
+   "name": "ramp schedule",
+   "type": "Topic",
+   "chunk": "IDE-BCA001-heat-hold-cool-laplace-derivation.md#3"
+  },
+  {
+   "name": "soak schedule",
+   "type": "Topic",
+   "chunk": "IDE-BCA001-heat-hold-cool-laplace-derivation.md#3"
+  },
+  {
+   "name": "phi function",
+   "type": "Topic",
+   "chunk": "IDE-BCA001-heat-hold-cool-laplace-derivation.md#3"
+  },
+  {
+   "name": "entire function",
+   "type": "Topic",
+   "chunk": "IDE-BCA001-heat-hold-cool-laplace-derivation.md#3"
+  },
+  {
+   "name": "expm1",
+   "type": "Tool",
+   "chunk": "IDE-BCA001-heat-hold-cool-laplace-derivation.md#3"
+  },
+  {
+   "name": "Course structure, assessment, and the AI-use policy",
+   "type": "Topic",
+   "chunk": "week-01-lecture-plan.md#0"
+  },
+  {
+   "name": "The line from classical AI → ML → deep learning → transformers → foundation models",
+   "type": "Topic",
+   "chunk": "week-01-lecture-plan.md#0"
+  },
+  {
+   "name": "Why the boom happened: scale, data, compute, pretraining, general-purpose models, accessible APIs",
+   "type": "Topic",
+   "chunk": "week-01-lecture-plan.md#0"
+  },
+  {
+   "name": "Task-specific models versus prompting a general model",
+   "type": "Topic",
+   "chunk": "week-01-lecture-plan.md#0"
+  },
+  {
+   "name": "The modern AI application stack",
+   "type": "Topic",
+   "chunk": "week-01-lecture-plan.md#0"
+  },
+  {
+   "name": "The semester project and the domain approval gate",
+   "type": "Topic",
+   "chunk": "week-01-lecture-plan.md#0"
+  },
+  {
+   "name": "Model families",
+   "type": "Topic",
+   "chunk": "week-01-lecture-plan.md#0"
+  },
+  {
+   "name": "Demo",
+   "type": "Topic",
+   "chunk": "week-01-lecture-plan.md#0"
+  },
+  {
+   "name": "Milestone 0 proposal",
+   "type": "Deliverable",
+   "chunk": "week-01-lecture-plan.md#0"
+  },
+  {
+   "name": "AI application stack",
+   "type": "Topic",
+   "chunk": "week-01-lecture-plan.md#3"
+  },
+  {
+   "name": "model families",
+   "type": "Topic",
+   "chunk": "week-01-lecture-plan.md#3"
+  },
+  {
+   "name": "architecture diagram",
+   "type": "Topic",
+   "chunk": "week-01-lecture-plan.md#3"
+  },
+  {
+   "name": "semester project",
+   "type": "Topic",
+   "chunk": "week-01-lecture-plan.md#3"
+  },
+  {
+   "name": "domain gate",
+   "type": "Topic",
+   "chunk": "week-01-lecture-plan.md#3"
+  },
+  {
+   "name": "criteria",
+   "type": "Topic",
+   "chunk": "week-01-lecture-plan.md#3"
+  },
+  {
+   "name": "prompting",
+   "type": "Topic",
+   "chunk": "week-01-lecture-plan.md#4"
+  },
+  {
+   "name": "retrieval",
+   "type": "Topic",
+   "chunk": "week-01-lecture-plan.md#4"
+  },
+  {
+   "name": "graphs",
+   "type": "Topic",
+   "chunk": "week-01-lecture-plan.md#4"
+  },
+  {
+   "name": "tools",
+   "type": "Topic",
+   "chunk": "week-01-lecture-plan.md#4"
+  },
+  {
+   "name": "memory",
+   "type": "Topic",
+   "chunk": "week-01-lecture-plan.md#4"
+  },
+  {
+   "name": "evaluation",
+   "type": "Topic",
+   "chunk": "week-01-lecture-plan.md#4"
+  },
+  {
+   "name": "Lab 2",
+   "type": "Deliverable",
+   "chunk": "week-01-lecture-plan.md#4"
+  },
+  {
+   "name": "prompting",
+   "type": "Topic",
+   "chunk": "week-01-lecture-plan.md#5"
+  },
+  {
+   "name": "retrieval",
+   "type": "Topic",
+   "chunk": "week-01-lecture-plan.md#5"
+  },
+  {
+   "name": "graphs",
+   "type": "Topic",
+   "chunk": "week-01-lecture-plan.md#5"
+  },
+  {
+   "name": "tools",
+   "type": "Topic",
+   "chunk": "week-01-lecture-plan.md#5"
+  },
+  {
+   "name": "memory",
+   "type": "Topic",
+   "chunk": "week-01-lecture-plan.md#5"
+  },
+  {
+   "name": "evaluation",
+   "type": "Topic",
+   "chunk": "week-01-lecture-plan.md#5"
+  },
+  {
+   "name": "Gate criteria",
+   "type": "Topic",
+   "chunk": "week-01-lecture-plan.md#6"
+  },
+  {
+   "name": "Week 1 clinic",
+   "type": "Topic",
+   "chunk": "week-01-lecture-plan.md#6"
+  },
+  {
+   "name": "Project Proposal",
+   "type": "Topic",
+   "chunk": "week-01-lecture-plan.md#7"
+  },
+  {
+   "name": "Milestone 0 — Project Proposal",
+   "type": "Deliverable",
+   "chunk": "week-01-lecture-plan.md#7"
+  },
+  {
+   "name": "Lab 1",
+   "type": "Deliverable",
+   "chunk": "week-01-lecture-plan.md#7"
+  },
+  {
+   "name": "Google account",
+   "type": "Tool",
+   "chunk": "week-01-lecture-plan.md#7"
+  },
+  {
+   "name": "Docker Desktop",
+   "type": "Tool",
+   "chunk": "week-01-lecture-plan.md#7"
+  },
+  {
+   "name": "VS Code",
+   "type": "Tool",
+   "chunk": "week-01-lecture-plan.md#7"
+  },
+  {
+   "name": "Python",
+   "type": "Tool",
+   "chunk": "week-01-lecture-plan.md#7"
+  },
+  {
+   "name": "Git",
+   "type": "Tool",
+   "chunk": "week-01-lecture-plan.md#7"
+  },
+  {
+   "name": "Domain-approval criteria sheet",
+   "type": "Deliverable",
+   "chunk": "week-01-lecture-plan.md#7"
+  },
+  {
+   "name": "Modern AI Systems",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#0"
+  },
+  {
+   "name": "Classical Algorithm",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#0"
+  },
+  {
+   "name": "Machine learning",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#0"
+  },
+  {
+   "name": "Modern AI Systems",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#1"
+  },
+  {
+   "name": "Classical Algorithm",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#1"
+  },
+  {
+   "name": "Machine learning",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#1"
+  },
+  {
+   "name": "Feature engineering",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#2"
+  },
+  {
+   "name": "Deep learning",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#2"
+  },
+  {
+   "name": "Transformers",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#4"
+  },
+  {
+   "name": "Transformer",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#5"
+  },
+  {
+   "name": "Attention",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#5"
+  },
+  {
+   "name": "Interactive transformer visualisation",
+   "type": "Tool",
+   "chunk": "week-01-lecture.md#5"
+  },
+  {
+   "name": "GPT",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#5"
+  },
+  {
+   "name": "GPT",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#6"
+  },
+  {
+   "name": "LLM",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#7"
+  },
+  {
+   "name": "Foundation model",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#7"
+  },
+  {
+   "name": "Attention",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#8"
+  },
+  {
+   "name": "Foundation model",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#9"
+  },
+  {
+   "name": "Pretraining",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#9"
+  },
+  {
+   "name": "Model family",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#9"
+  },
+  {
+   "name": "Prompting",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#9"
+  },
+  {
+   "name": "Context window",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#9"
+  },
+  {
+   "name": "Hand-written rules",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#10"
+  },
+  {
+   "name": "Labeled examples",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#10"
+  },
+  {
+   "name": "Learned features",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#10"
+  },
+  {
+   "name": "Described tasks",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#10"
+  },
+  {
+   "name": "General corpus",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#9"
+  },
+  {
+   "name": "Scale",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#9"
+  },
+  {
+   "name": "Data",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#9"
+  },
+  {
+   "name": "Compute",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#9"
+  },
+  {
+   "name": "Transformer",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#9"
+  },
+  {
+   "name": "GPT",
+   "type": "Tool",
+   "chunk": "week-01-lecture.md#9"
+  },
+  {
+   "name": "Gemini",
+   "type": "Tool",
+   "chunk": "week-01-lecture.md#9"
+  },
+  {
+   "name": "Claude",
+   "type": "Tool",
+   "chunk": "week-01-lecture.md#9"
+  },
+  {
+   "name": "Llama",
+   "type": "Tool",
+   "chunk": "week-01-lecture.md#9"
+  },
+  {
+   "name": "Gemini's Flash tier",
+   "type": "Tool",
+   "chunk": "week-01-lecture.md#9"
+  },
+  {
+   "name": "Software that uses a model as a component",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#11"
+  },
+  {
+   "name": "Large language model",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#11"
+  },
+  {
+   "name": "ChatGPT",
+   "type": "Tool",
+   "chunk": "week-01-lecture.md#11"
+  },
+  {
+   "name": "Calculate a total",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#14"
+  },
+  {
+   "name": "Validate a password",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#14"
+  },
+  {
+   "name": "Process a transaction",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#14"
+  },
+  {
+   "name": "Authenticate a user",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#14"
+  },
+  {
+   "name": "Sort records",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#14"
+  },
+  {
+   "name": "Enforce permissions",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#14"
+  },
+  {
+   "name": "Regex",
+   "type": "Tool",
+   "chunk": "week-01-lecture.md#14"
+  },
+  {
+   "name": "Cryptography library",
+   "type": "Tool",
+   "chunk": "week-01-lecture.md#14"
+  },
+  {
+   "name": "Database",
+   "type": "Tool",
+   "chunk": "week-01-lecture.md#14"
+  },
+  {
+   "name": "Lab 1 — Vector RAG",
+   "type": "Deliverable",
+   "chunk": "week-01-lecture.md#16"
+  },
+  {
+   "name": "Lab 2 — Knowledge graph / Graph RAG",
+   "type": "Deliverable",
+   "chunk": "week-01-lecture.md#16"
+  },
+  {
+   "name": "Lab 3 — Agent, tools, memory",
+   "type": "Deliverable",
+   "chunk": "week-01-lecture.md#16"
+  },
+  {
+   "name": "Final integrated project",
+   "type": "Deliverable",
+   "chunk": "week-01-lecture.md#16"
+  },
+  {
+   "name": "Knowledge graph",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#17"
+  },
+  {
+   "name": "Graph RAG",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#17"
+  },
+  {
+   "name": "Agent",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#17"
+  },
+  {
+   "name": "Tool",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#17"
+  },
+  {
+   "name": "Memory",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#17"
+  },
+  {
+   "name": "Lab 2",
+   "type": "Deliverable",
+   "chunk": "week-01-lecture.md#17"
+  },
+  {
+   "name": "Lab 3",
+   "type": "Deliverable",
+   "chunk": "week-01-lecture.md#17"
+  },
+  {
+   "name": "Final integrated project",
+   "type": "Deliverable",
+   "chunk": "week-01-lecture.md#17"
+  },
+  {
+   "name": "Prompting",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#20"
+  },
+  {
+   "name": "Retrieval",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#20"
+  },
+  {
+   "name": "Knowledge graph",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#20"
+  },
+  {
+   "name": "Agent",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#20"
+  },
+  {
+   "name": "Memory",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#20"
+  },
+  {
+   "name": "AI Application Stack",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#21"
+  },
+  {
+   "name": "Foundation model",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#21"
+  },
+  {
+   "name": "Model access",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#21"
+  },
+  {
+   "name": "Context",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#21"
+  },
+  {
+   "name": "Knowledge",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#21"
+  },
+  {
+   "name": "Orchestration",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#21"
+  },
+  {
+   "name": "Application",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#21"
+  },
+  {
+   "name": "Lab 1",
+   "type": "Deliverable",
+   "chunk": "week-01-lecture.md#22"
+  },
+  {
+   "name": "Lab 2",
+   "type": "Deliverable",
+   "chunk": "week-01-lecture.md#22"
+  },
+  {
+   "name": "Lab 3",
+   "type": "Deliverable",
+   "chunk": "week-01-lecture.md#22"
+  },
+  {
+   "name": "Final project",
+   "type": "Deliverable",
+   "chunk": "week-01-lecture.md#22"
+  },
+  {
+   "name": "Modern AI and the AI software stack",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#23"
+  },
+  {
+   "name": "LLMs, tokens, context, reasoning, prompting",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#23"
+  },
+  {
+   "name": "Embeddings and semantic search",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#23"
+  },
+  {
+   "name": "Retrieval-Augmented Generation",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#23"
+  },
+  {
+   "name": "Knowledge graphs and Neo4j for AI",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#23"
+  },
+  {
+   "name": "Graph RAG",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#23"
+  },
+  {
+   "name": "Agents, tools, and integration",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#23"
+  },
+  {
+   "name": "Agent architectures, skills, and workflows",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#23"
+  },
+  {
+   "name": "Memory",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#23"
+  },
+  {
+   "name": "Advanced agentic systems",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#23"
+  },
+  {
+   "name": "Lab 1",
+   "type": "Deliverable",
+   "chunk": "week-01-lecture.md#24"
+  },
+  {
+   "name": "Lab 2",
+   "type": "Deliverable",
+   "chunk": "week-01-lecture.md#24"
+  },
+  {
+   "name": "Lab 3",
+   "type": "Deliverable",
+   "chunk": "week-01-lecture.md#24"
+  },
+  {
+   "name": "Final project",
+   "type": "Deliverable",
+   "chunk": "week-01-lecture.md#24"
+  },
+  {
+   "name": "Neo4j",
+   "type": "Tool",
+   "chunk": "week-01-lecture.md#23"
+  },
+  {
+   "name": "Cypher",
+   "type": "Tool",
+   "chunk": "week-01-lecture.md#23"
+  },
+  {
+   "name": "A book series or game universe",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#26"
+  },
+  {
+   "name": "University course catalogue",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#26"
+  },
+  {
+   "name": "Milestone 0 — Project Proposal",
+   "type": "Deliverable",
+   "chunk": "week-01-lecture.md#27"
+  },
+  {
+   "name": "Project Proposal",
+   "type": "Deliverable",
+   "chunk": "week-01-lecture.md#27"
+  },
+  {
+   "name": "Domain",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#27"
+  },
+  {
+   "name": "Intended users",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#27"
+  },
+  {
+   "name": "The problem",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#27"
+  },
+  {
+   "name": "Candidate AI functionality",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#27"
+  },
+  {
+   "name": "Knowledge sources",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#27"
+  },
+  {
+   "name": "Evidence against all five criteria",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#27"
+  },
+  {
+   "name": "Google account",
+   "type": "Tool",
+   "chunk": "week-01-lecture.md#28"
+  },
+  {
+   "name": "Docker Desktop",
+   "type": "Tool",
+   "chunk": "week-01-lecture.md#28"
+  },
+  {
+   "name": "VS Code",
+   "type": "Tool",
+   "chunk": "week-01-lecture.md#28"
+  },
+  {
+   "name": "Python",
+   "type": "Tool",
+   "chunk": "week-01-lecture.md#28"
+  },
+  {
+   "name": "Git",
+   "type": "Tool",
+   "chunk": "week-01-lecture.md#28"
+  },
+  {
+   "name": "Docker",
+   "type": "Tool",
+   "chunk": "week-01-lecture.md#29"
+  },
+  {
+   "name": "Google Cloud",
+   "type": "Tool",
+   "chunk": "week-01-lecture.md#29"
+  },
+  {
+   "name": "LLM",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#29"
+  },
+  {
+   "name": "AI application",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#29"
+  },
+  {
+   "name": "Context",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#29"
+  },
+  {
+   "name": "Orchestration",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#29"
+  },
+  {
+   "name": "Knowledge",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#29"
+  },
+  {
+   "name": "Memory",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#29"
+  },
+  {
+   "name": "User",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#29"
+  },
+  {
+   "name": "domain clinic",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#29"
+  },
+  {
+   "name": "Milestone 0 proposal",
+   "type": "Deliverable",
+   "chunk": "week-01-practical-plan.md#0"
+  },
+  {
+   "name": "Lab",
+   "type": "Deliverable",
+   "chunk": "week-01-practical-plan.md#0"
+  },
+  {
+   "name": "Google Cloud project + API key",
+   "type": "Topic",
+   "chunk": "week-01-practical-plan.md#2"
+  },
+  {
+   "name": "Clone and Python environment",
+   "type": "Topic",
+   "chunk": "week-01-practical-plan.md#2"
+  },
+  {
+   "name": "Key hygiene",
+   "type": "Topic",
+   "chunk": "week-01-practical-plan.md#2"
+  },
+  {
+   "name": "First programmatic call",
+   "type": "Topic",
+   "chunk": "week-01-practical-plan.md#2"
+  },
+  {
+   "name": "The prompt lab",
+   "type": "Topic",
+   "chunk": "week-01-practical-plan.md#2"
+  },
+  {
+   "name": "Synthesis",
+   "type": "Topic",
+   "chunk": "week-01-practical-plan.md#2"
+  },
+  {
+   "name": "Domain clinic",
+   "type": "Topic",
+   "chunk": "week-01-practical-plan.md#2"
+  },
+  {
+   "name": "Checklist sign-off",
+   "type": "Topic",
+   "chunk": "week-01-practical-plan.md#2"
+  },
+  {
+   "name": "Git",
+   "type": "Tool",
+   "chunk": "week-01-practical-plan.md#2"
+  },
+  {
+   "name": "Google Cloud",
+   "type": "Tool",
+   "chunk": "week-01-practical-plan.md#2"
+  },
+  {
+   "name": "VS Code",
+   "type": "Tool",
+   "chunk": "week-01-practical-plan.md#2"
+  },
+  {
+   "name": "Hello.py",
+   "type": "Deliverable",
+   "chunk": "week-01-practical-plan.md#2"
+  },
+  {
+   "name": "prompt_lab.ipynb",
+   "type": "Deliverable",
+   "chunk": "week-01-practical-plan.md#2"
+  },
+  {
+   "name": "prompt_lab.py",
+   "type": "Deliverable",
+   "chunk": "week-01-practical-plan.md#2"
+  },
+  {
+   "name": "Week 2 lecture — systematic",
+   "type": "Topic",
+   "chunk": "week-01-practical-plan.md#6"
+  },
+  {
+   "name": "Week 1 practical — empirical",
+   "type": "Topic",
+   "chunk": "week-01-practical-plan.md#6"
+  },
+  {
+   "name": "prompting taxonomy",
+   "type": "Topic",
+   "chunk": "week-01-practical-plan.md#5"
+  },
+  {
+   "name": "structured output",
+   "type": "Topic",
+   "chunk": "week-01-practical-plan.md#5"
+  },
+  {
+   "name": "thinking budget",
+   "type": "Topic",
+   "chunk": "week-01-practical-plan.md#5"
+  },
+  {
+   "name": "system role",
+   "type": "Topic",
+   "chunk": "week-01-practical-plan.md#6"
+  },
+  {
+   "name": "developer role",
+   "type": "Topic",
+   "chunk": "week-01-practical-plan.md#6"
+  },
+  {
+   "name": "user role",
+   "type": "Topic",
+   "chunk": "week-01-practical-plan.md#6"
+  },
+  {
+   "name": "generation parameter",
+   "type": "Topic",
+   "chunk": "week-01-practical-plan.md#6"
+  },
+  {
+   "name": "in-class exercise",
+   "type": "Topic",
+   "chunk": "week-01-practical-plan.md#6"
+  },
+  {
+   "name": "domain clinic",
+   "type": "Topic",
+   "chunk": "week-01-practical-plan.md#6"
+  },
+  {
+   "name": "approval gate",
+   "type": "Topic",
+   "chunk": "week-01-practical-plan.md#6"
+  },
+  {
+   "name": "Lab 2",
+   "type": "Deliverable",
+   "chunk": "week-01-practical-plan.md#7"
+  },
+  {
+   "name": "ask()",
+   "type": "Tool",
+   "chunk": "week-01-practical-plan.md#6"
+  },
+  {
+   "name": "Domain",
+   "type": "Topic",
+   "chunk": "week-01-practical-plan.md#8"
+  },
+  {
+   "name": "Definition of done",
+   "type": "Topic",
+   "chunk": "week-01-practical-plan.md#8"
+  },
+  {
+   "name": "Lab 1",
+   "type": "Topic",
+   "chunk": "week-01-practical-plan.md#8"
+  },
+  {
+   "name": "Experiment",
+   "type": "Topic",
+   "chunk": "week-01-practical-plan.md#8"
+  },
+  {
+   "name": "Milestone",
+   "type": "Topic",
+   "chunk": "week-01-practical-plan.md#8"
+  },
+  {
+   "name": "Milestone 0 proposal",
+   "type": "Topic",
+   "chunk": "week-01-practical-plan.md#8"
+  },
+  {
+   "name": "Hello.py",
+   "type": "Topic",
+   "chunk": "week-01-practical-plan.md#8"
+  },
+  {
+   "name": "Thoughts_token_count",
+   "type": "Topic",
+   "chunk": "week-01-practical-plan.md#8"
+  },
+  {
+   "name": "Milestone 0 — Project Proposal",
+   "type": "Topic",
+   "chunk": "week-01-practical-plan.md#9"
+  },
+  {
+   "name": "Domain provisionally approved",
+   "type": "Topic",
+   "chunk": "week-01-practical-plan.md#9"
+  },
+  {
+   "name": "Lab 1",
+   "type": "Topic",
+   "chunk": "week-01-practical-plan.md#9"
+  },
+  {
+   "name": "§3.1 criteria",
+   "type": "Topic",
+   "chunk": "week-01-practical-plan.md#9"
+  },
+  {
+   "name": "Domain clinic",
+   "type": "Topic",
+   "chunk": "week-01-practical-plan.md#9"
+  },
+  {
+   "name": "Prompt lab",
+   "type": "Topic",
+   "chunk": "week-01-practical-plan.md#10"
+  },
+  {
+   "name": "Notebook kernel",
+   "type": "Topic",
+   "chunk": "week-01-practical-plan.md#10"
+  },
+  {
+   "name": "VS Code kernel picker",
+   "type": "Tool",
+   "chunk": "week-01-practical-plan.md#10"
+  },
+  {
+   "name": "ipykernel",
+   "type": "Tool",
+   "chunk": "week-01-practical-plan.md#10"
+  },
+  {
+   "name": "jedi",
+   "type": "Tool",
+   "chunk": "week-01-practical-plan.md#10"
+  },
+  {
+   "name": "Google Workspace account",
+   "type": "Topic",
+   "chunk": "week-01-practical-plan.md#10"
+  },
+  {
+   "name": "Cloud project",
+   "type": "Topic",
+   "chunk": "week-01-practical-plan.md#10"
+  },
+  {
+   "name": "LongPathsEnabled",
+   "type": "Topic",
+   "chunk": "week-01-practical-plan.md#10"
+  },
+  {
+   "name": "OSError",
+   "type": "Topic",
+   "chunk": "week-01-practical-plan.md#10"
+  },
+  {
+   "name": "pip install",
+   "type": "Topic",
+   "chunk": "week-01-practical-plan.md#10"
+  },
+  {
+   "name": "admin rights",
+   "type": "Topic",
+   "chunk": "week-01-practical-plan.md#10"
+  },
+  {
+   "name": "Two sessions per week",
+   "type": "Topic",
+   "chunk": "week-01-practical-plan.md#11"
+  },
+  {
+   "name": "Four graded deliverables",
+   "type": "Topic",
+   "chunk": "week-01-practical-plan.md#11"
+  },
+  {
+   "name": "Twelve practical sessions",
+   "type": "Topic",
+   "chunk": "week-01-practical-plan.md#11"
+  },
+  {
+   "name": "Docker",
+   "type": "Topic",
+   "chunk": "week-01-practical-plan.md#11"
+  },
+  {
+   "name": "Neo4j",
+   "type": "Topic",
+   "chunk": "week-01-practical-plan.md#11"
+  },
+  {
+   "name": "docker compose up",
+   "type": "Tool",
+   "chunk": "week-01-practical-plan.md#11"
+  },
+  {
+   "name": "Week 1",
+   "type": "Topic",
+   "chunk": "week-01-practical-plan.md#11"
+  },
+  {
+   "name": "Calling the model from Python, and finding out what a prompt actually does",
+   "type": "Topic",
+   "chunk": "week-01-practical.md#0"
+  },
+  {
+   "name": "Python script that calls a model and reads its token usage",
+   "type": "Deliverable",
+   "chunk": "week-01-practical.md#0"
+  },
+  {
+   "name": "Cloud project",
+   "type": "Topic",
+   "chunk": "week-01-practical.md#2"
+  },
+  {
+   "name": "Google AI Studio",
+   "type": "Tool",
+   "chunk": "week-01-practical.md#2"
+  },
+  {
+   "name": "Python environment",
+   "type": "Topic",
+   "chunk": "week-01-practical.md#3"
+  },
+  {
+   "name": "Git",
+   "type": "Tool",
+   "chunk": "week-01-practical.md#3"
+  },
+  {
+   "name": "Python",
+   "type": "Tool",
+   "chunk": "week-01-practical.md#3"
+  },
+  {
+   "name": "Pip",
+   "type": "Tool",
+   "chunk": "week-01-practical.md#3"
+  },
+  {
+   "name": "Your first model call",
+   "type": "Topic",
+   "chunk": "week-01-practical.md#4"
+  },
+  {
+   "name": "GenAI library",
+   "type": "Tool",
+   "chunk": "week-01-practical.md#4"
+  },
+  {
+   "name": "Gemini-3.5-flash",
+   "type": "Tool",
+   "chunk": "week-01-practical.md#4"
+  },
+  {
+   "name": "Model",
+   "type": "Topic",
+   "chunk": "week-01-practical.md#6"
+  },
+  {
+   "name": "Thoughts token count",
+   "type": "Topic",
+   "chunk": "week-01-practical.md#6"
+  },
+  {
+   "name": "Prompt",
+   "type": "Topic",
+   "chunk": "week-01-practical.md#6"
+  },
+  {
+   "name": "Gemini 3.5 Flash",
+   "type": "Tool",
+   "chunk": "week-01-practical.md#6"
+  },
+  {
+   "name": "Lab",
+   "type": "Deliverable",
+   "chunk": "week-01-practical.md#6"
+  },
+  {
+   "name": "API key",
+   "type": "Topic",
+   "chunk": "week-01-practical.md#9"
+  },
+  {
+   "name": "structured output",
+   "type": "Topic",
+   "chunk": "week-01-practical.md#9"
+  },
+  {
+   "name": "JSON",
+   "type": "Topic",
+   "chunk": "week-01-practical.md#9"
+  },
+  {
+   "name": "audience",
+   "type": "Topic",
+   "chunk": "week-01-practical.md#9"
+  },
+  {
+   "name": "Lab 2",
+   "type": "Deliverable",
+   "chunk": "week-01-practical.md#9"
+  },
+  {
+   "name": "Python",
+   "type": "Tool",
+   "chunk": "week-01-practical.md#9"
+  },
+  {
+   "name": "Prompt variation experiment",
+   "type": "Topic",
+   "chunk": "week-01-practical.md#12"
+  },
+  {
+   "name": "Python",
+   "type": "Tool",
+   "chunk": "week-01-practical.md#12"
+  },
+  {
+   "name": "Domain clinic",
+   "type": "Topic",
+   "chunk": "week-01-practical.md#13"
+  },
+  {
+   "name": "Lab 2",
+   "type": "Deliverable",
+   "chunk": "week-01-practical.md#14"
+  },
+  {
+   "name": "knowledge graph",
+   "type": "Topic",
+   "chunk": "week-01-practical.md#15"
+  },
+  {
+   "name": "domain",
+   "type": "Topic",
+   "chunk": "week-01-practical.md#15"
+  },
+  {
+   "name": "criterion",
+   "type": "Topic",
+   "chunk": "week-01-practical.md#15"
+  },
+  {
+   "name": "Lab 2",
+   "type": "Deliverable",
+   "chunk": "week-01-practical.md#15"
+  },
+  {
+   "name": "corpus",
+   "type": "Topic",
+   "chunk": "week-01-practical.md#16"
+  },
+  {
+   "name": "project proposal",
+   "type": "Topic",
+   "chunk": "week-01-practical.md#17"
+  },
+  {
+   "name": "domain provisionally approved",
+   "type": "Topic",
+   "chunk": "week-01-practical.md#17"
+  },
+  {
+   "name": "five criteria",
+   "type": "Topic",
+   "chunk": "week-01-practical.md#17"
+  },
+  {
+   "name": "Milestone 0 — Project Proposal",
+   "type": "Deliverable",
+   "chunk": "week-01-practical.md#17"
+  },
+  {
+   "name": "virtual environment",
+   "type": "Topic",
+   "chunk": "week-01-practical.md#18"
+  },
+  {
+   "name": "kernel",
+   "type": "Topic",
+   "chunk": "week-01-practical.md#18"
+  },
+  {
+   "name": "Notebook",
+   "type": "Topic",
+   "chunk": "week-01-practical.md#18"
+  },
+  {
+   "name": "Kernel",
+   "type": "Topic",
+   "chunk": "week-01-practical.md#18"
+  },
+  {
+   "name": "ipykernel",
+   "type": "Tool",
+   "chunk": "week-01-practical.md#18"
+  },
+  {
+   "name": "jedi",
+   "type": "Tool",
+   "chunk": "week-01-practical.md#18"
+  },
+  {
+   "name": "django-stubs",
+   "type": "Tool",
+   "chunk": "week-01-practical.md#18"
+  },
+  {
+   "name": "VS Code",
+   "type": "Tool",
+   "chunk": "week-01-practical.md#18"
+  },
+  {
+   "name": "pip",
+   "type": "Tool",
+   "chunk": "week-01-practical.md#18"
+  },
+  {
+   "name": "requirements.txt",
+   "type": "Tool",
+   "chunk": "week-01-practical.md#18"
+  },
+  {
+   "name": "prompt lab",
+   "type": "Deliverable",
+   "chunk": "week-01-practical.md#18"
+  },
+  {
+   "name": "API key management",
+   "type": "Topic",
+   "chunk": "week-01-practical.md#18"
+  },
+  {
+   "name": "GEMINI_API_KEY",
+   "type": "Topic",
+   "chunk": "week-01-practical.md#18"
+  },
+  {
+   "name": "Gemini API",
+   "type": "Tool",
+   "chunk": "week-01-practical.md#18"
+  },
+  {
+   "name": "prompt lab",
+   "type": "Deliverable",
+   "chunk": "week-01-practical.md#19"
+  },
+  {
+   "name": "GEMINI_API_KEY",
+   "type": "Topic",
+   "chunk": "week-01-practical.md#19"
+  },
+  {
+   "name": "rate limits",
+   "type": "Topic",
+   "chunk": "week-01-practical.md#20"
+  },
+  {
+   "name": "Gemini API",
+   "type": "Tool",
+   "chunk": "week-01-practical.md#20"
+  },
+  {
+   "name": "Tokens",
+   "type": "Topic",
+   "chunk": "week-02-lecture-plan.md#0"
+  },
+  {
+   "name": "How reasoning models emerged",
+   "type": "Topic",
+   "chunk": "week-02-lecture-plan.md#0"
+  },
+  {
+   "name": "What thinking costs",
+   "type": "Topic",
+   "chunk": "week-02-lecture-plan.md#0"
+  },
+  {
+   "name": "Temperature",
+   "type": "Topic",
+   "chunk": "week-02-lecture-plan.md#0"
+  },
+  {
+   "name": "Building a good context",
+   "type": "Topic",
+   "chunk": "week-02-lecture-plan.md#0"
+  },
+  {
+   "name": "Tokens",
+   "type": "Topic",
+   "chunk": "week-02-lecture-plan.md#1"
+  },
+  {
+   "name": "How reasoning models emerged",
+   "type": "Topic",
+   "chunk": "week-02-lecture-plan.md#1"
+  },
+  {
+   "name": "What thinking costs",
+   "type": "Topic",
+   "chunk": "week-02-lecture-plan.md#1"
+  },
+  {
+   "name": "Temperature",
+   "type": "Topic",
+   "chunk": "week-02-lecture-plan.md#1"
+  },
+  {
+   "name": "Building a good context",
+   "type": "Topic",
+   "chunk": "week-02-lecture-plan.md#1"
+  },
+  {
+   "name": "Tokens",
+   "type": "Topic",
+   "chunk": "week-02-lecture-plan.md#2"
+  },
+  {
+   "name": "How reasoning models emerged",
+   "type": "Topic",
+   "chunk": "week-02-lecture-plan.md#2"
+  },
+  {
+   "name": "What thinking costs",
+   "type": "Topic",
+   "chunk": "week-02-lecture-plan.md#2"
+  },
+  {
+   "name": "Temperature",
+   "type": "Topic",
+   "chunk": "week-02-lecture-plan.md#2"
+  },
+  {
+   "name": "Building a good context",
+   "type": "Topic",
+   "chunk": "week-02-lecture-plan.md#2"
+  },
+  {
+   "name": "context window",
+   "type": "Topic",
+   "chunk": "week-02-lecture-plan.md#3"
+  },
+  {
+   "name": "prompt skeleton",
+   "type": "Topic",
+   "chunk": "week-02-lecture-plan.md#3"
+  },
+  {
+   "name": "context engineering",
+   "type": "Topic",
+   "chunk": "week-02-lecture-plan.md#3"
+  },
+  {
+   "name": "tool calling",
+   "type": "Topic",
+   "chunk": "week-02-lecture-plan.md#3"
+  },
+  {
+   "name": "reasoning",
+   "type": "Topic",
+   "chunk": "week-02-lecture-plan.md#3"
+  },
+  {
+   "name": "hallucination",
+   "type": "Topic",
+   "chunk": "week-02-lecture-plan.md#3"
+  },
+  {
+   "name": "retrieval",
+   "type": "Topic",
+   "chunk": "week-02-lecture-plan.md#3"
+  },
+  {
+   "name": "grounding",
+   "type": "Topic",
+   "chunk": "week-02-lecture-plan.md#3"
+  },
+  {
+   "name": "constraint",
+   "type": "Topic",
+   "chunk": "week-02-lecture-plan.md#3"
+  },
+  {
+   "name": "explicit exit clause",
+   "type": "Topic",
+   "chunk": "week-02-lecture-plan.md#3"
+  },
+  {
+   "name": "measurement",
+   "type": "Topic",
+   "chunk": "week-02-lecture-plan.md#3"
+  },
+  {
+   "name": "Milestone 0",
+   "type": "Topic",
+   "chunk": "week-02-lecture-plan.md#3"
+  },
+  {
+   "name": "gold set",
+   "type": "Topic",
+   "chunk": "week-02-lecture-plan.md#3"
+  },
+  {
+   "name": "Experiment 4",
+   "type": "Topic",
+   "chunk": "week-02-lecture-plan.md#3"
+  },
+  {
+   "name": "source manually worked",
+   "type": "Topic",
+   "chunk": "week-02-lecture-plan.md#3"
+  },
+  {
+   "name": "Lab 1",
+   "type": "Deliverable",
+   "chunk": "week-02-lecture-plan.md#3"
+  },
+  {
+   "name": "Tokens",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#0"
+  },
+  {
+   "name": "Sub-word pieces",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#0"
+  },
+  {
+   "name": "OpenAI tokenizer",
+   "type": "Tool",
+   "chunk": "week-02-lecture.md#0"
+  },
+  {
+   "name": "tiktokenizer",
+   "type": "Tool",
+   "chunk": "week-02-lecture.md#0"
+  },
+  {
+   "name": "the-tokenizer-playground",
+   "type": "Tool",
+   "chunk": "week-02-lecture.md#0"
+  },
+  {
+   "name": "Byte-pair encoding",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#3"
+  },
+  {
+   "name": "Token",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#3"
+  },
+  {
+   "name": "Vocabulary",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#3"
+  },
+  {
+   "name": "Training corpus",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#3"
+  },
+  {
+   "name": "Python",
+   "type": "Tool",
+   "chunk": "week-02-lecture.md#3"
+  },
+  {
+   "name": "tokens.py",
+   "type": "Tool",
+   "chunk": "week-02-lecture.md#3"
+  },
+  {
+   "name": "gemini-3.5-flash",
+   "type": "Tool",
+   "chunk": "week-02-lecture.md#3"
+  },
+  {
+   "name": "Starter repository",
+   "type": "Tool",
+   "chunk": "week-02-lecture.md#3"
+  },
+  {
+   "name": "Token",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#6"
+  },
+  {
+   "name": "Chain-of-Thought Prompting",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#6"
+  },
+  {
+   "name": "Internal reasoning",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#6"
+  },
+  {
+   "name": "Test-time compute",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#8"
+  },
+  {
+   "name": "Gemini-3.5-flash",
+   "type": "Tool",
+   "chunk": "week-02-lecture.md#8"
+  },
+  {
+   "name": "Pricing",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#9"
+  },
+  {
+   "name": "Gemini 3.8 Flash",
+   "type": "Tool",
+   "chunk": "week-02-lecture.md#9"
+  },
+  {
+   "name": "Claude Sonnet 5",
+   "type": "Tool",
+   "chunk": "week-02-lecture.md#9"
+  },
+  {
+   "name": "GPT-4o",
+   "type": "Tool",
+   "chunk": "week-02-lecture.md#9"
+  },
+  {
+   "name": "Temperature",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#10"
+  },
+  {
+   "name": "Probability distribution",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#10"
+  },
+  {
+   "name": "Open-ended prompts",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#11"
+  },
+  {
+   "name": "Gemini-3.5-flash",
+   "type": "Tool",
+   "chunk": "week-02-lecture.md#11"
+  },
+  {
+   "name": "Good context",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#14"
+  },
+  {
+   "name": "System instructions",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#14"
+  },
+  {
+   "name": "Examples",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#14"
+  },
+  {
+   "name": "Tool definitions",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#14"
+  },
+  {
+   "name": "Retrieved knowledge",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#14"
+  },
+  {
+   "name": "Memory",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#14"
+  },
+  {
+   "name": "Conversation history",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#14"
+  },
+  {
+   "name": "The request",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#14"
+  },
+  {
+   "name": "Context window",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#14"
+  },
+  {
+   "name": "RAG failure mode",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#14"
+  },
+  {
+   "name": "Context cost",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#14"
+  },
+  {
+   "name": "Context engineering",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#15"
+  },
+  {
+   "name": "System block",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#18"
+  },
+  {
+   "name": "Standing rules",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#18"
+  },
+  {
+   "name": "Output policy",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#18"
+  },
+  {
+   "name": "Tone and audience",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#18"
+  },
+  {
+   "name": "In-context learning",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#21"
+  },
+  {
+   "name": "Classification",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#21"
+  },
+  {
+   "name": "Decomposition",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#21"
+  },
+  {
+   "name": "Hallucination",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#23"
+  },
+  {
+   "name": "Decomposition",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#22"
+  },
+  {
+   "name": "Classification",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#22"
+  },
+  {
+   "name": "Plausible-shape completion",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#24"
+  },
+  {
+   "name": "Hallucination",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#24"
+  },
+  {
+   "name": "Grounding",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#24"
+  },
+  {
+   "name": "Retrieval",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#24"
+  },
+  {
+   "name": "Citation",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#24"
+  },
+  {
+   "name": "Measurement",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#24"
+  },
+  {
+   "name": "Confabulation",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#24"
+  },
+  {
+   "name": "API call shape",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#25"
+  },
+  {
+   "name": "DOI",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#25"
+  },
+  {
+   "name": "URL",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#25"
+  },
+  {
+   "name": "Next-token prediction",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#25"
+  },
+  {
+   "name": "Tokens",
+   "type": "Topic",
+   "chunk": "week-02-practical-plan.md#0"
+  },
+  {
+   "name": "tokens.py",
+   "type": "Tool",
+   "chunk": "week-02-practical-plan.md#0"
+  },
+  {
+   "name": "starter-repo/week2/context_lab.ipynb",
+   "type": "Tool",
+   "chunk": "week-02-practical-plan.md#0"
+  },
+  {
+   "name": "context_lab.py",
+   "type": "Tool",
+   "chunk": "week-02-practical-plan.md#0"
+  },
+  {
+   "name": "Temperature",
+   "type": "Topic",
+   "chunk": "week-02-practical-plan.md#3"
+  },
+  {
+   "name": "Context ladder",
+   "type": "Topic",
+   "chunk": "week-02-practical-plan.md#3"
+  },
+  {
+   "name": "context_lab.ipynb",
+   "type": "Tool",
+   "chunk": "week-02-practical-plan.md#3"
+  },
+  {
+   "name": "gemini-3.5-flash",
+   "type": "Tool",
+   "chunk": "week-02-practical-plan.md#3"
+  },
+  {
+   "name": "Prompt",
+   "type": "Topic",
+   "chunk": "week-02-practical-plan.md#4"
+  },
+  {
+   "name": "Configuration",
+   "type": "Topic",
+   "chunk": "week-02-practical-plan.md#4"
+  },
+  {
+   "name": "Tool calling",
+   "type": "Topic",
+   "chunk": "week-02-practical-plan.md#4"
+  },
+  {
+   "name": "Parse step",
+   "type": "Topic",
+   "chunk": "week-02-practical-plan.md#5"
+  },
+  {
+   "name": "Ingestion",
+   "type": "Topic",
+   "chunk": "week-02-practical-plan.md#6"
+  },
+  {
+   "name": "Gold set",
+   "type": "Topic",
+   "chunk": "week-02-practical-plan.md#6"
+  },
+  {
+   "name": "Milestone 0 proposal",
+   "type": "Deliverable",
+   "chunk": "week-02-practical-plan.md#4"
+  },
+  {
+   "name": "Structured output",
+   "type": "Topic",
+   "chunk": "week-02-practical-plan.md#7"
+  },
+  {
+   "name": "Thinking dial",
+   "type": "Topic",
+   "chunk": "week-02-practical-plan.md#7"
+  },
+  {
+   "name": "Tool calling",
+   "type": "Topic",
+   "chunk": "week-02-practical-plan.md#7"
+  },
+  {
+   "name": "Cost work",
+   "type": "Topic",
+   "chunk": "week-02-practical-plan.md#7"
+  },
+  {
+   "name": "Embeddings",
+   "type": "Topic",
+   "chunk": "week-03-lecture-plan.md#0"
+  },
+  {
+   "name": "Semantic search",
+   "type": "Topic",
+   "chunk": "week-03-lecture-plan.md#0"
+  },
+  {
+   "name": "RAG",
+   "type": "Topic",
+   "chunk": "week-03-lecture-plan.md#0"
+  },
+  {
+   "name": "Keyword search",
+   "type": "Topic",
+   "chunk": "week-03-lecture-plan.md#0"
+  },
+  {
+   "name": "Encoder network",
+   "type": "Topic",
+   "chunk": "week-03-lecture-plan.md#0"
+  },
+  {
+   "name": "Embedding model",
+   "type": "Topic",
+   "chunk": "week-03-lecture-plan.md#2"
+  },
+  {
+   "name": "Generative model",
+   "type": "Topic",
+   "chunk": "week-03-lecture-plan.md#2"
+  },
+  {
+   "name": "Cosine similarity",
+   "type": "Topic",
+   "chunk": "week-03-lecture-plan.md#3"
+  },
+  {
+   "name": "Euclidean distance",
+   "type": "Topic",
+   "chunk": "week-03-lecture-plan.md#3"
+  },
+  {
+   "name": "Cosine distance",
+   "type": "Topic",
+   "chunk": "week-03-lecture-plan.md#3"
+  },
+  {
+   "name": "Ranking",
+   "type": "Topic",
+   "chunk": "week-03-lecture-plan.md#4"
+  },
+  {
+   "name": "Local model",
+   "type": "Topic",
+   "chunk": "week-03-lecture-plan.md#4"
+  },
+  {
+   "name": "Hosted model",
+   "type": "Topic",
+   "chunk": "week-03-lecture-plan.md#4"
+  },
+  {
+   "name": "Monolingual",
+   "type": "Topic",
+   "chunk": "week-03-lecture-plan.md#4"
+  },
+  {
+   "name": "Multilingual",
+   "type": "Topic",
+   "chunk": "week-03-lecture-plan.md#4"
+  },
+  {
+   "name": "Matryoshka truncation",
+   "type": "Topic",
+   "chunk": "week-03-lecture-plan.md#4"
+  },
+  {
+   "name": "Multimodal embeddings",
+   "type": "Topic",
+   "chunk": "week-03-lecture-plan.md#4"
+  },
+  {
+   "name": "Retrieval pipeline",
+   "type": "Topic",
+   "chunk": "week-03-lecture-plan.md#6"
+  },
+  {
+   "name": "Vector databases",
+   "type": "Topic",
+   "chunk": "week-03-lecture-plan.md#6"
+  },
+  {
+   "name": "Index libraries",
+   "type": "Topic",
+   "chunk": "week-03-lecture-plan.md#6"
+  },
+  {
+   "name": "cosine metric",
+   "type": "Topic",
+   "chunk": "week-03-lecture-plan.md#6"
+  },
+  {
+   "name": "hnsw space parameter",
+   "type": "Topic",
+   "chunk": "week-03-lecture-plan.md#6"
+  },
+  {
+   "name": "MySQL",
+   "type": "Tool",
+   "chunk": "week-03-lecture-plan.md#6"
+  },
+  {
+   "name": "MariaDB",
+   "type": "Tool",
+   "chunk": "week-03-lecture-plan.md#6"
+  },
+  {
+   "name": "PostgreSQL",
+   "type": "Tool",
+   "chunk": "week-03-lecture-plan.md#6"
+  },
+  {
+   "name": "pgvector",
+   "type": "Tool",
+   "chunk": "week-03-lecture-plan.md#6"
+  },
+  {
+   "name": "SQL Server",
+   "type": "Tool",
+   "chunk": "week-03-lecture-plan.md#6"
+  },
+  {
+   "name": "Neo4j",
+   "type": "Tool",
+   "chunk": "week-03-lecture-plan.md#6"
+  },
+  {
+   "name": "DynamoDB",
+   "type": "Tool",
+   "chunk": "week-03-lecture-plan.md#6"
+  },
+  {
+   "name": "Chroma",
+   "type": "Tool",
+   "chunk": "week-03-lecture-plan.md#6"
+  },
+  {
+   "name": "Qdrant",
+   "type": "Tool",
+   "chunk": "week-03-lecture-plan.md#6"
+  },
+  {
+   "name": "Weaviate",
+   "type": "Tool",
+   "chunk": "week-03-lecture-plan.md#6"
+  },
+  {
+   "name": "Milvus",
+   "type": "Tool",
+   "chunk": "week-03-lecture-plan.md#6"
+  },
+  {
+   "name": "FAISS",
+   "type": "Tool",
+   "chunk": "week-03-lecture-plan.md#6"
+  },
+  {
+   "name": "Ranked list",
+   "type": "Topic",
+   "chunk": "week-03-lecture-plan.md#7"
+  },
+  {
+   "name": "LLM-only application",
+   "type": "Topic",
+   "chunk": "week-03-lecture-plan.md#7"
+  },
+  {
+   "name": "Private corpus",
+   "type": "Topic",
+   "chunk": "week-03-lecture-plan.md#7"
+  },
+  {
+   "name": "retrieval",
+   "type": "Topic",
+   "chunk": "week-03-lecture-plan.md#8"
+  },
+  {
+   "name": "assembling a context and grounding the answer",
+   "type": "Topic",
+   "chunk": "week-03-lecture-plan.md#8"
+  },
+  {
+   "name": "sources block",
+   "type": "Topic",
+   "chunk": "week-03-lecture-plan.md#8"
+  },
+  {
+   "name": "Week 2 context template",
+   "type": "Topic",
+   "chunk": "week-03-lecture-plan.md#8"
+  },
+  {
+   "name": "grounding",
+   "type": "Topic",
+   "chunk": "week-03-lecture-plan.md#8"
+  },
+  {
+   "name": "system instruction",
+   "type": "Topic",
+   "chunk": "week-03-lecture-plan.md#8"
+  },
+  {
+   "name": "exit clause",
+   "type": "Topic",
+   "chunk": "week-03-lecture-plan.md#8"
+  },
+  {
+   "name": "source attribution",
+   "type": "Topic",
+   "chunk": "week-03-lecture-plan.md#8"
+  },
+  {
+   "name": "evaluation practice",
+   "type": "Topic",
+   "chunk": "week-03-lecture-plan.md#9"
+  },
+  {
+   "name": "gold set",
+   "type": "Topic",
+   "chunk": "week-03-lecture-plan.md#9"
+  },
+  {
+   "name": "ten representative queries",
+   "type": "Deliverable",
+   "chunk": "week-03-lecture-plan.md#9"
+  },
+  {
+   "name": "gold set",
+   "type": "Deliverable",
+   "chunk": "week-03-lecture-plan.md#9"
+  },
+  {
+   "name": "gemini-embedding-001",
+   "type": "Tool",
+   "chunk": "week-03-lecture-plan.md#10"
+  },
+  {
+   "name": "gemini-embedding-2",
+   "type": "Tool",
+   "chunk": "week-03-lecture-plan.md#10"
+  },
+  {
+   "name": "gemini-embedding-2-preview",
+   "type": "Tool",
+   "chunk": "week-03-lecture-plan.md#10"
+  },
+  {
+   "name": "Embedding",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#0"
+  },
+  {
+   "name": "Similarity",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#0"
+  },
+  {
+   "name": "Chunking",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#0"
+  },
+  {
+   "name": "Retrieval",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#0"
+  },
+  {
+   "name": "Grounded generation",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#0"
+  },
+  {
+   "name": "Keyword search",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#0"
+  },
+  {
+   "name": "Embedding model",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#3"
+  },
+  {
+   "name": "Generative model",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#4"
+  },
+  {
+   "name": "Cosine similarity",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#5"
+  },
+  {
+   "name": "embedding_client.py",
+   "type": "Tool",
+   "chunk": "week-03-lecture.md#5"
+  },
+  {
+   "name": "gemini-embedding-001",
+   "type": "Tool",
+   "chunk": "week-03-lecture.md#5"
+  },
+  {
+   "name": "Cosine similarity",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#6"
+  },
+  {
+   "name": "Euclidean distance",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#6"
+  },
+  {
+   "name": "Cosine distance",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#6"
+  },
+  {
+   "name": "Choosing a model",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#6"
+  },
+  {
+   "name": "Cosine similarity",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#7"
+  },
+  {
+   "name": "Euclidean distance",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#7"
+  },
+  {
+   "name": "Cosine distance",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#8"
+  },
+  {
+   "name": "Choosing a model",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#8"
+  },
+  {
+   "name": "vector",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#6"
+  },
+  {
+   "name": "embedding",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#6"
+  },
+  {
+   "name": "cosine similarity",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#7"
+  },
+  {
+   "name": "dot product",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#7"
+  },
+  {
+   "name": "cosine distance",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#8"
+  },
+  {
+   "name": "gemini-embedding-001",
+   "type": "Tool",
+   "chunk": "week-03-lecture.md#8"
+  },
+  {
+   "name": "gemini-embedding-2",
+   "type": "Tool",
+   "chunk": "week-03-lecture.md#8"
+  },
+  {
+   "name": "Embedding model",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#9"
+  },
+  {
+   "name": "Task type",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#9"
+  },
+  {
+   "name": "Multimodal embeddings",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#9"
+  },
+  {
+   "name": "Chunking a corpus",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#9"
+  },
+  {
+   "name": "Retrieval pipeline",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#9"
+  },
+  {
+   "name": "Gemini embeddings",
+   "type": "Tool",
+   "chunk": "week-03-lecture.md#9"
+  },
+  {
+   "name": "multimodal_demo.py",
+   "type": "Tool",
+   "chunk": "week-03-lecture.md#9"
+  },
+  {
+   "name": "Retrieval pipeline",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#12"
+  },
+  {
+   "name": "Ingest",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#12"
+  },
+  {
+   "name": "Chunk",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#12"
+  },
+  {
+   "name": "Embed",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#12"
+  },
+  {
+   "name": "Store",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#12"
+  },
+  {
+   "name": "Query",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#12"
+  },
+  {
+   "name": "Search",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#12"
+  },
+  {
+   "name": "Ranked chunks",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#12"
+  },
+  {
+   "name": "Vector index",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#12"
+  },
+  {
+   "name": "Dedicated vector databases",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#12"
+  },
+  {
+   "name": "Vector databases",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#12"
+  },
+  {
+   "name": "Index libraries",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#12"
+  },
+  {
+   "name": "Chroma",
+   "type": "Tool",
+   "chunk": "week-03-lecture.md#12"
+  },
+  {
+   "name": "Qdrant",
+   "type": "Tool",
+   "chunk": "week-03-lecture.md#12"
+  },
+  {
+   "name": "Weaviate",
+   "type": "Tool",
+   "chunk": "week-03-lecture.md#12"
+  },
+  {
+   "name": "Milvus",
+   "type": "Tool",
+   "chunk": "week-03-lecture.md#12"
+  },
+  {
+   "name": "PostgreSQL",
+   "type": "Tool",
+   "chunk": "week-03-lecture.md#12"
+  },
+  {
+   "name": "pgvector",
+   "type": "Tool",
+   "chunk": "week-03-lecture.md#12"
+  },
+  {
+   "name": "Redis",
+   "type": "Tool",
+   "chunk": "week-03-lecture.md#12"
+  },
+  {
+   "name": "Elasticsearch",
+   "type": "Tool",
+   "chunk": "week-03-lecture.md#12"
+  },
+  {
+   "name": "MongoDB",
+   "type": "Tool",
+   "chunk": "week-03-lecture.md#12"
+  },
+  {
+   "name": "FAISS",
+   "type": "Tool",
+   "chunk": "week-03-lecture.md#12"
+  },
+  {
+   "name": "hnswlib",
+   "type": "Tool",
+   "chunk": "week-03-lecture.md#12"
+  },
+  {
+   "name": "Lab 1 discussion",
+   "type": "Deliverable",
+   "chunk": "week-03-lecture.md#12"
+  },
+  {
+   "name": "Vector search",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#15"
+  },
+  {
+   "name": "Cosine distance",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#15"
+  },
+  {
+   "name": "Euclidean distance",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#15"
+  },
+  {
+   "name": "HNSW",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#15"
+  },
+  {
+   "name": "SQL Server 2025",
+   "type": "Tool",
+   "chunk": "week-03-lecture.md#15"
+  },
+  {
+   "name": "MariaDB 11.7+",
+   "type": "Tool",
+   "chunk": "week-03-lecture.md#15"
+  },
+  {
+   "name": "Neo4j",
+   "type": "Tool",
+   "chunk": "week-03-lecture.md#15"
+  },
+  {
+   "name": "DynamoDB",
+   "type": "Tool",
+   "chunk": "week-03-lecture.md#15"
+  },
+  {
+   "name": "Chroma",
+   "type": "Tool",
+   "chunk": "week-03-lecture.md#15"
+  },
+  {
+   "name": "Neo4j",
+   "type": "Tool",
+   "chunk": "week-03-lecture.md#16"
+  },
+  {
+   "name": "Question answering pipeline",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#20"
+  },
+  {
+   "name": "Ingest",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#20"
+  },
+  {
+   "name": "Embedding",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#20"
+  },
+  {
+   "name": "Vector index",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#20"
+  },
+  {
+   "name": "Model",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#20"
+  },
+  {
+   "name": "Neo4j/Cypher",
+   "type": "Tool",
+   "chunk": "week-03-lecture.md#20"
+  },
+  {
+   "name": "Knowledge graph",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#20"
+  },
+  {
+   "name": "Graph model quality",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#20"
+  },
+  {
+   "name": "Retrieval Augmented Generation",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#19"
+  },
+  {
+   "name": "RAG",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#19"
+  },
+  {
+   "name": "Graph RAG",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#19"
+  },
+  {
+   "name": "Lab 2 marking",
+   "type": "Deliverable",
+   "chunk": "week-03-lecture.md#19"
+  },
+  {
+   "name": "Lab 3 marking",
+   "type": "Deliverable",
+   "chunk": "week-03-lecture.md#19"
+  },
+  {
+   "name": "Lab 2 - Knowledge graph and Graph RAG",
+   "type": "Deliverable",
+   "chunk": "week-03-lecture.md#19"
+  },
+  {
+   "name": "Assembling the context",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#21"
+  },
+  {
+   "name": "Grounding",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#22"
+  },
+  {
+   "name": "Evaluation seed",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#23"
+  },
+  {
+   "name": "Gold set",
+   "type": "Deliverable",
+   "chunk": "week-03-lecture.md#23"
+  },
+  {
+   "name": "Ten representative queries",
+   "type": "Deliverable",
+   "chunk": "week-03-lecture.md#23"
+  },
+  {
+   "name": "chunking",
+   "type": "Topic",
+   "chunk": "week-03-practical-plan.md#0"
+  },
+  {
+   "name": "retrieval pipeline",
+   "type": "Topic",
+   "chunk": "week-03-practical-plan.md#0"
+  },
+  {
+   "name": "dense retrieval",
+   "type": "Topic",
+   "chunk": "week-03-practical-plan.md#0"
+  },
+  {
+   "name": "embedding",
+   "type": "Topic",
+   "chunk": "week-03-practical-plan.md#0"
+  },
+  {
+   "name": "gold set",
+   "type": "Deliverable",
+   "chunk": "week-03-practical-plan.md#0"
+  },
+  {
+   "name": "local multilingual model",
+   "type": "Topic",
+   "chunk": "week-03-practical-plan.md#0"
+  },
+  {
+   "name": "gemini-embedding-001",
+   "type": "Tool",
+   "chunk": "week-03-practical-plan.md#0"
+  },
+  {
+   "name": "Chroma",
+   "type": "Tool",
+   "chunk": "week-03-practical-plan.md#0"
+  },
+  {
+   "name": "chroma browse",
+   "type": "Tool",
+   "chunk": "week-03-practical-plan.md#0"
+  },
+  {
+   "name": "Grounded answer",
+   "type": "Topic",
+   "chunk": "week-03-practical-plan.md#3"
+  },
+  {
+   "name": "Retrieved chunks",
+   "type": "Topic",
+   "chunk": "week-03-practical-plan.md#3"
+  },
+  {
+   "name": "program that takes a question and returns an answer with its sources cited",
+   "type": "Deliverable",
+   "chunk": "week-03-practical-plan.md#4"
+  },
+  {
+   "name": "Embedding",
+   "type": "Topic",
+   "chunk": "week-03-practical-plan.md#6"
+  },
+  {
+   "name": "gemini-embedding-001",
+   "type": "Tool",
+   "chunk": "week-03-practical-plan.md#6"
+  },
+  {
+   "name": "OpenRouter's baai-bge-m3",
+   "type": "Tool",
+   "chunk": "week-03-practical-plan.md#6"
+  },
+  {
+   "name": "Chroma",
+   "type": "Tool",
+   "chunk": "week-03-practical-plan.md#6"
+  },
+  {
+   "name": "ingest.py",
+   "type": "Tool",
+   "chunk": "week-03-practical-plan.md#6"
+  },
+  {
+   "name": "CLAUDE.md",
+   "type": "Deliverable",
+   "chunk": "week-03-practical-plan.md#6"
+  },
+  {
+   "name": "chunking.py",
+   "type": "Tool",
+   "chunk": "week-03-practical-plan.md#6"
+  },
+  {
+   "name": "vector_store.py",
+   "type": "Tool",
+   "chunk": "week-03-practical-plan.md#6"
+  },
+  {
+   "name": "Lab 2",
+   "type": "Deliverable",
+   "chunk": "week-03-practical-plan.md#6"
+  },
+  {
+   "name": "Sparse retrieval",
+   "type": "Topic",
+   "chunk": "week-03-practical-plan.md#7"
+  },
+  {
+   "name": "RAG construction",
+   "type": "Topic",
+   "chunk": "week-03-practical-plan.md#7"
+  },
+  {
+   "name": "BM25",
+   "type": "Topic",
+   "chunk": "week-03-practical-plan.md#7"
+  },
+  {
+   "name": "lemmatisation",
+   "type": "Topic",
+   "chunk": "week-03-practical-plan.md#7"
+  },
+  {
+   "name": "Reciprocal Rank Fusion",
+   "type": "Topic",
+   "chunk": "week-03-practical-plan.md#7"
+  },
+  {
+   "name": "retrieval_lab.ipynb",
+   "type": "Deliverable",
+   "chunk": "week-03-practical-plan.md#8"
+  },
+  {
+   "name": "Starter-repo",
+   "type": "Tool",
+   "chunk": "week-03-practical-plan.md#8"
+  },
+  {
+   "name": "Embedding",
+   "type": "Topic",
+   "chunk": "week-03-practical-plan.md#9"
+  },
+  {
+   "name": "Live quota",
+   "type": "Topic",
+   "chunk": "week-03-practical-plan.md#9"
+  },
+  {
+   "name": "OpenRouter API key",
+   "type": "Topic",
+   "chunk": "week-03-practical-plan.md#9"
+  },
+  {
+   "name": "Embedding function",
+   "type": "Topic",
+   "chunk": "week-03-practical-plan.md#9"
+  },
+  {
+   "name": "Vector store",
+   "type": "Topic",
+   "chunk": "week-03-practical-plan.md#9"
+  },
+  {
+   "name": "Chroma",
+   "type": "Topic",
+   "chunk": "week-03-practical-plan.md#9"
+  },
+  {
+   "name": "Gemini embedding 001",
+   "type": "Topic",
+   "chunk": "week-03-practical-plan.md#9"
+  },
+  {
+   "name": "CLAUDE",
+   "type": "Topic",
+   "chunk": "week-03-practical-plan.md#9"
+  },
+  {
+   "name": "chromadb",
+   "type": "Tool",
+   "chunk": "week-03-practical-plan.md#9"
+  },
+  {
+   "name": "chroma browse",
+   "type": "Tool",
+   "chunk": "week-03-practical-plan.md#9"
+  },
+  {
+   "name": "CLAUDE.md",
+   "type": "Deliverable",
+   "chunk": "week-03-practical-plan.md#9"
+  },
+  {
+   "name": "Section 4: Choosing a model",
+   "type": "Topic",
+   "chunk": "week-03-practical-plan.md#10"
+  },
+  {
+   "name": "Section 6 Week 3 syllabus",
+   "type": "Topic",
+   "chunk": "week-03-practical-plan.md#10"
+  },
+  {
+   "name": "Section 3",
+   "type": "Topic",
+   "chunk": "week-03-practical-plan.md#10"
+  },
+  {
+   "name": "gold set",
+   "type": "Topic",
+   "chunk": "week-03-practical-plan.md#10"
+  },
+  {
+   "name": "Ingest",
+   "type": "Topic",
+   "chunk": "week-03-practical.md#1"
+  },
+  {
+   "name": "Embedding",
+   "type": "Topic",
+   "chunk": "week-03-practical.md#1"
+  },
+  {
+   "name": "Chunking",
+   "type": "Topic",
+   "chunk": "week-03-practical.md#1"
+  },
+  {
+   "name": "Vector store",
+   "type": "Topic",
+   "chunk": "week-03-practical.md#1"
+  },
+  {
+   "name": "Retrieval augmented generation",
+   "type": "Topic",
+   "chunk": "week-03-practical.md#1"
+  },
+  {
+   "name": "Chroma",
+   "type": "Tool",
+   "chunk": "week-03-practical.md#1"
+  },
+  {
+   "name": "Docker",
+   "type": "Tool",
+   "chunk": "week-03-practical.md#1"
+  },
+  {
+   "name": "Ten gold-set queries",
+   "type": "Deliverable",
+   "chunk": "week-03-practical.md#1"
+  },
+  {
+   "name": "Program that answers a question from your own documents, with sources",
+   "type": "Deliverable",
+   "chunk": "week-03-practical.md#1"
+  },
+  {
+   "name": "chunking",
+   "type": "Topic",
+   "chunk": "week-03-practical.md#4"
+  },
+  {
+   "name": "embedding",
+   "type": "Topic",
+   "chunk": "week-03-practical.md#4"
+  },
+  {
+   "name": "boundary",
+   "type": "Topic",
+   "chunk": "week-03-practical.md#4"
+  },
+  {
+   "name": "VectorStore",
+   "type": "Tool",
+   "chunk": "week-03-practical.md#4"
+  },
+  {
+   "name": "retrieval",
+   "type": "Topic",
+   "chunk": "week-03-practical.md#5"
+  },
+  {
+   "name": "VectorStore",
+   "type": "Tool",
+   "chunk": "week-03-practical.md#5"
+  },
+  {
+   "name": "gold set",
+   "type": "Deliverable",
+   "chunk": "week-03-practical.md#5"
+  },
+  {
+   "name": "chromadb",
+   "type": "Tool",
+   "chunk": "week-03-practical.md#6"
+  },
+  {
+   "name": "chroma",
+   "type": "Tool",
+   "chunk": "week-03-practical.md#6"
+  },
+  {
+   "name": "Gold set",
+   "type": "Deliverable",
+   "chunk": "week-03-practical.md#7"
+  },
+  {
+   "name": "Step 5 — Ten queries",
+   "type": "Topic",
+   "chunk": "week-03-practical.md#7"
+  },
+  {
+   "name": "Choosing a model",
+   "type": "Topic",
+   "chunk": "week-03-practical.md#8"
+  },
+  {
+   "name": "EmbeddingClient",
+   "type": "Tool",
+   "chunk": "week-03-practical.md#8"
+  },
+  {
+   "name": "VectorStore",
+   "type": "Tool",
+   "chunk": "week-03-practical.md#8"
+  },
+  {
+   "name": "gemini-embedding-001",
+   "type": "Tool",
+   "chunk": "week-03-practical.md#8"
+  },
+  {
+   "name": "baai/bge-m3",
+   "type": "Tool",
+   "chunk": "week-03-practical.md#8"
+  },
+  {
+   "name": "RAG",
+   "type": "Topic",
+   "chunk": "week-03-practical.md#9"
+  },
+  {
+   "name": "SOURCES block",
+   "type": "Topic",
+   "chunk": "week-03-practical.md#9"
+  },
+  {
+   "name": "retrieval",
+   "type": "Topic",
+   "chunk": "week-03-practical.md#10"
+  },
+  {
+   "name": "chunking",
+   "type": "Topic",
+   "chunk": "week-03-practical.md#10"
+  },
+  {
+   "name": "generation",
+   "type": "Topic",
+   "chunk": "week-03-practical.md#10"
+  },
+  {
+   "name": "hallucination",
+   "type": "Topic",
+   "chunk": "week-03-practical.md#10"
+  },
+  {
+   "name": "context-rot",
+   "type": "Topic",
+   "chunk": "week-03-practical.md#10"
+  },
+  {
+   "name": "token arithmetic",
+   "type": "Topic",
+   "chunk": "week-03-practical.md#10"
+  },
+  {
+   "name": "chunking",
+   "type": "Topic",
+   "chunk": "week-03-practical.md#11"
+  },
+  {
+   "name": "retrieval",
+   "type": "Topic",
+   "chunk": "week-03-practical.md#11"
+  },
+  {
+   "name": "generation",
+   "type": "Topic",
+   "chunk": "week-03-practical.md#11"
+  },
+  {
+   "name": "context-rot",
+   "type": "Topic",
+   "chunk": "week-03-practical.md#12"
+  },
+  {
+   "name": "numbering",
+   "type": "Topic",
+   "chunk": "week-03-practical.md#12"
+  },
+  {
+   "name": "citation",
+   "type": "Topic",
+   "chunk": "week-03-practical.md#12"
+  },
+  {
+   "name": "rag",
+   "type": "Tool",
+   "chunk": "week-03-practical.md#10"
+  },
+  {
+   "name": "render",
+   "type": "Tool",
+   "chunk": "week-03-practical.md#10"
+  },
+  {
+   "name": "counttokens",
+   "type": "Tool",
+   "chunk": "week-03-practical.md#10"
+  },
+  {
+   "name": "store.search",
+   "type": "Tool",
+   "chunk": "week-03-practical.md#10"
+  },
+  {
+   "name": "ingest.py",
+   "type": "Tool",
+   "chunk": "week-03-practical.md#12"
+  },
+  {
+   "name": "Ingestion",
+   "type": "Topic",
+   "chunk": "week-03-practical.md#13"
+  },
+  {
+   "name": "VectorStore",
+   "type": "Topic",
+   "chunk": "week-03-practical.md#13"
+  },
+  {
+   "name": "Embedding",
+   "type": "Topic",
+   "chunk": "week-03-practical.md#13"
+  },
+  {
+   "name": "Evaluation Seed",
+   "type": "Deliverable",
+   "chunk": "week-03-practical.md#13"
+  },
+  {
+   "name": "Offline Artefact",
+   "type": "Topic",
+   "chunk": "week-03-practical.md#13"
+  },
+  {
+   "name": "Chromadb",
+   "type": "Tool",
+   "chunk": "week-03-practical.md#13"
+  },
+  {
+   "name": "Python",
+   "type": "Tool",
+   "chunk": "week-03-practical.md#13"
+  }
+ ],
+ "relations": [
+  {
+   "source": "Laplace transform",
+   "type": "USES",
+   "target": "ramp function",
+   "chunk": "IDE-BCA001-heat-hold-cool-laplace-derivation.md#0"
+  },
+  {
+   "source": "Laplace transform",
+   "type": "USES",
+   "target": "shifted ramp",
+   "chunk": "IDE-BCA001-heat-hold-cool-laplace-derivation.md#0"
+  },
+  {
+   "source": "Laplace transform",
+   "type": "USES",
+   "target": "basic ramp",
+   "chunk": "IDE-BCA001-heat-hold-cool-laplace-derivation.md#0"
+  },
+  {
+   "source": "heat–hold–cool boundary history",
+   "type": "BUILDS_ON",
+   "target": "ramp function",
+   "chunk": "IDE-BCA001-heat-hold-cool-laplace-derivation.md#0"
+  },
+  {
+   "source": "heat–hold–cool boundary history",
+   "type": "USES",
+   "target": "basic ramp",
+   "chunk": "IDE-BCA001-heat-hold-cool-laplace-derivation.md#0"
+  },
+  {
+   "source": "ramp schedule",
+   "type": "BUILDS_ON",
+   "target": "Laplace transform",
+   "chunk": "IDE-BCA001-heat-hold-cool-laplace-derivation.md#3"
+  },
+  {
+   "source": "phi function",
+   "type": "USES",
+   "target": "expm1",
+   "chunk": "IDE-BCA001-heat-hold-cool-laplace-derivation.md#3"
+  },
+  {
+   "source": "Milestone 0 proposal",
+   "type": "ASSESSES",
+   "target": "The semester project and the domain approval gate",
+   "chunk": "week-01-lecture-plan.md#0"
+  },
+  {
+   "source": "Lab 1",
+   "type": "ASSESSES",
+   "target": "Project Proposal",
+   "chunk": "week-01-lecture-plan.md#7"
+  },
+  {
+   "source": "Project Proposal",
+   "type": "BUILDS_ON",
+   "target": "Gate criteria",
+   "chunk": "week-01-lecture-plan.md#7"
+  },
+  {
+   "source": "Attention",
+   "type": "USES",
+   "target": "Interactive transformer visualisation",
+   "chunk": "week-01-lecture.md#5"
+  },
+  {
+   "source": "GPT",
+   "type": "BUILDS_ON",
+   "target": "Transformer",
+   "chunk": "week-01-lecture.md#5"
+  },
+  {
+   "source": "Foundation model",
+   "type": "BUILDS_ON",
+   "target": "General corpus",
+   "chunk": "week-01-lecture.md#9"
+  },
+  {
+   "source": "Software that uses a model as a component",
+   "type": "BUILDS_ON",
+   "target": "Large language model",
+   "chunk": "week-01-lecture.md#11"
+  },
+  {
+   "source": "Software that uses a model as a component",
+   "type": "USES",
+   "target": "ChatGPT",
+   "chunk": "week-01-lecture.md#11"
+  },
+  {
+   "source": "Validate a password",
+   "type": "USES",
+   "target": "Regex",
+   "chunk": "week-01-lecture.md#14"
+  },
+  {
+   "source": "Authenticate a user",
+   "type": "USES",
+   "target": "Cryptography library",
+   "chunk": "week-01-lecture.md#14"
+  },
+  {
+   "source": "Sort records",
+   "type": "USES",
+   "target": "Database",
+   "chunk": "week-01-lecture.md#14"
+  },
+  {
+   "source": "Lab 1",
+   "type": "ASSESSES",
+   "target": "Knowledge",
+   "chunk": "week-01-lecture.md#22"
+  },
+  {
+   "source": "Lab 2",
+   "type": "ASSESSES",
+   "target": "Knowledge",
+   "chunk": "week-01-lecture.md#22"
+  },
+  {
+   "source": "Lab 3",
+   "type": "ASSESSES",
+   "target": "Orchestration",
+   "chunk": "week-01-lecture.md#22"
+  },
+  {
+   "source": "Final project",
+   "type": "ASSESSES",
+   "target": "Foundation model",
+   "chunk": "week-01-lecture.md#22"
+  },
+  {
+   "source": "Final project",
+   "type": "ASSESSES",
+   "target": "Model access",
+   "chunk": "week-01-lecture.md#22"
+  },
+  {
+   "source": "Final project",
+   "type": "ASSESSES",
+   "target": "Knowledge",
+   "chunk": "week-01-lecture.md#22"
+  },
+  {
+   "source": "Final project",
+   "type": "ASSESSES",
+   "target": "Context",
+   "chunk": "week-01-lecture.md#22"
+  },
+  {
+   "source": "Final project",
+   "type": "ASSESSES",
+   "target": "Orchestration",
+   "chunk": "week-01-lecture.md#22"
+  },
+  {
+   "source": "Final project",
+   "type": "ASSESSES",
+   "target": "Application",
+   "chunk": "week-01-lecture.md#22"
+  },
+  {
+   "source": "Clone and Python environment",
+   "type": "USES",
+   "target": "Git",
+   "chunk": "week-01-practical-plan.md#2"
+  },
+  {
+   "source": "Key hygiene",
+   "type": "USES",
+   "target": "Git",
+   "chunk": "week-01-practical-plan.md#2"
+  },
+  {
+   "source": "The prompt lab",
+   "type": "USES",
+   "target": "VS Code",
+   "chunk": "week-01-practical-plan.md#2"
+  },
+  {
+   "source": "The prompt lab",
+   "type": "USES",
+   "target": "VS Code",
+   "chunk": "week-01-practical-plan.md#2"
+  },
+  {
+   "source": "Google Cloud project + API key",
+   "type": "USES",
+   "target": "Google Cloud",
+   "chunk": "week-01-practical-plan.md#2"
+  },
+  {
+   "source": "Week 2 lecture — systematic",
+   "type": "BUILDS_ON",
+   "target": "Week 1 practical — empirical",
+   "chunk": "week-01-practical-plan.md#6"
+  },
+  {
+   "source": "Lab 2",
+   "type": "USES",
+   "target": "ask()",
+   "chunk": "week-01-practical-plan.md#7"
+  },
+  {
+   "source": "Milestone 0 — Project Proposal",
+   "type": "ASSESSES",
+   "target": "Lab 1",
+   "chunk": "week-01-practical-plan.md#9"
+  },
+  {
+   "source": "Cloud project",
+   "type": "USES",
+   "target": "Google AI Studio",
+   "chunk": "week-01-practical.md#2"
+  },
+  {
+   "source": "Python environment",
+   "type": "USES",
+   "target": "Git",
+   "chunk": "week-01-practical.md#3"
+  },
+  {
+   "source": "Python environment",
+   "type": "USES",
+   "target": "Python",
+   "chunk": "week-01-practical.md#3"
+  },
+  {
+   "source": "Python environment",
+   "type": "USES",
+   "target": "Pip",
+   "chunk": "week-01-practical.md#3"
+  },
+  {
+   "source": "Your first model call",
+   "type": "USES",
+   "target": "GenAI library",
+   "chunk": "week-01-practical.md#4"
+  },
+  {
+   "source": "Your first model call",
+   "type": "USES",
+   "target": "Gemini-3.5-flash",
+   "chunk": "week-01-practical.md#4"
+  },
+  {
+   "source": "Model",
+   "type": "USES",
+   "target": "Gemini 3.5 Flash",
+   "chunk": "week-01-practical.md#6"
+  },
+  {
+   "source": "Prompt variation experiment",
+   "type": "USES",
+   "target": "Python",
+   "chunk": "week-01-practical.md#12"
+  },
+  {
+   "source": "Einstein",
+   "type": "BUILDS_ON",
+   "target": "Relativity",
+   "chunk": "week-01-practical.md#15"
+  },
+  {
+   "source": "Einstein",
+   "type": "BUILDS_ON",
+   "target": "Princeton",
+   "chunk": "week-01-practical.md#15"
+  },
+  {
+   "source": "Notebook",
+   "type": "BUILDS_ON",
+   "target": "Kernel",
+   "chunk": "week-01-practical.md#18"
+  },
+  {
+   "source": "Notebook",
+   "type": "USES",
+   "target": "ipykernel",
+   "chunk": "week-01-practical.md#18"
+  },
+  {
+   "source": "Notebook",
+   "type": "USES",
+   "target": "jedi",
+   "chunk": "week-01-practical.md#18"
+  },
+  {
+   "source": "Notebook",
+   "type": "USES",
+   "target": "django-stubs",
+   "chunk": "week-01-practical.md#18"
+  },
+  {
+   "source": "Notebook",
+   "type": "USES",
+   "target": "VS Code",
+   "chunk": "week-01-practical.md#18"
+  },
+  {
+   "source": "ModuleNotFoundError",
+   "type": "USES",
+   "target": "pip",
+   "chunk": "week-01-practical.md#18"
+  },
+  {
+   "source": "ModuleNotFoundError",
+   "type": "USES",
+   "target": "requirements.txt",
+   "chunk": "week-01-practical.md#18"
+  },
+  {
+   "source": "Virtual environment",
+   "type": "USES",
+   "target": "pip",
+   "chunk": "week-01-practical.md#18"
+  },
+  {
+   "source": "Virtual environment",
+   "type": "USES",
+   "target": "requirements.txt",
+   "chunk": "week-01-practical.md#18"
+  },
+  {
+   "source": "prompt lab",
+   "type": "ASSESSES",
+   "target": "GEMINI_API_KEY",
+   "chunk": "week-01-practical.md#18"
+  },
+  {
+   "source": "prompt lab",
+   "type": "ASSESSES",
+   "target": "GEMINI_API_KEY",
+   "chunk": "week-01-practical.md#19"
+  },
+  {
+   "source": "rate limits",
+   "type": "USES",
+   "target": "Gemini API",
+   "chunk": "week-01-practical.md#20"
+  },
+  {
+   "source": "rate limits",
+   "type": "USES",
+   "target": "Gemini API",
+   "chunk": "week-01-practical.md#20"
+  },
+  {
+   "source": "How reasoning models emerged",
+   "type": "BUILDS_ON",
+   "target": "Tokens",
+   "chunk": "week-02-lecture-plan.md#1"
+  },
+  {
+   "source": "Building a good context",
+   "type": "BUILDS_ON",
+   "target": "Tokens",
+   "chunk": "week-02-lecture-plan.md#1"
+  },
+  {
+   "source": "Tokens",
+   "type": "USES",
+   "target": "OpenAI tokenizer",
+   "chunk": "week-02-lecture.md#0"
+  },
+  {
+   "source": "Tokens",
+   "type": "USES",
+   "target": "tiktokenizer",
+   "chunk": "week-02-lecture.md#0"
+  },
+  {
+   "source": "Tokens",
+   "type": "USES",
+   "target": "the-tokenizer-playground",
+   "chunk": "week-02-lecture.md#0"
+  },
+  {
+   "source": "Byte-pair encoding",
+   "type": "BUILDS_ON",
+   "target": "Training corpus",
+   "chunk": "week-02-lecture.md#3"
+  },
+  {
+   "source": "Vocabulary",
+   "type": "BUILDS_ON",
+   "target": "Training corpus",
+   "chunk": "week-02-lecture.md#3"
+  },
+  {
+   "source": "Token",
+   "type": "BUILDS_ON",
+   "target": "Byte-pair encoding",
+   "chunk": "week-02-lecture.md#3"
+  },
+  {
+   "source": "Token",
+   "type": "USES",
+   "target": "Python",
+   "chunk": "week-02-lecture.md#3"
+  },
+  {
+   "source": "Token",
+   "type": "USES",
+   "target": "tokens.py",
+   "chunk": "week-02-lecture.md#3"
+  },
+  {
+   "source": "Token",
+   "type": "USES",
+   "target": "Starter repository",
+   "chunk": "week-02-lecture.md#3"
+  },
+  {
+   "source": "Chain-of-Thought Prompting",
+   "type": "BUILDS_ON",
+   "target": "Token",
+   "chunk": "week-02-lecture.md#6"
+  },
+  {
+   "source": "Internal reasoning",
+   "type": "BUILDS_ON",
+   "target": "Chain-of-Thought Prompting",
+   "chunk": "week-02-lecture.md#7"
+  },
+  {
+   "source": "Test-time compute",
+   "type": "BUILDS_ON",
+   "target": "Internal reasoning",
+   "chunk": "week-02-lecture.md#8"
+  },
+  {
+   "source": "Test-time compute",
+   "type": "USES",
+   "target": "Gemini-3.5-flash",
+   "chunk": "week-02-lecture.md#8"
+  },
+  {
+   "source": "Open-ended prompts",
+   "type": "USES",
+   "target": "Gemini-3.5-flash",
+   "chunk": "week-02-lecture.md#11"
+  },
+  {
+   "source": "Temperature",
+   "type": "USES",
+   "target": "Gemini-3.5-flash",
+   "chunk": "week-02-lecture.md#11"
+  },
+  {
+   "source": "Good context",
+   "type": "BUILDS_ON",
+   "target": "System instructions",
+   "chunk": "week-02-lecture.md#14"
+  },
+  {
+   "source": "Good context",
+   "type": "BUILDS_ON",
+   "target": "Examples",
+   "chunk": "week-02-lecture.md#14"
+  },
+  {
+   "source": "Good context",
+   "type": "BUILDS_ON",
+   "target": "Tool definitions",
+   "chunk": "week-02-lecture.md#14"
+  },
+  {
+   "source": "Good context",
+   "type": "BUILDS_ON",
+   "target": "Retrieved knowledge",
+   "chunk": "week-02-lecture.md#14"
+  },
+  {
+   "source": "Good context",
+   "type": "BUILDS_ON",
+   "target": "Memory",
+   "chunk": "week-02-lecture.md#14"
+  },
+  {
+   "source": "Good context",
+   "type": "BUILDS_ON",
+   "target": "Conversation history",
+   "chunk": "week-02-lecture.md#14"
+  },
+  {
+   "source": "Good context",
+   "type": "BUILDS_ON",
+   "target": "The request",
+   "chunk": "week-02-lecture.md#14"
+  },
+  {
+   "source": "Tokens",
+   "type": "USES",
+   "target": "tokens.py",
+   "chunk": "week-02-practical-plan.md#0"
+  },
+  {
+   "source": "Temperature",
+   "type": "USES",
+   "target": "context_lab.ipynb",
+   "chunk": "week-02-practical-plan.md#3"
+  },
+  {
+   "source": "Tool calling",
+   "type": "BUILDS_ON",
+   "target": "Prompt",
+   "chunk": "week-02-practical-plan.md#4"
+  },
+  {
+   "source": "Tool calling",
+   "type": "BUILDS_ON",
+   "target": "Configuration",
+   "chunk": "week-02-practical-plan.md#4"
+  },
+  {
+   "source": "Tool calling",
+   "type": "BUILDS_ON",
+   "target": "Structured output",
+   "chunk": "week-02-practical-plan.md#7"
+  },
+  {
+   "source": "Tool calling",
+   "type": "BUILDS_ON",
+   "target": "Thinking dial",
+   "chunk": "week-02-practical-plan.md#7"
+  },
+  {
+   "source": "Cost work",
+   "type": "BUILDS_ON",
+   "target": "Structured output",
+   "chunk": "week-02-practical-plan.md#7"
+  },
+  {
+   "source": "Cost work",
+   "type": "BUILDS_ON",
+   "target": "Thinking dial",
+   "chunk": "week-02-practical-plan.md#7"
+  },
+  {
+   "source": "Embeddings",
+   "type": "USES",
+   "target": "Encoder network",
+   "chunk": "week-03-lecture-plan.md#0"
+  },
+  {
+   "source": "Ranking",
+   "type": "BUILDS_ON",
+   "target": "Cosine similarity",
+   "chunk": "week-03-lecture-plan.md#3"
+  },
+  {
+   "source": "Cosine distance",
+   "type": "BUILDS_ON",
+   "target": "Cosine similarity",
+   "chunk": "week-03-lecture-plan.md#3"
+  },
+  {
+   "source": "Retrieval pipeline",
+   "type": "USES",
+   "target": "Chroma",
+   "chunk": "week-03-lecture-plan.md#6"
+  },
+  {
+   "source": "Retrieval pipeline",
+   "type": "USES",
+   "target": "Qdrant",
+   "chunk": "week-03-lecture-plan.md#6"
+  },
+  {
+   "source": "Retrieval pipeline",
+   "type": "USES",
+   "target": "Weaviate",
+   "chunk": "week-03-lecture-plan.md#6"
+  },
+  {
+   "source": "Retrieval pipeline",
+   "type": "USES",
+   "target": "Milvus",
+   "chunk": "week-03-lecture-plan.md#6"
+  },
+  {
+   "source": "Retrieval pipeline",
+   "type": "USES",
+   "target": "PostgreSQL",
+   "chunk": "week-03-lecture-plan.md#6"
+  },
+  {
+   "source": "PostgreSQL",
+   "type": "USES",
+   "target": "pgvector",
+   "chunk": "week-03-lecture-plan.md#6"
+  },
+  {
+   "source": "Retrieval pipeline",
+   "type": "USES",
+   "target": "SQL Server",
+   "chunk": "week-03-lecture-plan.md#6"
+  },
+  {
+   "source": "Retrieval pipeline",
+   "type": "USES",
+   "target": "MariaDB",
+   "chunk": "week-03-lecture-plan.md#6"
+  },
+  {
+   "source": "MariaDB",
+   "type": "USES",
+   "target": "VECTOR INDEX",
+   "chunk": "week-03-lecture-plan.md#6"
+  },
+  {
+   "source": "Neo4j",
+   "type": "USES",
+   "target": "vector indexes",
+   "chunk": "week-03-lecture-plan.md#6"
+  },
+  {
+   "source": "Retrieval pipeline",
+   "type": "USES",
+   "target": "Neo4j",
+   "chunk": "week-03-lecture-plan.md#6"
+  },
+  {
+   "source": "FAISS",
+   "type": "USES",
+   "target": "search algorithm",
+   "chunk": "week-03-lecture-plan.md#6"
+  },
+  {
+   "source": "Retrieval pipeline",
+   "type": "USES",
+   "target": "FAISS",
+   "chunk": "week-03-lecture-plan.md#6"
+  },
+  {
+   "source": "Ranked list",
+   "type": "USES",
+   "target": "LLM-only application",
+   "chunk": "week-03-lecture-plan.md#7"
+  },
+  {
+   "source": "assembling a context and grounding the answer",
+   "type": "BUILDS_ON",
+   "target": "Week 2 context template",
+   "chunk": "week-03-lecture-plan.md#8"
+  },
+  {
+   "source": "Embedding model selection",
+   "type": "USES",
+   "target": "gemini-embedding-001",
+   "chunk": "week-03-lecture-plan.md#10"
+  },
+  {
+   "source": "Embedding model selection",
+   "type": "USES",
+   "target": "gemini-embedding-2",
+   "chunk": "week-03-lecture-plan.md#10"
+  },
+  {
+   "source": "Embedding model selection",
+   "type": "USES",
+   "target": "gemini-embedding-2-preview",
+   "chunk": "week-03-lecture-plan.md#10"
+  },
+  {
+   "source": "ten representative queries",
+   "type": "ASSESSES",
+   "target": "evaluation practice",
+   "chunk": "week-03-lecture-plan.md#9"
+  },
+  {
+   "source": "gold set",
+   "type": "ASSESSES",
+   "target": "evaluation practice",
+   "chunk": "week-03-lecture-plan.md#9"
+  },
+  {
+   "source": "Embedding model",
+   "type": "USES",
+   "target": "embedding_client.py",
+   "chunk": "week-03-lecture.md#5"
+  },
+  {
+   "source": "Embedding model",
+   "type": "USES",
+   "target": "gemini-embedding-001",
+   "chunk": "week-03-lecture.md#5"
+  },
+  {
+   "source": "Cosine similarity",
+   "type": "BUILDS_ON",
+   "target": "Cosine similarity",
+   "chunk": "week-03-lecture.md#6"
+  },
+  {
+   "source": "Cosine similarity",
+   "type": "BUILDS_ON",
+   "target": "Vector",
+   "chunk": "week-03-lecture.md#6"
+  },
+  {
+   "source": "Cosine similarity",
+   "type": "BUILDS_ON",
+   "target": "Cosine similarity",
+   "chunk": "week-03-lecture.md#7"
+  },
+  {
+   "source": "Cosine similarity",
+   "type": "BUILDS_ON",
+   "target": "Dot product",
+   "chunk": "week-03-lecture.md#7"
+  },
+  {
+   "source": "Choosing a model",
+   "type": "USES",
+   "target": "gemini-embedding-001",
+   "chunk": "week-03-lecture.md#8"
+  },
+  {
+   "source": "Choosing a model",
+   "type": "USES",
+   "target": "gemini-embedding-2",
+   "chunk": "week-03-lecture.md#8"
+  },
+  {
+   "source": "Embedding model",
+   "type": "USES",
+   "target": "Gemini embeddings",
+   "chunk": "week-03-lecture.md#9"
+  },
+  {
+   "source": "Multimodal embeddings",
+   "type": "USES",
+   "target": "multimodal_demo.py",
+   "chunk": "week-03-lecture.md#9"
+  },
+  {
+   "source": "Ingest",
+   "type": "BUILDS_ON",
+   "target": "Chunk",
+   "chunk": "week-03-lecture.md#12"
+  },
+  {
+   "source": "Chunk",
+   "type": "BUILDS_ON",
+   "target": "Embed",
+   "chunk": "week-03-lecture.md#12"
+  },
+  {
+   "source": "Embed",
+   "type": "BUILDS_ON",
+   "target": "Store",
+   "chunk": "week-03-lecture.md#12"
+  },
+  {
+   "source": "Query",
+   "type": "BUILDS_ON",
+   "target": "Embed",
+   "chunk": "week-03-lecture.md#12"
+  },
+  {
+   "source": "Query",
+   "type": "BUILDS_ON",
+   "target": "Search",
+   "chunk": "week-03-lecture.md#12"
+  },
+  {
+   "source": "Search",
+   "type": "BUILDS_ON",
+   "target": "Ranked chunks",
+   "chunk": "week-03-lecture.md#12"
+  },
+  {
+   "source": "Cosine distance",
+   "type": "USES",
+   "target": "Neo4j",
+   "chunk": "week-03-lecture.md#16"
+  },
+  {
+   "source": "Question answering pipeline",
+   "type": "BUILDS_ON",
+   "target": "Ingest",
+   "chunk": "week-03-lecture.md#20"
+  },
+  {
+   "source": "Question answering pipeline",
+   "type": "BUILDS_ON",
+   "target": "Embedding",
+   "chunk": "week-03-lecture.md#20"
+  },
+  {
+   "source": "Question answering pipeline",
+   "type": "BUILDS_ON",
+   "target": "Vector index",
+   "chunk": "week-03-lecture.md#20"
+  },
+  {
+   "source": "Question answering pipeline",
+   "type": "BUILDS_ON",
+   "target": "Model",
+   "chunk": "week-03-lecture.md#20"
+  },
+  {
+   "source": "Neo4j/Cypher",
+   "type": "USES",
+   "target": "Neo4j/Cypher",
+   "chunk": "week-03-lecture.md#20"
+  },
+  {
+   "source": "Lab 2 marking",
+   "type": "ASSESSES",
+   "target": "Graph model quality",
+   "chunk": "week-03-lecture.md#20"
+  },
+  {
+   "source": "Lab 2 marking",
+   "type": "ASSESSES",
+   "target": "Neo4j/Cypher",
+   "chunk": "week-03-lecture.md#20"
+  },
+  {
+   "source": "Lab 3 marking",
+   "type": "ASSESSES",
+   "target": "Agent correctness",
+   "chunk": "week-03-lecture.md#20"
+  },
+  {
+   "source": "Lab 3 marking",
+   "type": "ASSESSES",
+   "target": "Tool schema",
+   "chunk": "week-03-lecture.md#20"
+  },
+  {
+   "source": "dense retrieval",
+   "type": "BUILDS_ON",
+   "target": "chunking",
+   "chunk": "week-03-practical-plan.md#0"
+  },
+  {
+   "source": "dense retrieval",
+   "type": "USES",
+   "target": "gemini-embedding-001",
+   "chunk": "week-03-practical-plan.md#0"
+  },
+  {
+   "source": "dense retrieval",
+   "type": "USES",
+   "target": "Chroma",
+   "chunk": "week-03-practical-plan.md#0"
+  },
+  {
+   "source": "gold set",
+   "type": "ASSESSES",
+   "target": "Evaluation seed",
+   "chunk": "week-03-practical-plan.md#0"
+  },
+  {
+   "source": "Grounded answer",
+   "type": "BUILDS_ON",
+   "target": "Retrieved chunks",
+   "chunk": "week-03-practical-plan.md#3"
+  },
+  {
+   "source": "Embedding",
+   "type": "USES",
+   "target": "gemini-embedding-001",
+   "chunk": "week-03-practical-plan.md#6"
+  },
+  {
+   "source": "Embedding",
+   "type": "USES",
+   "target": "Chroma",
+   "chunk": "week-03-practical-plan.md#6"
+  },
+  {
+   "source": "Ingestion",
+   "type": "USES",
+   "target": "ingest.py",
+   "chunk": "week-03-practical-plan.md#6"
+  },
+  {
+   "source": "Ingestion",
+   "type": "USES",
+   "target": "Chroma",
+   "chunk": "week-03-practical-plan.md#6"
+  },
+  {
+   "source": "Section 4 comparison",
+   "type": "BUILDS_ON",
+   "target": "gemini-embedding-001",
+   "chunk": "week-03-practical-plan.md#6"
+  },
+  {
+   "source": "Section 4 comparison",
+   "type": "BUILDS_ON",
+   "target": "OpenRouter-model baai-bge-m3",
+   "chunk": "week-03-practical-plan.md#6"
+  },
+  {
+   "source": "Sparse retrieval",
+   "type": "BUILDS_ON",
+   "target": "BM25",
+   "chunk": "week-03-practical-plan.md#7"
+  },
+  {
+   "source": "Vector store",
+   "type": "USES",
+   "target": "Chroma",
+   "chunk": "week-03-practical.md#1"
+  },
+  {
+   "source": "Retrieval augmented generation",
+   "type": "USES",
+   "target": "Chroma",
+   "chunk": "week-03-practical.md#1"
+  },
+  {
+   "source": "Ten gold-set queries",
+   "type": "ASSESSES",
+   "target": "Retrieval augmented generation",
+   "chunk": "week-03-practical.md#1"
+  },
+  {
+   "source": "Program that answers a question from your own documents, with sources",
+   "type": "ASSESSES",
+   "target": "Retrieval augmented generation",
+   "chunk": "week-03-practical.md#1"
+  },
+  {
+   "source": "embedding",
+   "type": "BUILDS_ON",
+   "target": "chunking",
+   "chunk": "week-03-practical.md#4"
+  },
+  {
+   "source": "embedding",
+   "type": "USES",
+   "target": "VectorStore",
+   "chunk": "week-03-practical.md#4"
+  },
+  {
+   "source": "retrieval",
+   "type": "USES",
+   "target": "VectorStore",
+   "chunk": "week-03-practical.md#5"
+  },
+  {
+   "source": "Choosing a model",
+   "type": "USES",
+   "target": "EmbeddingClient",
+   "chunk": "week-03-practical.md#8"
+  },
+  {
+   "source": "Choosing a model",
+   "type": "USES",
+   "target": "VectorStore",
+   "chunk": "week-03-practical.md#8"
+  },
+  {
+   "source": "Choosing a model",
+   "type": "USES",
+   "target": "gemini-embedding-001",
+   "chunk": "week-03-practical.md#8"
+  },
+  {
+   "source": "Choosing a model",
+   "type": "USES",
+   "target": "baai/bge-m3",
+   "chunk": "week-03-practical.md#8"
+  },
+  {
+   "source": "Ingestion",
+   "type": "USES",
+   "target": "Chromadb",
+   "chunk": "week-03-practical.md#13"
+  }
+ ],
+ "calls": [
+  {
+   "chunks": 3,
+   "seconds": 10.1,
+   "prompt": 1970,
+   "thinking": 1344,
+   "answer": 426
+  },
+  {
+   "chunks": 3,
+   "seconds": 7.1,
+   "prompt": 1684,
+   "thinking": 896,
+   "answer": 299
+  },
+  {
+   "chunks": 3,
+   "seconds": 8.9,
+   "prompt": 1317,
+   "thinking": 1152,
+   "answer": 314
+  },
+  {
+   "chunks": 3,
+   "seconds": 8.2,
+   "prompt": 1261,
+   "thinking": 896,
+   "answer": 434
+  },
+  {
+   "chunks": 3,
+   "seconds": 12.3,
+   "prompt": 1201,
+   "thinking": 1792,
+   "answer": 335
+  },
+  {
+   "chunks": 3,
+   "seconds": 4.7,
+   "prompt": 1003,
+   "thinking": 576,
+   "answer": 151
+  },
+  {
+   "chunks": 3,
+   "seconds": 3.3,
+   "prompt": 1199,
+   "thinking": 384,
+   "answer": 83
+  },
+  {
+   "chunks": 3,
+   "seconds": 10.3,
+   "prompt": 1215,
+   "thinking": 1536,
+   "answer": 221
+  },
+  {
+   "chunks": 3,
+   "seconds": 10.7,
+   "prompt": 1185,
+   "thinking": 1344,
+   "answer": 470
+  },
+  {
+   "chunks": 3,
+   "seconds": 6.6,
+   "prompt": 1187,
+   "thinking": 896,
+   "answer": 160
+  },
+  {
+   "chunks": 3,
+   "seconds": 10.3,
+   "prompt": 1176,
+   "thinking": 1408,
+   "answer": 403
+  },
+  {
+   "chunks": 3,
+   "seconds": 6.6,
+   "prompt": 1211,
+   "thinking": 704,
+   "answer": 302
+  },
+  {
+   "chunks": 3,
+   "seconds": 15.9,
+   "prompt": 1227,
+   "thinking": 2240,
+   "answer": 605
+  },
+  {
+   "chunks": 3,
+   "seconds": 8.5,
+   "prompt": 1326,
+   "thinking": 1024,
+   "answer": 400
+  },
+  {
+   "chunks": 3,
+   "seconds": 10.5,
+   "prompt": 1157,
+   "thinking": 1472,
+   "answer": 350
+  },
+  {
+   "chunks": 3,
+   "seconds": 9.0,
+   "prompt": 1241,
+   "thinking": 1216,
+   "answer": 275
+  },
+  {
+   "chunks": 3,
+   "seconds": 13.9,
+   "prompt": 1265,
+   "thinking": 1728,
+   "answer": 486
+  },
+  {
+   "chunks": 3,
+   "seconds": 15.8,
+   "prompt": 1209,
+   "thinking": 1792,
+   "answer": 409
+  },
+  {
+   "chunks": 3,
+   "seconds": 13.4,
+   "prompt": 1230,
+   "thinking": 1536,
+   "answer": 604
+  },
+  {
+   "chunks": 3,
+   "seconds": 8.4,
+   "prompt": 1258,
+   "thinking": 1152,
+   "answer": 183
+  },
+  {
+   "chunks": 3,
+   "seconds": 7.4,
+   "prompt": 1185,
+   "thinking": 1024,
+   "answer": 156
+  },
+  {
+   "chunks": 3,
+   "seconds": 13.7,
+   "prompt": 1314,
+   "thinking": 1792,
+   "answer": 314
+  },
+  {
+   "chunks": 3,
+   "seconds": 9.3,
+   "prompt": 1257,
+   "thinking": 960,
+   "answer": 162
+  },
+  {
+   "chunks": 3,
+   "seconds": 8.6,
+   "prompt": 1172,
+   "thinking": 1024,
+   "answer": 146
+  },
+  {
+   "chunks": 3,
+   "seconds": 8.0,
+   "prompt": 1173,
+   "thinking": 1024,
+   "answer": 133
+  },
+  {
+   "chunks": 3,
+   "seconds": 10.7,
+   "prompt": 1240,
+   "thinking": 1280,
+   "answer": 276
+  },
+  {
+   "chunks": 3,
+   "seconds": 14.2,
+   "prompt": 1293,
+   "thinking": 1408,
+   "answer": 758
+  },
+  {
+   "chunks": 3,
+   "seconds": 13.0,
+   "prompt": 1151,
+   "thinking": 1344,
+   "answer": 423
+  },
+  {
+   "chunks": 3,
+   "seconds": 8.4,
+   "prompt": 1123,
+   "thinking": 832,
+   "answer": 378
+  },
+  {
+   "chunks": 3,
+   "seconds": 8.0,
+   "prompt": 1244,
+   "thinking": 896,
+   "answer": 215
+  },
+  {
+   "chunks": 3,
+   "seconds": 10.5,
+   "prompt": 1242,
+   "thinking": 1088,
+   "answer": 474
+  },
+  {
+   "chunks": 3,
+   "seconds": 12.2,
+   "prompt": 1252,
+   "thinking": 1472,
+   "answer": 370
+  },
+  {
+   "chunks": 3,
+   "seconds": 10.6,
+   "prompt": 1301,
+   "thinking": 1344,
+   "answer": 288
+  },
+  {
+   "chunks": 3,
+   "seconds": 12.1,
+   "prompt": 1158,
+   "thinking": 1280,
+   "answer": 453
+  },
+  {
+   "chunks": 3,
+   "seconds": 2.4,
+   "prompt": 1149,
+   "thinking": 256,
+   "answer": 41
+  },
+  {
+   "chunks": 3,
+   "seconds": 3.2,
+   "prompt": 1158,
+   "thinking": 256,
+   "answer": 105
+  },
+  {
+   "chunks": 3,
+   "seconds": 5.9,
+   "prompt": 1177,
+   "thinking": 704,
+   "answer": 146
+  },
+  {
+   "chunks": 3,
+   "seconds": 11.0,
+   "prompt": 1150,
+   "thinking": 1280,
+   "answer": 379
+  },
+  {
+   "chunks": 3,
+   "seconds": 10.9,
+   "prompt": 1206,
+   "thinking": 1472,
+   "answer": 146
+  },
+  {
+   "chunks": 3,
+   "seconds": 12.1,
+   "prompt": 1128,
+   "thinking": 1408,
+   "answer": 280
+  },
+  {
+   "chunks": 3,
+   "seconds": 12.0,
+   "prompt": 1098,
+   "thinking": 1344,
+   "answer": 366
+  },
+  {
+   "chunks": 3,
+   "seconds": 11.5,
+   "prompt": 1129,
+   "thinking": 1216,
+   "answer": 423
+  },
+  {
+   "chunks": 3,
+   "seconds": 15.4,
+   "prompt": 1160,
+   "thinking": 1472,
+   "answer": 871
+  },
+  {
+   "chunks": 3,
+   "seconds": 16.6,
+   "prompt": 1100,
+   "thinking": 2048,
+   "answer": 570
+  },
+  {
+   "chunks": 3,
+   "seconds": 5.0,
+   "prompt": 1180,
+   "thinking": 512,
+   "answer": 145
+  },
+  {
+   "chunks": 3,
+   "seconds": 8.0,
+   "prompt": 1230,
+   "thinking": 832,
+   "answer": 191
+  },
+  {
+   "chunks": 3,
+   "seconds": 8.1,
+   "prompt": 1255,
+   "thinking": 576,
+   "answer": 535
+  },
+  {
+   "chunks": 3,
+   "seconds": 10.0,
+   "prompt": 1234,
+   "thinking": 1152,
+   "answer": 235
+  },
+  {
+   "chunks": 3,
+   "seconds": 13.0,
+   "prompt": 1184,
+   "thinking": 1408,
+   "answer": 696
+  },
+  {
+   "chunks": 3,
+   "seconds": 13.1,
+   "prompt": 1197,
+   "thinking": 1600,
+   "answer": 273
+  },
+  {
+   "chunks": 3,
+   "seconds": 15.4,
+   "prompt": 1160,
+   "thinking": 1536,
+   "answer": 611
+  },
+  {
+   "chunks": 3,
+   "seconds": 8.1,
+   "prompt": 1048,
+   "thinking": 960,
+   "answer": 130
+  },
+  {
+   "chunks": 3,
+   "seconds": 13.2,
+   "prompt": 1173,
+   "thinking": 1600,
+   "answer": 343
+  },
+  {
+   "chunks": 3,
+   "seconds": 12.8,
+   "prompt": 1155,
+   "thinking": 1536,
+   "answer": 389
+  },
+  {
+   "chunks": 3,
+   "seconds": 11.5,
+   "prompt": 1370,
+   "thinking": 1088,
+   "answer": 617
+  },
+  {
+   "chunks": 3,
+   "seconds": 10.7,
+   "prompt": 1239,
+   "thinking": 1088,
+   "answer": 441
+  },
+  {
+   "chunks": 3,
+   "seconds": 10.2,
+   "prompt": 1323,
+   "thinking": 1152,
+   "answer": 348
+  },
+  {
+   "chunks": 3,
+   "seconds": 12.9,
+   "prompt": 1277,
+   "thinking": 1728,
+   "answer": 289
+  },
+  {
+   "chunks": 3,
+   "seconds": 12.5,
+   "prompt": 1258,
+   "thinking": 1536,
+   "answer": 342
+  },
+  {
+   "chunks": 3,
+   "seconds": 9.7,
+   "prompt": 1241,
+   "thinking": 1088,
+   "answer": 376
+  },
+  {
+   "chunks": 3,
+   "seconds": 10.8,
+   "prompt": 1113,
+   "thinking": 1472,
+   "answer": 194
+  }
+ ],
+ "done": [
+  "IDE-BCA001-heat-hold-cool-laplace-derivation.md#0",
+  "IDE-BCA001-heat-hold-cool-laplace-derivation.md#1",
+  "IDE-BCA001-heat-hold-cool-laplace-derivation.md#2",
+  "IDE-BCA001-heat-hold-cool-laplace-derivation.md#3",
+  "IDE-BCA001-heat-hold-cool-laplace-derivation.md#4",
+  "IDE-BCA001-heat-hold-cool-laplace-derivation.md#5",
+  "week-01-lecture-plan.md#0",
+  "week-01-lecture-plan.md#1",
+  "week-01-lecture-plan.md#2",
+  "week-01-lecture-plan.md#3",
+  "week-01-lecture-plan.md#4",
+  "week-01-lecture-plan.md#5",
+  "week-01-lecture-plan.md#6",
+  "week-01-lecture-plan.md#7",
+  "week-01-lecture-plan.md#8",
+  "week-01-lecture-plan.md#9",
+  "week-01-lecture.md#0",
+  "week-01-lecture.md#1",
+  "week-01-lecture.md#2",
+  "week-01-lecture.md#3",
+  "week-01-lecture.md#4",
+  "week-01-lecture.md#5",
+  "week-01-lecture.md#6",
+  "week-01-lecture.md#7",
+  "week-01-lecture.md#8",
+  "week-01-lecture.md#9",
+  "week-01-lecture.md#10",
+  "week-01-lecture.md#11",
+  "week-01-lecture.md#12",
+  "week-01-lecture.md#13",
+  "week-01-lecture.md#14",
+  "week-01-lecture.md#15",
+  "week-01-lecture.md#16",
+  "week-01-lecture.md#17",
+  "week-01-lecture.md#18",
+  "week-01-lecture.md#19",
+  "week-01-lecture.md#20",
+  "week-01-lecture.md#21",
+  "week-01-lecture.md#22",
+  "week-01-lecture.md#23",
+  "week-01-lecture.md#24",
+  "week-01-lecture.md#25",
+  "week-01-lecture.md#26",
+  "week-01-lecture.md#27",
+  "week-01-lecture.md#28",
+  "week-01-lecture.md#29",
+  "week-01-practical-plan.md#0",
+  "week-01-practical-plan.md#1",
+  "week-01-practical-plan.md#2",
+  "week-01-practical-plan.md#3",
+  "week-01-practical-plan.md#4",
+  "week-01-practical-plan.md#5",
+  "week-01-practical-plan.md#6",
+  "week-01-practical-plan.md#7",
+  "week-01-practical-plan.md#8",
+  "week-01-practical-plan.md#9",
+  "week-01-practical-plan.md#10",
+  "week-01-practical-plan.md#11",
+  "week-01-practical-plan.md#12",
+  "week-01-practical-plan.md#13",
+  "week-01-practical.md#0",
+  "week-01-practical.md#1",
+  "week-01-practical.md#2",
+  "week-01-practical.md#3",
+  "week-01-practical.md#4",
+  "week-01-practical.md#5",
+  "week-01-practical.md#6",
+  "week-01-practical.md#7",
+  "week-01-practical.md#8",
+  "week-01-practical.md#9",
+  "week-01-practical.md#10",
+  "week-01-practical.md#11",
+  "week-01-practical.md#12",
+  "week-01-practical.md#13",
+  "week-01-practical.md#14",
+  "week-01-practical.md#15",
+  "week-01-practical.md#16",
+  "week-01-practical.md#17",
+  "week-01-practical.md#18",
+  "week-01-practical.md#19",
+  "week-01-practical.md#20",
+  "week-02-lecture-plan.md#0",
+  "week-02-lecture-plan.md#1",
+  "week-02-lecture-plan.md#2",
+  "week-02-lecture-plan.md#3",
+  "week-02-lecture-plan.md#4",
+  "week-02-lecture-plan.md#5",
+  "week-02-lecture.md#0",
+  "week-02-lecture.md#1",
+  "week-02-lecture.md#2",
+  "week-02-lecture.md#3",
+  "week-02-lecture.md#4",
+  "week-02-lecture.md#5",
+  "week-02-lecture.md#6",
+  "week-02-lecture.md#7",
+  "week-02-lecture.md#8",
+  "week-02-lecture.md#9",
+  "week-02-lecture.md#10",
+  "week-02-lecture.md#11",
+  "week-02-lecture.md#12",
+  "week-02-lecture.md#13",
+  "week-02-lecture.md#14",
+  "week-02-lecture.md#15",
+  "week-02-lecture.md#16",
+  "week-02-lecture.md#17",
+  "week-02-lecture.md#18",
+  "week-02-lecture.md#19",
+  "week-02-lecture.md#20",
+  "week-02-lecture.md#21",
+  "week-02-lecture.md#22",
+  "week-02-lecture.md#23",
+  "week-02-lecture.md#24",
+  "week-02-lecture.md#25",
+  "week-02-practical-plan.md#0",
+  "week-02-practical-plan.md#1",
+  "week-02-practical-plan.md#2",
+  "week-02-practical-plan.md#3",
+  "week-02-practical-plan.md#4",
+  "week-02-practical-plan.md#5",
+  "week-02-practical-plan.md#6",
+  "week-02-practical-plan.md#7",
+  "week-03-lecture-plan.md#0",
+  "week-03-lecture-plan.md#1",
+  "week-03-lecture-plan.md#2",
+  "week-03-lecture-plan.md#3",
+  "week-03-lecture-plan.md#4",
+  "week-03-lecture-plan.md#5",
+  "week-03-lecture-plan.md#6",
+  "week-03-lecture-plan.md#7",
+  "week-03-lecture-plan.md#8",
+  "week-03-lecture-plan.md#9",
+  "week-03-lecture-plan.md#10",
+  "week-03-lecture.md#0",
+  "week-03-lecture.md#1",
+  "week-03-lecture.md#2",
+  "week-03-lecture.md#3",
+  "week-03-lecture.md#4",
+  "week-03-lecture.md#5",
+  "week-03-lecture.md#6",
+  "week-03-lecture.md#7",
+  "week-03-lecture.md#8",
+  "week-03-lecture.md#9",
+  "week-03-lecture.md#10",
+  "week-03-lecture.md#11",
+  "week-03-lecture.md#12",
+  "week-03-lecture.md#13",
+  "week-03-lecture.md#14",
+  "week-03-lecture.md#15",
+  "week-03-lecture.md#16",
+  "week-03-lecture.md#17",
+  "week-03-lecture.md#18",
+  "week-03-lecture.md#19",
+  "week-03-lecture.md#20",
+  "week-03-lecture.md#21",
+  "week-03-lecture.md#22",
+  "week-03-lecture.md#23",
+  "week-03-practical-plan.md#0",
+  "week-03-practical-plan.md#1",
+  "week-03-practical-plan.md#2",
+  "week-03-practical-plan.md#3",
+  "week-03-practical-plan.md#4",
+  "week-03-practical-plan.md#5",
+  "week-03-practical-plan.md#6",
+  "week-03-practical-plan.md#7",
+  "week-03-practical-plan.md#8",
+  "week-03-practical-plan.md#9",
+  "week-03-practical-plan.md#10",
+  "week-03-practical.md#0",
+  "week-03-practical.md#1",
+  "week-03-practical.md#2",
+  "week-03-practical.md#3",
+  "week-03-practical.md#4",
+  "week-03-practical.md#5",
+  "week-03-practical.md#6",
+  "week-03-practical.md#7",
+  "week-03-practical.md#8",
+  "week-03-practical.md#9",
+  "week-03-practical.md#10",
+  "week-03-practical.md#11",
+  "week-03-practical.md#12",
+  "week-03-practical.md#13",
+  "week-03-practical.md#14",
+  "week-03-practical.md#15"
+ ],
+ "dropped_unknown_chunk": 18
+}

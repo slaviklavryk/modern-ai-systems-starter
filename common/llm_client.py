@@ -25,6 +25,9 @@ structured output      response_schema, incl.       response_format json_schema.
                                                       wraps/unwraps lists so the
                                                       call site is identical on
                                                       both backends -- see _schema.
+                                                      Sent with strict: true
+                                                      (2026-10-04); without it the
+                                                      schema is not enforced.
 max output tokens      max_output_tokens             max_completion_tokens
                                                       (verified: `max_tokens` ->
                                                       HTTP 500 naming the field)
@@ -178,9 +181,13 @@ class LLMClient:
         wrapped_list = False
         if schema is not None:
             json_schema, wrapped_list = _to_json_schema(schema)
+            # strict: True is what makes the schema binding. Without it the schema
+            # is only a hint: verified 2026-10-04 on openai/gpt-5-nano, a Literal
+            # "Topic" came back as "topic", and one reply echoed the schema itself.
             body["response_format"] = {
                 "type": "json_schema",
-                "json_schema": {"name": "response", "schema": json_schema},
+                "json_schema": {"name": "response", "strict": True,
+                                "schema": _strict(json_schema)},
             }
 
         response = requests.post(self._url, headers=self._headers, json=body)
@@ -263,8 +270,40 @@ def _to_json_schema(schema):
     json_schema = adapter.json_schema()
 
     if is_list:
-        return {"type": "object", "properties": {"items": json_schema}, "required": ["items"]}, True
+        # A $ref such as "#/$defs/Risk" resolves from the ROOT of the schema, so the
+        # definitions must move up to the wrapper rather than stay inside "items".
+        defs = json_schema.pop("$defs", None)
+        wrapper = {"type": "object", "properties": {"items": json_schema}, "required": ["items"]}
+        if defs:
+            wrapper["$defs"] = defs
+        return wrapper, True
     return json_schema, False
+
+
+def _strict(node):
+    """Rewrite a JSON schema into the form OpenAI-compatible strict mode accepts.
+
+    Strict mode requires every object to be closed (additionalProperties: false)
+    and to list every property as required, and it rejects `default`. Pydantic's
+    schemas have neither property and may carry defaults, so they are adjusted here.
+
+    Pydantic also writes a one-value Literal["Topic"] as {"const": "Topic"}, and
+    the Lightning backend does not enforce `const`: it returned "topic"
+    (2026-10-04). An `enum` of one value says the same and is enforced.
+    """
+    if isinstance(node, dict):
+        node.pop("default", None)
+        if "const" in node:
+            node["enum"] = [node.pop("const")]
+        if node.get("type") == "object":
+            node["additionalProperties"] = False
+            node["required"] = list(node.get("properties", {}))
+        for value in node.values():
+            _strict(value)
+    elif isinstance(node, list):
+        for value in node:
+            _strict(value)
+    return node
 
 
 def _parse_schema(schema, content: str, wrapped_list: bool):

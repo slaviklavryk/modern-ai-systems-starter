@@ -1,0 +1,1582 @@
+{
+ "created": "2026-10-04",
+ "chunks": 183,
+ "corpus_fingerprint": "f0c1c3de6663cbfd",
+ "complete": true,
+ "provider": "lightning",
+ "model": "openai/gpt-5-nano",
+ "per_call": 10,
+ "thinking": "default",
+ "mentions": [
+  {
+   "name": "Laplace image of the heat–hold–cool boundary history",
+   "type": "Topic",
+   "chunk": "IDE-BCA001-heat-hold-cool-laplace-derivation.md#0"
+  },
+  {
+   "name": "Ramp",
+   "type": "Topic",
+   "chunk": "IDE-BCA001-heat-hold-cool-laplace-derivation.md#0"
+  },
+  {
+   "name": "Piecewise-linear schedule",
+   "type": "Topic",
+   "chunk": "IDE-BCA001-heat-hold-cool-laplace-derivation.md#0"
+  },
+  {
+   "name": "Ramp",
+   "type": "Topic",
+   "chunk": "IDE-BCA001-heat-hold-cool-laplace-derivation.md#1"
+  },
+  {
+   "name": "Shift rule",
+   "type": "Topic",
+   "chunk": "IDE-BCA001-heat-hold-cool-laplace-derivation.md#1"
+  },
+  {
+   "name": "Ramp (t - τ)_+",
+   "type": "Topic",
+   "chunk": "IDE-BCA001-heat-hold-cool-laplace-derivation.md#2"
+  },
+  {
+   "name": "Transformation of ramps under Laplace",
+   "type": "Topic",
+   "chunk": "IDE-BCA001-heat-hold-cool-laplace-derivation.md#2"
+  },
+  {
+   "name": "Phi form",
+   "type": "Topic",
+   "chunk": "IDE-BCA001-heat-hold-cool-laplace-derivation.md#3"
+  },
+  {
+   "name": "Entire function",
+   "type": "Topic",
+   "chunk": "IDE-BCA001-heat-hold-cool-laplace-derivation.md#3"
+  },
+  {
+   "name": "Area under the trapezoid",
+   "type": "Topic",
+   "chunk": "IDE-BCA001-heat-hold-cool-laplace-derivation.md#4"
+  },
+  {
+   "name": "Triangular limit",
+   "type": "Topic",
+   "chunk": "IDE-BCA001-heat-hold-cool-laplace-derivation.md#4"
+  },
+  {
+   "name": "Modern AI Systems",
+   "type": "Topic",
+   "chunk": "week-01-lecture-plan.md#0"
+  },
+  {
+   "name": "Semester project",
+   "type": "Topic",
+   "chunk": "week-01-lecture-plan.md#0"
+  },
+  {
+   "name": "AI-use policy",
+   "type": "Topic",
+   "chunk": "week-01-lecture-plan.md#0"
+  },
+  {
+   "name": "Demo",
+   "type": "Topic",
+   "chunk": "week-01-lecture-plan.md#1"
+  },
+  {
+   "name": "Historical line from classical AI to foundation models",
+   "type": "Topic",
+   "chunk": "week-01-lecture-plan.md#2"
+  },
+  {
+   "name": "Why the boom happened",
+   "type": "Topic",
+   "chunk": "week-01-lecture-plan.md#2"
+  },
+  {
+   "name": "Task-specific models versus prompting a general model",
+   "type": "Topic",
+   "chunk": "week-01-lecture-plan.md#2"
+  },
+  {
+   "name": "Modern AI application stack",
+   "type": "Topic",
+   "chunk": "week-01-lecture-plan.md#2"
+  },
+  {
+   "name": "Model families as a mention slide",
+   "type": "Topic",
+   "chunk": "week-01-lecture-plan.md#2"
+  },
+  {
+   "name": "Demo: same model, different context",
+   "type": "Topic",
+   "chunk": "week-01-lecture-plan.md#3"
+  },
+  {
+   "name": "The anchor of the whole lecture",
+   "type": "Topic",
+   "chunk": "week-01-lecture-plan.md#3"
+  },
+  {
+   "name": "The AI application stack",
+   "type": "Topic",
+   "chunk": "week-01-lecture-plan.md#3"
+  },
+  {
+   "name": "Model families as a mention slide",
+   "type": "Topic",
+   "chunk": "week-01-lecture-plan.md#3"
+  },
+  {
+   "name": "Classical Algorithm",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#0"
+  },
+  {
+   "name": "Machine learning",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#0"
+  },
+  {
+   "name": "Deep learning",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#0"
+  },
+  {
+   "name": "Feature engineering",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#1"
+  },
+  {
+   "name": "Transformer",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#3"
+  },
+  {
+   "name": "Attention",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#3"
+  },
+  {
+   "name": "Docker Desktop",
+   "type": "Tool",
+   "chunk": "week-01-lecture-plan.md#7"
+  },
+  {
+   "name": "VS Code",
+   "type": "Tool",
+   "chunk": "week-01-lecture-plan.md#7"
+  },
+  {
+   "name": "Python",
+   "type": "Tool",
+   "chunk": "week-01-lecture-plan.md#7"
+  },
+  {
+   "name": "Git",
+   "type": "Tool",
+   "chunk": "week-01-lecture-plan.md#7"
+  },
+  {
+   "name": "Lab 2",
+   "type": "Deliverable",
+   "chunk": "week-01-lecture-plan.md#4"
+  },
+  {
+   "name": "Lab 1",
+   "type": "Deliverable",
+   "chunk": "week-01-lecture-plan.md#4"
+  },
+  {
+   "name": "Project Proposal",
+   "type": "Deliverable",
+   "chunk": "week-01-lecture-plan.md#4"
+  },
+  {
+   "name": "Attention",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#4"
+  },
+  {
+   "name": "Transformer",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#4"
+  },
+  {
+   "name": "GPT",
+   "type": "Tool",
+   "chunk": "week-01-lecture.md#4"
+  },
+  {
+   "name": "Gemini",
+   "type": "Tool",
+   "chunk": "week-01-lecture.md#4"
+  },
+  {
+   "name": "Claude",
+   "type": "Tool",
+   "chunk": "week-01-lecture.md#4"
+  },
+  {
+   "name": "Llama",
+   "type": "Tool",
+   "chunk": "week-01-lecture.md#4"
+  },
+  {
+   "name": "LLM",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#4"
+  },
+  {
+   "name": "Foundation LLMs",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#9"
+  },
+  {
+   "name": "Modern AI and the AI software stack",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#23"
+  },
+  {
+   "name": "LLMs, tokens, context, reasoning, prompting",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#23"
+  },
+  {
+   "name": "Embeddings and semantic search",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#23"
+  },
+  {
+   "name": "Retrieval-Augmented Generation",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#23"
+  },
+  {
+   "name": "Knowledge graphs and Neo4j for AI",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#23"
+  },
+  {
+   "name": "Graph RAG",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#23"
+  },
+  {
+   "name": "Agents, tools, and integration",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#23"
+  },
+  {
+   "name": "Agent architectures, skills, and workflows",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#23"
+  },
+  {
+   "name": "Memory",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#23"
+  },
+  {
+   "name": "Advanced agentic systems",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#23"
+  },
+  {
+   "name": "Lab 1 — Vector RAG",
+   "type": "Deliverable",
+   "chunk": "week-01-lecture.md#16"
+  },
+  {
+   "name": "Lab 2 — Knowledge graph / Graph RAG",
+   "type": "Deliverable",
+   "chunk": "week-01-lecture.md#16"
+  },
+  {
+   "name": "Lab 3 — Agent, tools, memory",
+   "type": "Deliverable",
+   "chunk": "week-01-lecture.md#16"
+  },
+  {
+   "name": "Final integrated project",
+   "type": "Deliverable",
+   "chunk": "week-01-lecture.md#16"
+  },
+  {
+   "name": "Neo4j",
+   "type": "Tool",
+   "chunk": "week-01-lecture.md#23"
+  },
+  {
+   "name": "Cypher",
+   "type": "Tool",
+   "chunk": "week-01-lecture.md#23"
+  },
+  {
+   "name": "API / SDK",
+   "type": "Tool",
+   "chunk": "week-01-lecture.md#23"
+  },
+  {
+   "name": "Agent architectures, skills, and workflows",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#24"
+  },
+  {
+   "name": "Memory",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#24"
+  },
+  {
+   "name": "Advanced agentic systems",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#24"
+  },
+  {
+   "name": "Reliable AI systems",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#24"
+  },
+  {
+   "name": "Final AI systems",
+   "type": "Topic",
+   "chunk": "week-01-lecture.md#24"
+  },
+  {
+   "name": "Lab 2 due",
+   "type": "Deliverable",
+   "chunk": "week-01-lecture.md#24"
+  },
+  {
+   "name": "Lab 3 due",
+   "type": "Deliverable",
+   "chunk": "week-01-lecture.md#24"
+  },
+  {
+   "name": "Final project due",
+   "type": "Deliverable",
+   "chunk": "week-01-lecture.md#24"
+  },
+  {
+   "name": "Experiment",
+   "type": "Topic",
+   "chunk": "week-01-practical-plan.md#4"
+  },
+  {
+   "name": "Notebook",
+   "type": "Topic",
+   "chunk": "week-01-practical-plan.md#4"
+  },
+  {
+   "name": "VS Code",
+   "type": "Tool",
+   "chunk": "week-01-practical-plan.md#4"
+  },
+  {
+   "name": "API key",
+   "type": "Topic",
+   "chunk": "week-01-practical.md#2"
+  },
+  {
+   "name": "Google AI Studio",
+   "type": "Tool",
+   "chunk": "week-01-practical.md#2"
+  },
+  {
+   "name": "Cloud project",
+   "type": "Topic",
+   "chunk": "week-01-practical.md#2"
+  },
+  {
+   "name": "prompt_lab.ipynb",
+   "type": "Deliverable",
+   "chunk": "week-01-practical.md#4"
+  },
+  {
+   "name": "hello.py",
+   "type": "Deliverable",
+   "chunk": "week-01-practical.md#4"
+  },
+  {
+   "name": "Python script",
+   "type": "Topic",
+   "chunk": "week-01-practical.md#4"
+  },
+  {
+   "name": "Gemini API client",
+   "type": "Tool",
+   "chunk": "week-01-practical.md#5"
+  },
+  {
+   "name": "Model call",
+   "type": "Topic",
+   "chunk": "week-01-practical.md#5"
+  },
+  {
+   "name": "gemini-3.5-flash",
+   "type": "Topic",
+   "chunk": "week-01-practical.md#5"
+  },
+  {
+   "name": "First Calls and the Prompt Lab",
+   "type": "Topic",
+   "chunk": "week-01-practical.md#0"
+  },
+  {
+   "name": "JSON",
+   "type": "Topic",
+   "chunk": "week-01-practical.md#10"
+  },
+  {
+   "name": "Structured output",
+   "type": "Topic",
+   "chunk": "week-01-practical.md#10"
+  },
+  {
+   "name": "Account-level limit",
+   "type": "Topic",
+   "chunk": "week-01-practical.md#20"
+  },
+  {
+   "name": "Per-model limit",
+   "type": "Topic",
+   "chunk": "week-01-practical.md#20"
+  },
+  {
+   "name": "Backoff",
+   "type": "Topic",
+   "chunk": "week-01-practical.md#20"
+  },
+  {
+   "name": "Free tier",
+   "type": "Topic",
+   "chunk": "week-01-practical.md#20"
+  },
+  {
+   "name": "Pro plan",
+   "type": "Topic",
+   "chunk": "week-01-practical.md#20"
+  },
+  {
+   "name": "429 error",
+   "type": "Topic",
+   "chunk": "week-01-practical.md#20"
+  },
+  {
+   "name": "503 UNAVAILABLE",
+   "type": "Topic",
+   "chunk": "week-01-practical.md#20"
+  },
+  {
+   "name": "Prompt lab",
+   "type": "Topic",
+   "chunk": "week-01-practical.md#20"
+  },
+  {
+   "name": "Flash",
+   "type": "Tool",
+   "chunk": "week-01-practical.md#20"
+  },
+  {
+   "name": "OpenAI tokenizer",
+   "type": "Tool",
+   "chunk": "week-01-practical.md#20"
+  },
+  {
+   "name": "tiktokenizer.vercel.app",
+   "type": "Tool",
+   "chunk": "week-01-practical.md#20"
+  },
+  {
+   "name": "HuggingFace tokenizer playground",
+   "type": "Tool",
+   "chunk": "week-01-practical.md#20"
+  },
+  {
+   "name": "Token",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#3"
+  },
+  {
+   "name": "Byte-pair encoding",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#3"
+  },
+  {
+   "name": "Vocabulary",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#3"
+  },
+  {
+   "name": "Token",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#4"
+  },
+  {
+   "name": "Python",
+   "type": "Tool",
+   "chunk": "week-02-lecture.md#4"
+  },
+  {
+   "name": "count_tokens",
+   "type": "Tool",
+   "chunk": "week-02-lecture.md#4"
+  },
+  {
+   "name": "Gemini 3.5 Flash",
+   "type": "Tool",
+   "chunk": "week-02-lecture.md#4"
+  },
+  {
+   "name": "Stage 1 — tokens in, tokens out",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#5"
+  },
+  {
+   "name": "Chain-of-thought prompting",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#6"
+  },
+  {
+   "name": "Internal reasoning",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#7"
+  },
+  {
+   "name": "Usage metadata",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#8"
+  },
+  {
+   "name": "Gemini-3.5-Flash",
+   "type": "Tool",
+   "chunk": "week-02-lecture.md#8"
+  },
+  {
+   "name": "Gemini 3.8 Flash",
+   "type": "Tool",
+   "chunk": "week-02-lecture.md#9"
+  },
+  {
+   "name": "Claude Sonnet 5",
+   "type": "Tool",
+   "chunk": "week-02-lecture.md#9"
+  },
+  {
+   "name": "GPT-4o",
+   "type": "Tool",
+   "chunk": "week-02-lecture.md#9"
+  },
+  {
+   "name": "Usage metadata",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#10"
+  },
+  {
+   "name": "Temperature",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#11"
+  },
+  {
+   "name": "Context window",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#12"
+  },
+  {
+   "name": "Context engineering",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#14"
+  },
+  {
+   "name": "System instructions",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#14"
+  },
+  {
+   "name": "Examples",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#14"
+  },
+  {
+   "name": "Tool definitions",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#14"
+  },
+  {
+   "name": "Retrieved knowledge",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#14"
+  },
+  {
+   "name": "Memory",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#14"
+  },
+  {
+   "name": "Conversation history",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#14"
+  },
+  {
+   "name": "The request",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#14"
+  },
+  {
+   "name": "System block",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#18"
+  },
+  {
+   "name": "Zero-shot",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#20"
+  },
+  {
+   "name": "Few-shot",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#20"
+  },
+  {
+   "name": "In-context learning",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#21"
+  },
+  {
+   "name": "Hallucination",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#23"
+  },
+  {
+   "name": "Plausible-shape completion",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#23"
+  },
+  {
+   "name": "Conflicting sources",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#23"
+  },
+  {
+   "name": "Grounding",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#23"
+  },
+  {
+   "name": "Confabulation",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#24"
+  },
+  {
+   "name": "Hallucination",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#25"
+  },
+  {
+   "name": "Plausible-shape completion",
+   "type": "Topic",
+   "chunk": "week-02-lecture.md#25"
+  },
+  {
+   "name": "Milestone 0 proposal",
+   "type": "Deliverable",
+   "chunk": "week-02-practical-plan.md#0"
+  },
+  {
+   "name": "tokens.py",
+   "type": "Tool",
+   "chunk": "week-02-practical-plan.md#0"
+  },
+  {
+   "name": "thinking_levels.py",
+   "type": "Tool",
+   "chunk": "week-02-practical-plan.md#1"
+  },
+  {
+   "name": "context_lab.ipynb",
+   "type": "Tool",
+   "chunk": "week-02-practical-plan.md#3"
+  },
+  {
+   "name": "context_lab.py",
+   "type": "Tool",
+   "chunk": "week-02-practical-plan.md#3"
+  },
+  {
+   "name": "starter-repo/week2/context_lab.ipynb",
+   "type": "Tool",
+   "chunk": "week-02-practical-plan.md#3"
+  },
+  {
+   "name": "tokens.py",
+   "type": "Tool",
+   "chunk": "week-02-practical-plan.md#3"
+  },
+  {
+   "name": "Structured output",
+   "type": "Topic",
+   "chunk": "week-02-practical-plan.md#7"
+  },
+  {
+   "name": "Thinking dial",
+   "type": "Topic",
+   "chunk": "week-02-practical-plan.md#7"
+  },
+  {
+   "name": "Embeddings",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#0"
+  },
+  {
+   "name": "Semantic Search",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#0"
+  },
+  {
+   "name": "Retrieval",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#0"
+  },
+  {
+   "name": "Grounded generation",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#0"
+  },
+  {
+   "name": "Retrieval Augmented Generation",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#0"
+  },
+  {
+   "name": "Keyword search",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#1"
+  },
+  {
+   "name": "Exact-match search",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#1"
+  },
+  {
+   "name": "Symbol matching",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#2"
+  },
+  {
+   "name": "Meaning",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#2"
+  },
+  {
+   "name": "Paraphrase",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#2"
+  },
+  {
+   "name": "Synonym",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#2"
+  },
+  {
+   "name": "Exact-match search",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#2"
+  },
+  {
+   "name": "Embedding model",
+   "type": "Tool",
+   "chunk": "week-03-lecture.md#3"
+  },
+  {
+   "name": "Embedding model",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#3"
+  },
+  {
+   "name": "Contrastive objective",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#4"
+  },
+  {
+   "name": "Generative model",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#5"
+  },
+  {
+   "name": "Embedding model",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#5"
+  },
+  {
+   "name": "Cosine similarity",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#6"
+  },
+  {
+   "name": "embedding_client.py",
+   "type": "Tool",
+   "chunk": "week-03-lecture.md#6"
+  },
+  {
+   "name": "gemini-embedding-001",
+   "type": "Tool",
+   "chunk": "week-03-lecture.md#6"
+  },
+  {
+   "name": "Cosine similarity",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#7"
+  },
+  {
+   "name": "Euclidean distance",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#7"
+  },
+  {
+   "name": "Cosine distance",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#8"
+  },
+  {
+   "name": "Choosing a model",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#8"
+  },
+  {
+   "name": "gemini-embedding-001",
+   "type": "Tool",
+   "chunk": "week-03-lecture.md#8"
+  },
+  {
+   "name": "gemini-embedding-2",
+   "type": "Tool",
+   "chunk": "week-03-lecture.md#8"
+  },
+  {
+   "name": "graph model quality",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#18"
+  },
+  {
+   "name": "knowledge graph",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#18"
+  },
+  {
+   "name": "Graph RAG",
+   "type": "Topic",
+   "chunk": "week-03-lecture.md#18"
+  },
+  {
+   "name": "Neo4j",
+   "type": "Tool",
+   "chunk": "week-03-lecture.md#18"
+  },
+  {
+   "name": "Cypher",
+   "type": "Tool",
+   "chunk": "week-03-lecture.md#18"
+  },
+  {
+   "name": "Lab 2",
+   "type": "Deliverable",
+   "chunk": "week-03-lecture.md#18"
+  },
+  {
+   "name": "Lab 3",
+   "type": "Deliverable",
+   "chunk": "week-03-lecture.md#18"
+  },
+  {
+   "name": "gemini-embedding-001",
+   "type": "Tool",
+   "chunk": "week-03-practical-plan.md#4"
+  },
+  {
+   "name": "OpenRouter",
+   "type": "Tool",
+   "chunk": "week-03-practical-plan.md#4"
+  },
+  {
+   "name": "Chroma",
+   "type": "Tool",
+   "chunk": "week-03-practical-plan.md#6"
+  },
+  {
+   "name": "ingest.py",
+   "type": "Tool",
+   "chunk": "week-03-practical-plan.md#7"
+  },
+  {
+   "name": "chunking.py",
+   "type": "Tool",
+   "chunk": "week-03-practical-plan.md#7"
+  },
+  {
+   "name": "vector_store.py",
+   "type": "Tool",
+   "chunk": "week-03-practical-plan.md#7"
+  },
+  {
+   "name": "Chroma",
+   "type": "Tool",
+   "chunk": "week-03-practical.md#3"
+  },
+  {
+   "name": "Chunking",
+   "type": "Topic",
+   "chunk": "week-03-practical.md#3"
+  },
+  {
+   "name": "Vector Store",
+   "type": "Topic",
+   "chunk": "week-03-practical.md#3"
+  },
+  {
+   "name": "Retrieval",
+   "type": "Topic",
+   "chunk": "week-03-practical.md#3"
+  },
+  {
+   "name": "retrieval_lab.ipynb",
+   "type": "Deliverable",
+   "chunk": "week-03-practical.md#3"
+  },
+  {
+   "name": "Gold set",
+   "type": "Deliverable",
+   "chunk": "week-03-practical.md#3"
+  },
+  {
+   "name": "VectorStore",
+   "type": "Tool",
+   "chunk": "week-03-practical.md#3"
+  },
+  {
+   "name": "EmbeddingClient",
+   "type": "Tool",
+   "chunk": "week-03-practical.md#3"
+  },
+  {
+   "name": "OpenRouter",
+   "type": "Tool",
+   "chunk": "week-03-practical.md#3"
+  },
+  {
+   "name": "Ingestion",
+   "type": "Topic",
+   "chunk": "week-03-practical.md#13"
+  },
+  {
+   "name": "Querying",
+   "type": "Topic",
+   "chunk": "week-03-practical.md#13"
+  },
+  {
+   "name": "Embedding",
+   "type": "Topic",
+   "chunk": "week-03-practical.md#13"
+  },
+  {
+   "name": "Vector store",
+   "type": "Topic",
+   "chunk": "week-03-practical.md#13"
+  },
+  {
+   "name": "Offline processing artefact",
+   "type": "Topic",
+   "chunk": "week-03-practical.md#13"
+  },
+  {
+   "name": "Evaluation seed",
+   "type": "Deliverable",
+   "chunk": "week-03-practical.md#13"
+  },
+  {
+   "name": "chromadb",
+   "type": "Tool",
+   "chunk": "week-03-practical.md#13"
+  },
+  {
+   "name": "Collection naming",
+   "type": "Topic",
+   "chunk": "week-03-practical.md#14"
+  },
+  {
+   "name": "Ingestion name",
+   "type": "Topic",
+   "chunk": "week-03-practical.md#14"
+  },
+  {
+   "name": "Reset option",
+   "type": "Topic",
+   "chunk": "week-03-practical.md#14"
+  },
+  {
+   "name": "chromadb",
+   "type": "Tool",
+   "chunk": "week-03-practical.md#14"
+  },
+  {
+   "name": "VectorStore",
+   "type": "Topic",
+   "chunk": "week-03-practical.md#14"
+  },
+  {
+   "name": "Generation quota",
+   "type": "Topic",
+   "chunk": "week-03-practical.md#15"
+  },
+  {
+   "name": "Ask function",
+   "type": "Topic",
+   "chunk": "week-03-practical.md#15"
+  }
+ ],
+ "relations": [
+  {
+   "source": "Laplace image of the heat–hold–cool boundary history",
+   "type": "BUILDS_ON",
+   "target": "Ramp",
+   "chunk": "IDE-BCA001-heat-hold-cool-laplace-derivation.md#0"
+  },
+  {
+   "source": "Machine learning",
+   "type": "BUILDS_ON",
+   "target": "Classical Algorithm",
+   "chunk": "week-01-lecture.md#0"
+  },
+  {
+   "source": "Deep learning",
+   "type": "BUILDS_ON",
+   "target": "Machine learning",
+   "chunk": "week-01-lecture.md#0"
+  },
+  {
+   "source": "Feature engineering",
+   "type": "BUILDS_ON",
+   "target": "Classical Algorithm",
+   "chunk": "week-01-lecture.md#1"
+  },
+  {
+   "source": "Feature engineering",
+   "type": "BUILDS_ON",
+   "target": "Machine learning",
+   "chunk": "week-01-lecture.md#1"
+  },
+  {
+   "source": "Transformer",
+   "type": "BUILDS_ON",
+   "target": "Deep learning",
+   "chunk": "week-01-lecture.md#3"
+  },
+  {
+   "source": "GPT",
+   "type": "USES",
+   "target": "Transformer",
+   "chunk": "week-01-lecture.md#4"
+  },
+  {
+   "source": "Knowledge graphs and Neo4j for AI",
+   "type": "USES",
+   "target": "Neo4j",
+   "chunk": "week-01-lecture.md#23"
+  },
+  {
+   "source": "Knowledge graphs and Neo4j for AI",
+   "type": "USES",
+   "target": "Cypher",
+   "chunk": "week-01-lecture.md#23"
+  },
+  {
+   "source": "Experiment",
+   "type": "USES",
+   "target": "VS Code",
+   "chunk": "week-01-practical-plan.md#4"
+  },
+  {
+   "source": "API key",
+   "type": "BUILDS_ON",
+   "target": "Google AI Studio",
+   "chunk": "week-01-practical.md#2"
+  },
+  {
+   "source": "API key",
+   "type": "BUILDS_ON",
+   "target": "Cloud project",
+   "chunk": "week-01-practical.md#2"
+  },
+  {
+   "source": "Model call",
+   "type": "USES",
+   "target": "Gemini API client",
+   "chunk": "week-01-practical.md#5"
+  },
+  {
+   "source": "Model call",
+   "type": "USES",
+   "target": "gemini-3.5-flash",
+   "chunk": "week-01-practical.md#5"
+  },
+  {
+   "source": "Token",
+   "type": "BUILDS_ON",
+   "target": "Byte-pair encoding",
+   "chunk": "week-02-lecture.md#3"
+  },
+  {
+   "source": "Token",
+   "type": "BUILDS_ON",
+   "target": "Vocabulary",
+   "chunk": "week-02-lecture.md#3"
+  },
+  {
+   "source": "Token",
+   "type": "USES",
+   "target": "Gemini 3.5 Flash",
+   "chunk": "week-02-lecture.md#4"
+  },
+  {
+   "source": "Token",
+   "type": "USES",
+   "target": "count_tokens",
+   "chunk": "week-02-lecture.md#4"
+  },
+  {
+   "source": "Python",
+   "type": "USES",
+   "target": "count_tokens",
+   "chunk": "week-02-lecture.md#4"
+  },
+  {
+   "source": "Python",
+   "type": "USES",
+   "target": "Gemini 3.5 Flash",
+   "chunk": "week-02-lecture.md#4"
+  },
+  {
+   "source": "Context engineering",
+   "type": "BUILDS_ON",
+   "target": "System instructions",
+   "chunk": "week-02-lecture.md#14"
+  },
+  {
+   "source": "Context engineering",
+   "type": "BUILDS_ON",
+   "target": "Examples",
+   "chunk": "week-02-lecture.md#14"
+  },
+  {
+   "source": "Context engineering",
+   "type": "BUILDS_ON",
+   "target": "Tool definitions",
+   "chunk": "week-02-lecture.md#14"
+  },
+  {
+   "source": "Context engineering",
+   "type": "BUILDS_ON",
+   "target": "Retrieved knowledge",
+   "chunk": "week-02-lecture.md#14"
+  },
+  {
+   "source": "Context engineering",
+   "type": "BUILDS_ON",
+   "target": "Memory",
+   "chunk": "week-02-lecture.md#14"
+  },
+  {
+   "source": "Context engineering",
+   "type": "BUILDS_ON",
+   "target": "Conversation history",
+   "chunk": "week-02-lecture.md#14"
+  },
+  {
+   "source": "Context engineering",
+   "type": "BUILDS_ON",
+   "target": "The request",
+   "chunk": "week-02-lecture.md#14"
+  },
+  {
+   "source": "Tool calling",
+   "type": "BUILDS_ON",
+   "target": "Structured output",
+   "chunk": "week-02-practical-plan.md#7"
+  },
+  {
+   "source": "Tool calling",
+   "type": "BUILDS_ON",
+   "target": "Thinking dial",
+   "chunk": "week-02-practical-plan.md#7"
+  },
+  {
+   "source": "Choosing a model",
+   "type": "USES",
+   "target": "gemini-embedding-001",
+   "chunk": "week-03-lecture.md#8"
+  },
+  {
+   "source": "Choosing a model",
+   "type": "USES",
+   "target": "gemini-embedding-2",
+   "chunk": "week-03-lecture.md#8"
+  },
+  {
+   "source": "Lab 2",
+   "type": "ASSESSES",
+   "target": "graph model quality",
+   "chunk": "week-03-lecture.md#18"
+  },
+  {
+   "source": "Lab 3",
+   "type": "ASSESSES",
+   "target": "agent correctness",
+   "chunk": "week-03-lecture.md#18"
+  },
+  {
+   "source": "Lab 3",
+   "type": "ASSESSES",
+   "target": "tool schema",
+   "chunk": "week-03-lecture.md#18"
+  },
+  {
+   "source": "Retrieval",
+   "type": "USES",
+   "target": "Vector Store",
+   "chunk": "week-03-practical.md#3"
+  },
+  {
+   "source": "Vector Store",
+   "type": "USES",
+   "target": "EmbeddingClient",
+   "chunk": "week-03-practical.md#3"
+  },
+  {
+   "source": "Vector Store",
+   "type": "USES",
+   "target": "OpenRouter",
+   "chunk": "week-03-practical.md#3"
+  }
+ ],
+ "calls": [
+  {
+   "chunks": 10,
+   "seconds": 12.9,
+   "prompt": 4475,
+   "thinking": 1408,
+   "answer": 768
+  },
+  {
+   "chunks": 10,
+   "seconds": 11.1,
+   "prompt": 2928,
+   "thinking": 1472,
+   "answer": 449
+  },
+  {
+   "chunks": 10,
+   "seconds": 8.7,
+   "prompt": 3102,
+   "thinking": 1216,
+   "answer": 211
+  },
+  {
+   "chunks": 10,
+   "seconds": 8.1,
+   "prompt": 3169,
+   "thinking": 768,
+   "answer": 506
+  },
+  {
+   "chunks": 10,
+   "seconds": 3.8,
+   "prompt": 3221,
+   "thinking": 384,
+   "answer": 204
+  },
+  {
+   "chunks": 10,
+   "seconds": 6.2,
+   "prompt": 3191,
+   "thinking": 832,
+   "answer": 111
+  },
+  {
+   "chunks": 10,
+   "seconds": 13.3,
+   "prompt": 3248,
+   "thinking": 1856,
+   "answer": 370
+  },
+  {
+   "chunks": 10,
+   "seconds": 5.2,
+   "prompt": 3181,
+   "thinking": 704,
+   "answer": 62
+  },
+  {
+   "chunks": 10,
+   "seconds": 8.6,
+   "prompt": 3004,
+   "thinking": 1152,
+   "answer": 285
+  },
+  {
+   "chunks": 10,
+   "seconds": 11.7,
+   "prompt": 3275,
+   "thinking": 1408,
+   "answer": 594
+  },
+  {
+   "chunks": 10,
+   "seconds": 9.5,
+   "prompt": 2955,
+   "thinking": 1088,
+   "answer": 473
+  },
+  {
+   "chunks": 10,
+   "seconds": 8.2,
+   "prompt": 2974,
+   "thinking": 896,
+   "answer": 351
+  },
+  {
+   "chunks": 10,
+   "seconds": 9.0,
+   "prompt": 2851,
+   "thinking": 1408,
+   "answer": 125
+  },
+  {
+   "chunks": 10,
+   "seconds": 12.3,
+   "prompt": 3022,
+   "thinking": 1664,
+   "answer": 499
+  },
+  {
+   "chunks": 10,
+   "seconds": 12.8,
+   "prompt": 3175,
+   "thinking": 2048,
+   "answer": 178
+  },
+  {
+   "chunks": 10,
+   "seconds": 9.9,
+   "prompt": 2842,
+   "thinking": 1216,
+   "answer": 260
+  },
+  {
+   "chunks": 10,
+   "seconds": 9.5,
+   "prompt": 3339,
+   "thinking": 1088,
+   "answer": 326
+  },
+  {
+   "chunks": 10,
+   "seconds": 10.0,
+   "prompt": 3345,
+   "thinking": 1216,
+   "answer": 294
+  },
+  {
+   "chunks": 3,
+   "seconds": 13.9,
+   "prompt": 1113,
+   "thinking": 1856,
+   "answer": 319
+  }
+ ],
+ "done": [
+  "IDE-BCA001-heat-hold-cool-laplace-derivation.md#0",
+  "IDE-BCA001-heat-hold-cool-laplace-derivation.md#1",
+  "IDE-BCA001-heat-hold-cool-laplace-derivation.md#2",
+  "IDE-BCA001-heat-hold-cool-laplace-derivation.md#3",
+  "IDE-BCA001-heat-hold-cool-laplace-derivation.md#4",
+  "IDE-BCA001-heat-hold-cool-laplace-derivation.md#5",
+  "week-01-lecture-plan.md#0",
+  "week-01-lecture-plan.md#1",
+  "week-01-lecture-plan.md#2",
+  "week-01-lecture-plan.md#3",
+  "week-01-lecture-plan.md#4",
+  "week-01-lecture-plan.md#5",
+  "week-01-lecture-plan.md#6",
+  "week-01-lecture-plan.md#7",
+  "week-01-lecture-plan.md#8",
+  "week-01-lecture-plan.md#9",
+  "week-01-lecture.md#0",
+  "week-01-lecture.md#1",
+  "week-01-lecture.md#2",
+  "week-01-lecture.md#3",
+  "week-01-lecture.md#4",
+  "week-01-lecture.md#5",
+  "week-01-lecture.md#6",
+  "week-01-lecture.md#7",
+  "week-01-lecture.md#8",
+  "week-01-lecture.md#9",
+  "week-01-lecture.md#10",
+  "week-01-lecture.md#11",
+  "week-01-lecture.md#12",
+  "week-01-lecture.md#13",
+  "week-01-lecture.md#14",
+  "week-01-lecture.md#15",
+  "week-01-lecture.md#16",
+  "week-01-lecture.md#17",
+  "week-01-lecture.md#18",
+  "week-01-lecture.md#19",
+  "week-01-lecture.md#20",
+  "week-01-lecture.md#21",
+  "week-01-lecture.md#22",
+  "week-01-lecture.md#23",
+  "week-01-lecture.md#24",
+  "week-01-lecture.md#25",
+  "week-01-lecture.md#26",
+  "week-01-lecture.md#27",
+  "week-01-lecture.md#28",
+  "week-01-lecture.md#29",
+  "week-01-practical-plan.md#0",
+  "week-01-practical-plan.md#1",
+  "week-01-practical-plan.md#2",
+  "week-01-practical-plan.md#3",
+  "week-01-practical-plan.md#4",
+  "week-01-practical-plan.md#5",
+  "week-01-practical-plan.md#6",
+  "week-01-practical-plan.md#7",
+  "week-01-practical-plan.md#8",
+  "week-01-practical-plan.md#9",
+  "week-01-practical-plan.md#10",
+  "week-01-practical-plan.md#11",
+  "week-01-practical-plan.md#12",
+  "week-01-practical-plan.md#13",
+  "week-01-practical.md#0",
+  "week-01-practical.md#1",
+  "week-01-practical.md#2",
+  "week-01-practical.md#3",
+  "week-01-practical.md#4",
+  "week-01-practical.md#5",
+  "week-01-practical.md#6",
+  "week-01-practical.md#7",
+  "week-01-practical.md#8",
+  "week-01-practical.md#9",
+  "week-01-practical.md#10",
+  "week-01-practical.md#11",
+  "week-01-practical.md#12",
+  "week-01-practical.md#13",
+  "week-01-practical.md#14",
+  "week-01-practical.md#15",
+  "week-01-practical.md#16",
+  "week-01-practical.md#17",
+  "week-01-practical.md#18",
+  "week-01-practical.md#19",
+  "week-01-practical.md#20",
+  "week-02-lecture-plan.md#0",
+  "week-02-lecture-plan.md#1",
+  "week-02-lecture-plan.md#2",
+  "week-02-lecture-plan.md#3",
+  "week-02-lecture-plan.md#4",
+  "week-02-lecture-plan.md#5",
+  "week-02-lecture.md#0",
+  "week-02-lecture.md#1",
+  "week-02-lecture.md#2",
+  "week-02-lecture.md#3",
+  "week-02-lecture.md#4",
+  "week-02-lecture.md#5",
+  "week-02-lecture.md#6",
+  "week-02-lecture.md#7",
+  "week-02-lecture.md#8",
+  "week-02-lecture.md#9",
+  "week-02-lecture.md#10",
+  "week-02-lecture.md#11",
+  "week-02-lecture.md#12",
+  "week-02-lecture.md#13",
+  "week-02-lecture.md#14",
+  "week-02-lecture.md#15",
+  "week-02-lecture.md#16",
+  "week-02-lecture.md#17",
+  "week-02-lecture.md#18",
+  "week-02-lecture.md#19",
+  "week-02-lecture.md#20",
+  "week-02-lecture.md#21",
+  "week-02-lecture.md#22",
+  "week-02-lecture.md#23",
+  "week-02-lecture.md#24",
+  "week-02-lecture.md#25",
+  "week-02-practical-plan.md#0",
+  "week-02-practical-plan.md#1",
+  "week-02-practical-plan.md#2",
+  "week-02-practical-plan.md#3",
+  "week-02-practical-plan.md#4",
+  "week-02-practical-plan.md#5",
+  "week-02-practical-plan.md#6",
+  "week-02-practical-plan.md#7",
+  "week-03-lecture-plan.md#0",
+  "week-03-lecture-plan.md#1",
+  "week-03-lecture-plan.md#2",
+  "week-03-lecture-plan.md#3",
+  "week-03-lecture-plan.md#4",
+  "week-03-lecture-plan.md#5",
+  "week-03-lecture-plan.md#6",
+  "week-03-lecture-plan.md#7",
+  "week-03-lecture-plan.md#8",
+  "week-03-lecture-plan.md#9",
+  "week-03-lecture-plan.md#10",
+  "week-03-lecture.md#0",
+  "week-03-lecture.md#1",
+  "week-03-lecture.md#2",
+  "week-03-lecture.md#3",
+  "week-03-lecture.md#4",
+  "week-03-lecture.md#5",
+  "week-03-lecture.md#6",
+  "week-03-lecture.md#7",
+  "week-03-lecture.md#8",
+  "week-03-lecture.md#9",
+  "week-03-lecture.md#10",
+  "week-03-lecture.md#11",
+  "week-03-lecture.md#12",
+  "week-03-lecture.md#13",
+  "week-03-lecture.md#14",
+  "week-03-lecture.md#15",
+  "week-03-lecture.md#16",
+  "week-03-lecture.md#17",
+  "week-03-lecture.md#18",
+  "week-03-lecture.md#19",
+  "week-03-lecture.md#20",
+  "week-03-lecture.md#21",
+  "week-03-lecture.md#22",
+  "week-03-lecture.md#23",
+  "week-03-practical-plan.md#0",
+  "week-03-practical-plan.md#1",
+  "week-03-practical-plan.md#2",
+  "week-03-practical-plan.md#3",
+  "week-03-practical-plan.md#4",
+  "week-03-practical-plan.md#5",
+  "week-03-practical-plan.md#6",
+  "week-03-practical-plan.md#7",
+  "week-03-practical-plan.md#8",
+  "week-03-practical-plan.md#9",
+  "week-03-practical-plan.md#10",
+  "week-03-practical.md#0",
+  "week-03-practical.md#1",
+  "week-03-practical.md#2",
+  "week-03-practical.md#3",
+  "week-03-practical.md#4",
+  "week-03-practical.md#5",
+  "week-03-practical.md#6",
+  "week-03-practical.md#7",
+  "week-03-practical.md#8",
+  "week-03-practical.md#9",
+  "week-03-practical.md#10",
+  "week-03-practical.md#11",
+  "week-03-practical.md#12",
+  "week-03-practical.md#13",
+  "week-03-practical.md#14",
+  "week-03-practical.md#15"
+ ],
+ "dropped_unknown_chunk": 7
+}
