@@ -1,0 +1,10 @@
+{
+ "about": "The course test set for Week 6: five questions about the course, each with the answer the corpus states and the chunks that state it. An answer is correct when it contains every expected point and nothing that contradicts the cited chunks; for question 5 the only correct answer is 'not stated'. Written 2026-10-06 from the Week 3 sample corpus as a ten-question gold set; reduced to five questions and renamed on 2026-10-11.",
+ "questions": [
+  {"id": "Q1", "question": "Why does the course prefer cosine similarity to Euclidean distance?", "expected": "Cosine similarity measures direction only and discards magnitude; an embedding's magnitude can vary with properties such as text length that have nothing to do with meaning.", "stated_in": ["week-03-lecture-plan.md#3", "week-03-lecture.md#7"], "kind": "passage"},
+  {"id": "Q2", "question": "Which parts of the course use Chroma?", "expected": "The Week 3 retrieval pipeline: Chroma is the vector store into which chunks and their embeddings are ingested and from which they are searched; it runs inside the Python process and persists to ./chroma/.", "stated_in": ["week-03-practical.md#1", "week-03-practical.md#2", "week-03-practical.md#13", "week-03-practical-plan.md#6"], "kind": "relationship across chunks"},
+  {"id": "Q3", "question": "Which databases does the course use to store embeddings?", "expected": "Both: Chroma, the vector store of Week 3 (persisted to ./chroma/), and Neo4j, which holds vector indexes natively and is installed in Week 5 for Lab 2. An answer naming only one is partly correct.", "stated_in": ["week-03-practical.md#2", "week-03-lecture.md#16"], "kind": "relationship across chunks: the answers' names are not in the question"},
+  {"id": "Q4", "question": "How many of the course's documents mention Chroma?", "expected": "Four: the Week 3 lecture, lecture plan, practical, and practical plan.", "stated_in": [], "kind": "count"},
+  {"id": "Q5", "question": "What is the penalty for submitting a lab late?", "expected": "not stated", "stated_in": [], "kind": "not answerable"}
+ ]
+}

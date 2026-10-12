@@ -30,3 +30,6 @@ Thumbs.db
 
 # Crash dumps (Cygwin/Git-Bash on Windows)
 *.stackdump
+
+# Week 6 answers written by evaluate.py and graph_rag_lab.ipynb
+week6/results/

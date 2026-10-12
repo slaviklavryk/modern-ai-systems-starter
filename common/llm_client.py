@@ -86,7 +86,7 @@ class ChatResult:
 
 
 class LLMClient:
-    def __init__(self, provider: Optional[str] = None):
+    def __init__(self, provider: Optional[str] = None, model: Optional[str] = None):
         self.provider = (provider or os.environ.get("LLM_PROVIDER", "gemini")).lower()
         self.calls = 0
 
@@ -96,6 +96,8 @@ class LLMClient:
             self._init_lightning()
         else:
             raise ValueError(f"Unknown LLM_PROVIDER {self.provider!r}. Use 'gemini' or 'lightning'.")
+        if model:
+            self.model = model   # overrides the provider's pinned model
 
     # ------------------------------------------------------------ gemini
     def _init_gemini(self) -> None:
