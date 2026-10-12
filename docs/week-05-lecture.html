@@ -1,0 +1,600 @@
+<!doctype html>
+<html lang="uk" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Week 5 — Knowledge Graphs: Designing a Graph and Populating It</title>
+<style>
+:root{
+  --w:1280px; --h:720px;
+  --bg:#fbfaf8; --panel:#ffffff; --ink:#1a1a1a; --ink-soft:#5b5b5b; --ink-faint:#8c8c8c;
+  --rule:#e2ded7; --accent:#1c5d99; --accent-soft:#e8f0f7; --mark:#f5efe3;
+  --code-bg:#f4f2ee; --code-ink:#26303a;
+  --tok-kw:#8a3d8f; --tok-str:#1f6f4a; --tok-com:#8c8c8c; --tok-num:#a35a1f;
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Consolas,"Liberation Mono",Menlo,monospace;
+}
+html[data-theme="dark"]{
+  --bg:#14161a; --panel:#1b1e24; --ink:#e9e6e1; --ink-soft:#a9a5a0; --ink-faint:#6f6b67;
+  --rule:#2c3138; --accent:#6fb3e8; --accent-soft:#1d2b38; --mark:#2a2620;
+  --code-bg:#1f242b; --code-ink:#d6dee7;
+  --tok-kw:#c99ae0; --tok-str:#7fd0a3; --tok-com:#7b7772; --tok-num:#e0a86a;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font-family:var(--font)}
+body.is-overview{overflow:auto}
+
+#stage{position:relative;width:100%;height:100%}
+.frame{position:absolute;top:0;left:0;width:var(--w);height:var(--h);transform-origin:top left}
+.slide{
+  position:absolute;inset:0;background:var(--panel);display:flex;flex-direction:column;
+  padding:56px 72px 40px;visibility:hidden;opacity:0;
+  transition:opacity .18s ease;overflow:hidden;
+}
+.frame.is-active .slide{visibility:visible;opacity:1}
+/* Inactive frames stay in the DOM (for the crossfade) stacked at the same
+   position as the active one. Without this they are invisible but still
+   catch the mouse, which silently blocks selecting text on the slide you
+   can actually see. Overview mode needs the opposite -- every thumbnail
+   must stay clickable -- so the rule is scoped to non-overview only. */
+body:not(.is-overview) .frame:not(.is-active){pointer-events:none}
+.slide-body{flex:1;min-height:0;font-size:calc(23px * var(--fit,1));line-height:1.5}
+
+.slide-title{margin:0 0 .7em;font-size:2.0em;line-height:1.15;font-weight:650;letter-spacing:-.015em}
+.slide--title{justify-content:center;padding:72px 96px}
+.slide--title .slide-body{display:flex;flex-direction:column;justify-content:center}
+.slide--title .slide-title{font-size:3.1em;margin-bottom:.35em}
+.slide-subtitle{margin:0;font-size:1.25em;color:var(--ink-soft);max-width:34em}
+.slide--section{justify-content:center}
+.slide--section .slide-body{display:flex;flex-direction:column;justify-content:center}
+.slide--section .slide-title{font-size:2.6em;margin-bottom:.5em}
+.slide--section .slide-title::after{
+  content:"";display:block;width:2.2em;height:3px;margin-top:.5em;background:var(--accent);border-radius:2px;
+}
+.slide--content .slide-title{
+  padding-bottom:.4em;border-bottom:2px solid var(--rule);
+}
+
+.slide-content h3{margin:1.1em 0 .45em;font-size:1.22em;font-weight:640;color:var(--accent)}
+.slide-content h4,.slide-content h5,.slide-content h6{margin:.9em 0 .35em;font-size:1.05em;font-weight:640}
+.slide-content>:first-child{margin-top:0}
+.slide-content p{margin:0 0 .7em;max-width:46em}
+.slide-content ul,.slide-content ol{margin:0 0 .7em;padding-left:1.35em}
+.slide-content li{margin:.3em 0}
+.slide-content li>ul,.slide-content li>ol{margin:.25em 0 .25em}
+.slide-content ul>li::marker{color:var(--accent)}
+.slide-content strong{font-weight:660}
+.slide-content a{color:var(--accent);text-decoration:none;border-bottom:1px solid var(--rule)}
+.slide-content hr{border:0;border-top:1px solid var(--rule);margin:1em 0}
+.slide-content code{
+  font-family:var(--mono);font-size:.88em;background:var(--code-bg);color:var(--code-ink);
+  padding:.12em .34em;border-radius:4px;
+}
+.slide-content pre{
+  margin:0 0 .75em;background:var(--code-bg);border:1px solid var(--rule);border-left:3px solid var(--accent);
+  border-radius:6px;padding:.7em .9em;overflow:auto;max-width:100%;
+}
+.slide-content pre code{
+  background:none;padding:0;font-size:.82em;line-height:1.45;color:var(--code-ink);
+  display:block;white-space:pre;
+}
+.slide-content pre.verbatim code{font-size:.78em;line-height:1.35}
+.tok-kw{color:var(--tok-kw)}.tok-str{color:var(--tok-str)}
+.tok-com{color:var(--tok-com);font-style:italic}.tok-num{color:var(--tok-num)}
+.slide-content blockquote{
+  margin:0 0 .8em;padding:.6em 1em;background:var(--accent-soft);border-left:3px solid var(--accent);
+  border-radius:0 6px 6px 0;
+}
+.slide-content blockquote p{margin:0;font-size:1.05em}
+.slide-content blockquote p+p{margin-top:.5em}
+.table-wrap{overflow-x:auto;margin:0 0 .8em;max-width:100%}
+.slide-content table{border-collapse:collapse;width:100%;font-size:.92em}
+.slide-content th,.slide-content td{padding:.4em .7em;border-bottom:1px solid var(--rule);vertical-align:top}
+.slide-content th{font-weight:660;color:var(--accent);border-bottom:2px solid var(--rule);white-space:nowrap}
+.slide-content tbody tr:last-child td{border-bottom:none}
+.slide-content img{max-width:100%;height:auto;border-radius:6px}
+
+.slide-foot{
+  display:flex;justify-content:space-between;align-items:flex-end;
+  font-size:13px;color:var(--ink-faint);padding-top:12px;flex:none;
+}
+.slide--title .slide-foot,.slide--section .slide-foot{opacity:.55}
+.foot-num{font-variant-numeric:tabular-nums}
+
+#progress{position:fixed;left:0;top:0;height:3px;background:var(--accent);width:0;z-index:40;transition:width .18s ease}
+#hud{
+  position:fixed;right:14px;bottom:12px;z-index:40;display:flex;gap:10px;align-items:center;
+  font-size:12px;color:var(--ink-faint);background:var(--bg);padding:4px 8px;border-radius:6px;opacity:.75;
+}
+#hud button{
+  font:inherit;color:inherit;background:none;border:1px solid var(--rule);border-radius:5px;
+  padding:2px 7px;cursor:pointer;
+}
+#hud button:hover{color:var(--accent);border-color:var(--accent)}
+
+#notes{
+  position:fixed;right:0;bottom:0;top:0;width:360px;z-index:50;background:var(--panel);
+  border-left:1px solid var(--rule);padding:18px 20px;overflow:auto;
+  font-size:15px;line-height:1.55;transform:translateX(100%);transition:transform .2s ease;
+}
+#notes.is-open{transform:none}
+#notes h3{margin:.9em 0 .3em;font-size:1em;color:var(--accent)}
+#notes p,#notes li{margin:.35em 0}
+#notes pre{background:var(--code-bg);padding:.5em .7em;border-radius:5px;overflow:auto;font-size:.85em}
+#notes code{font-family:var(--mono);font-size:.88em}
+.notes-head{
+  display:flex;justify-content:space-between;align-items:baseline;
+  border-bottom:1px solid var(--rule);padding-bottom:8px;margin-bottom:10px;
+  font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-faint);
+}
+#timer{font-variant-numeric:tabular-nums;font-size:15px;letter-spacing:0;color:var(--ink)}
+.notes-empty{color:var(--ink-faint);font-style:italic}
+
+/* Anchored to the L button in the HUD (bottom-right) horizontally, so
+   opening it is a small mouse/eye movement rather than a trip across the
+   screen -- but full page height, so a normal-length deck lists with no
+   internal scrolling. Closed state keeps pointer-events:none -- the same
+   fix as the inactive-slide-frame bug: an invisible-but-present fixed
+   element must not be able to catch clicks meant for whatever is under it. */
+#outline{
+  position:fixed;right:14px;top:16px;bottom:52px;z-index:50;background:var(--panel);
+  border:1px solid var(--rule);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.22);
+  width:320px;padding:12px 10px;overflow:auto;
+  transform-origin:bottom right;transform:scale(.97);opacity:0;pointer-events:none;
+  transition:transform .15s ease,opacity .15s ease;
+}
+#outline.is-open{transform:scale(1);opacity:1;pointer-events:auto}
+.outline-head{
+  display:flex;justify-content:space-between;align-items:baseline;
+  border-bottom:1px solid var(--rule);padding:0 8px 8px;margin:0 0 6px;
+  font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-faint);
+}
+.outline-item{
+  display:flex;gap:10px;align-items:baseline;padding:7px 8px;border-radius:5px;
+  cursor:pointer;font-size:14px;line-height:1.35;
+}
+.outline-item:hover{background:var(--accent-soft)}
+.outline-item.is-current{background:var(--accent-soft);color:var(--accent);font-weight:650}
+.outline-num{flex:none;width:2em;text-align:right;color:var(--ink-faint);font-variant-numeric:tabular-nums}
+.outline-item.is-current .outline-num{color:var(--accent)}
+.outline-item.is-section .outline-title{font-style:italic}
+
+#overlay{
+  position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.86);color:#fff;
+  display:none;align-items:center;justify-content:center;font-size:15px;line-height:1.7;
+}
+#overlay.is-open{display:flex}
+#overlay dl{display:grid;grid-template-columns:auto 1fr;gap:.4em 1.4em;margin:0}
+#overlay dt{font-family:var(--mono);color:#8fd0ff;text-align:right}
+#overlay dd{margin:0}
+#blank{position:fixed;inset:0;background:#000;z-index:70;display:none}
+#blank.is-open{display:block}
+
+body.is-overview #stage{height:auto;padding:24px}
+body.is-overview .slide{visibility:visible;opacity:1;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.12)}
+body.is-overview .frame{outline:2px solid transparent;border-radius:8px}
+body.is-overview .frame.is-active{outline-color:var(--accent)}
+body.is-overview #hud,body.is-overview #progress{opacity:.9}
+
+@media print{
+  html,body{overflow:visible;height:auto;background:#fff}
+  #progress,#hud,#notes,#outline,#overlay,#blank{display:none!important}
+  #stage{position:static;width:auto;height:auto}
+  .frame{position:static!important;transform:none!important;width:100%;height:auto;page-break-after:always}
+  .slide{
+    position:static;visibility:visible!important;opacity:1!important;
+    height:auto;min-height:0;border:1px solid #ddd;box-shadow:none;page-break-inside:avoid;
+  }
+  .slide-body{font-size:15px!important}
+  @page{size:landscape;margin:10mm}
+}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<div id="stage"><div class="frame" data-index="1"><section class="slide slide--title" aria-label="Slide 1"><div class="slide-body"><h1 class="slide-title">Knowledge Graphs Design</h1><p class="slide-subtitle">Modern AI Systems · Lecture 5</p><div class="slide-content"><p><em>Week 5 — Knowledge graphs</em></p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">1</span></div></section><div class="notes-src" hidden><p>≈90 min for the session. Run sheet: none. <code>week-05-lecture-plan.md</code> states each section's intent; the per-slide timings below are the schedule, and they sum to 86 minutes.</p>
+<p>Organising principle, from the plan: Week 4 taught the database, and students reconstructed the design of the course graph in its practical without designing a graph themselves. This session is about design first. Sections 3 to 5 carry its weight; extraction, resolution, and the pipeline follow as consequences of design decisions. The course graph is the worked example throughout, because every one of its relationships was written by hand and none was extracted, so it shows the difference between a relationship that can only be trusted and one that can be cited.</p>
+<p>No live demonstration and no API call in this session. Every output shown was recorded beforehand, with its provenance in the slide's notes.</p>
+<p>If the session runs long, shorten section 8 to the load order and the warning about extraction time: the practical builds the pipeline in full.</p></div></div>
+<div class="frame" data-index="2"><section class="slide slide--section" aria-label="Slide 2"><div class="slide-body"><h2 class="slide-title">What a graph captures that a vector does not</h2></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">2</span></div></section><div class="notes-src" hidden><p>Section divider. Plan §1. ≈8 min.</p>
+<p>The goal: students state the difference between the two representations in terms of what each asserts, and define a knowledge graph independently of the database that stores it.</p></div></div>
+<div class="frame" data-index="3"><section class="slide slide--content" aria-label="Slide 3"><div class="slide-body"><h2 class="slide-title">Two representations, two kinds of claim</h2><div class="slide-content"><div class="table-wrap"><table><thead><tr><th style="text-align:left"></th><th style="text-align:left">Embedding</th><th style="text-align:left">Knowledge graph</th></tr></thead><tbody><tr><td style="text-align:left"><strong>Unit</strong></td><td style="text-align:left">A chunk</td><td style="text-align:left">A fact: two entities and a typed relationship</td></tr><tr><td style="text-align:left"><strong>Asserts</strong></td><td style="text-align:left">Nothing about the world: only <em>near in meaning</em></td><td style="text-align:left">An explicit fact, stated once</td></tr><tr><td style="text-align:left"><strong>Supports</strong></td><td style="text-align:left">Ranking by similarity</td><td style="text-align:left">Following, counting, combining</td></tr></tbody></table></div>
+<p>A <strong>knowledge graph</strong> is the graph of a domain's entities and their explicit relationships, independent of the database that stores it.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">3</span></div></section><div class="notes-src" hidden><p>≈3 min. The middle row is the point of the slide. An embedding places a chunk near other chunks and makes no claim; a relationship in a graph is a claim, and can be right or wrong.</p>
+<p>The definition is deliberately independent of Neo4j. The term covers property graphs and the RDF graphs that Week 4 named and set aside.</p></div></div>
+<div class="frame" data-index="4"><section class="slide slide--content" aria-label="Slide 4"><div class="slide-body"><h2 class="slide-title">The same knowledge, two ways</h2><div class="slide-content"><p>Vector retrieval returns a chunk:</p>
+<blockquote><p><em>"Albert Einstein worked on relativity."</em></p></blockquote>
+<p>A graph states facts, and can be traversed <strong>from any of them</strong>:</p>
+<pre class="verbatim"><code>(:Person {name: 'Einstein'})-[:DEVELOPED]-&gt;(:Theory {name: 'Relativity'})
+(:Person {name: 'Einstein'})-[:WORKED_AT]-&gt;(:Institution {name: 'Princeton'})
+(:Person {name: 'Einstein'})-[:BORN_IN]-&gt;(:City {name: 'Ulm'})</code></pre></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">4</span></div></section><div class="notes-src" hidden><p>≈3 min. The syllabus's example. Ask the class which question the graph answers that the chunk cannot: who developed a theory and worked at Princeton, for instance, or which theories were developed by people born in a given city. Each is a pattern over the facts; none is stated in a single chunk.</p></div></div>
+<div class="frame" data-index="5"><section class="slide slide--section" aria-label="Slide 5"><div class="slide-body"><h2 class="slide-title">Two layers: the text and the domain</h2></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">5</span></div></section><div class="notes-src" hidden><p>Section divider. Plan §2. ≈9 min.</p>
+<p>The goal: students describe a graph built for retrieval as two layers joined by one relationship, and state what the join can and cannot do.</p></div></div>
+<div class="frame" data-index="6"><section class="slide slide--content" aria-label="Slide 6"><div class="slide-body"><h2 class="slide-title">Two layers, one join</h2><div class="slide-content"><pre class="verbatim"><code>TEXT LAYER     (:Document)-[:HAS_CHUNK]-&gt;(:Chunk)-[:NEXT]-&gt;(:Chunk)
+               built mechanically          |
+                                      [:MENTIONS]
+                                           v
+DOMAIN LAYER          (:Topic)-[:BUILDS_ON]-&gt;(:Topic)&lt;-[:COVERS]-(:Week)
+designed                 the modelling work</code></pre></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">6</span></div></section><div class="notes-src" hidden><p>≈4 min. This is the answer to the exercise that closed the Week 4 practical, in which students designed on paper what the course graph would need in order to answer which chunks discuss graph traversal.</p>
+<p>The text layer requires no judgement: documents, their chunks, and the order of the chunks. The domain layer is the design. <code>MENTIONS</code> is the one relationship between them, and producing it is the extraction of section 6.</p>
+<p>The label <code>Chunk</code> and its <code>id</code> key are those of <code>week4/graph_vectors.py</code>. The names <code>Document</code>, <code>HAS_CHUNK</code>, <code>NEXT</code>, and <code>MENTIONS</code> are the course's convention from this week; students may use their own if they use them consistently.</p></div></div>
+<div class="frame" data-index="7"><section class="slide slide--section" aria-label="Slide 7"><div class="slide-body"><h2 class="slide-title">Designing the domain model from competency questions</h2></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">7</span></div></section><div class="notes-src" hidden><p>Section divider. Plan §3. ≈14 min.</p>
+<p>The goal: students derive a model from its questions, validate it before any data exists, and criticise a model that was not derived that way. This is the centre of the session.</p></div></div>
+<div class="frame" data-index="8"><section class="slide slide--content" aria-label="Slide 8"><div class="slide-body"><h2 class="slide-title">Questions first</h2><div class="slide-content"><ol><li>Write the <strong>competency questions</strong>: multi-hop questions that vector retrieval cannot answer</li><li>The nouns in their answers become <strong>entity types</strong></li><li>The connections between those nouns become <strong>relationship types</strong></li><li>Values that are only ever read become <strong>properties</strong></li><li>A relationship type that <strong>no question traverses</strong> is removed</li></ol></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">8</span></div></section><div class="notes-src" hidden><p>≈3 min. Step 4 is Week 4's rule, section 3: a value that is only read is a property; anything traversed through or shared is a node.</p>
+<p>On the term: competency questions come from ontology engineering, where a formal model is judged by whether it can answer them. An ontology is the formal version of a domain model: classes in hierarchies, properties with declared domains and ranges, and rules from which facts are inferred, usually in RDF and OWL. Name it so that students recognise it. The course does not use one: the students' graphs are small, private, and designed for retrieval, and a second data model would cost more than it returns at that scale.</p></div></div>
+<div class="frame" data-index="9"><section class="slide slide--content" aria-label="Slide 9"><div class="slide-body"><h2 class="slide-title">A model is validated before any data exists</h2><div class="slide-content"><p>Every competency question must have a <strong>Cypher query</strong> on the model.</p>
+<p><em>"Which Week 3 topics must I know before Lab 2?"</em></p>
+<pre class="lang-cypher"><code><span class="tok-kw">MATCH</span> (:Deliverable {name: <span class="tok-str">'Lab 2'</span>})-[:ASSESSES]-&gt;(:Topic)
+      -[:BUILDS_ON]-&gt;{<span class="tok-num">1</span>,<span class="tok-num">4</span>}(t:Topic)&lt;-[:COVERS]-(:Week {number: <span class="tok-num">3</span>})
+<span class="tok-kw">RETURN</span> <span class="tok-kw">DISTINCT</span> t.name</code></pre>
+<p>A question whose query <strong>cannot be written</strong> exposes a gap in the model.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">9</span></div></section><div class="notes-src" hidden><p>≈4 min. Read the pattern aloud: a deliverable assesses a topic, which builds on, through one to four hops, a topic covered in Week 3. Each relationship type in the pattern is one that this question justifies.</p>
+<p>The query is written against the course graph's actual model, <code>course_graph.cypher</code>: <code>ASSESSES</code>, <code>BUILDS_ON</code>, and <code>COVERS</code>. It is not run in the lecture; the practical asks students to write this kind of query for each of their own questions before extracting anything.</p>
+<p>Students already did the reverse in the Week 4 practical, section 8: for each relationship type of the finished graph, the question it exists to answer. Today the method runs forwards.</p></div></div>
+<div class="frame" data-index="10"><section class="slide slide--content" aria-label="Slide 10"><div class="slide-body"><h2 class="slide-title">Graph design defects</h2><div class="slide-content"><div class="table-wrap"><table><thead><tr><th style="text-align:left">Defect</th><th style="text-align:left">Example</th></tr></thead><tbody><tr><td style="text-align:left"><strong>Decorative</strong> relationship</td><td style="text-align:left">A type that no competency question traverses</td></tr><tr><td style="text-align:left"><strong>Generic</strong> relationship</td><td style="text-align:left"><code>RELATED_TO</code>: connected, but not stated how</td></tr><tr><td style="text-align:left"><strong>Over-general</strong> entity type</td><td style="text-align:left"><code>Thing</code>, <code>Concept</code>: a traversal from it reaches everything</td></tr><tr><td style="text-align:left">A value as a <strong>node</strong></td><td style="text-align:left"><code>(:Year {value: 2024})</code>, although the year is only read</td></tr><tr><td style="text-align:left">A <strong>missing</strong> relationship</td><td style="text-align:left">A question whose query cannot be written</td></tr></tbody></table></div></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">10</span></div></section><div class="notes-src" hidden><p>≈4 min. These are exactly the five checks of the practical's model review, section 3, where students review each other's models in pairs.</p>
+<p>Lab 2's descriptors (syllabus §9): Excellent, relationships reflect the domain's actual structure and enable multi-hop questions vector search cannot answer; Good, sound but mostly shallow or decorative.</p>
+<p>Ask students to test the entities and relationship types of their approved proposals against this table before the practical.</p></div></div>
+<div class="frame" data-index="11"><section class="slide slide--content" aria-label="Slide 11"><div class="slide-body"><h2 class="slide-title">Direction and granularity</h2><div class="slide-content"><p><strong>Direction</strong> is a naming convention:</p>
+<ul><li><code>(:Topic)-[:BUILDS_ON]-&gt;(:Topic)</code></li><li><code>(:Topic)-[:IS_BUILT_ON]-&gt;(:Topic)</code></li></ul>
+<p><strong>Granularity</strong> is set by the questions, not by the domain.</p>
+<ul><li>A distinction no question uses belongs in a <strong>property</strong> or a <strong>second label</strong>, not a new type</li></ul>
+<p>Not:      (:LectureTopic)  (:PracticalTopic)    two types, so every query names both Instead:  (:Topic {session: 'practical'})       a property, if it is only read or:  (:Topic:Practical)                    a second label, if queries filter on it ``</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">11</span></div></section><div class="notes-src" hidden><p>≈3 min. Direction: Week 4 showed that a pattern can follow a relationship against its stored direction at no cost. Storing the inverse as well doubles the relationships and creates two facts that can disagree.</p>
+<p>Granularity: a domain always offers finer distinctions than the questions need. A course could distinguish lecture topics from practical topics; unless a question asks which, that distinction is a property, or a second label on the same node.</p></div></div>
+<div class="frame" data-index="12"><section class="slide slide--section" aria-label="Slide 12"><div class="slide-body"><h2 class="slide-title">Where relationships come from</h2></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">12</span></div></section><div class="notes-src" hidden><p>Section divider. Plan §5. ≈10 min.</p>
+<p>The goal: for every relationship, students state how it came to be there, how that is recorded, and why it matters for an answer built on it.</p></div></div>
+<div class="frame" data-index="13"><section class="slide slide--content" aria-label="Slide 13"><div class="slide-body"><h2 class="slide-title">Three origins</h2><div class="slide-content"><div class="table-wrap"><table><thead><tr><th style="text-align:left">Origin</th><th style="text-align:left">Example</th><th style="text-align:left">An answer built on it can</th></tr></thead><tbody><tr><td style="text-align:left"><strong>Curated</strong></td><td style="text-align:left">Written by a person</td><td style="text-align:left">Only be <strong>trusted</strong></td></tr><tr><td style="text-align:left"><strong>Derived</strong></td><td style="text-align:left">From a table or a metadata field</td><td style="text-align:left">Inherit its source's <strong>authority</strong></td></tr><tr><td style="text-align:left"><strong>Extracted</strong></td><td style="text-align:left">Read from a chunk that states it</td><td style="text-align:left"><strong>Cite</strong> the chunk</td></tr></tbody></table></div>
+<p>An extracted relationship extends <strong>Week 3's grounding</strong> to the graph.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">13</span></div></section><div class="notes-src" hidden><p>≈3 min. The three also differ in cost and coverage. Curated is cheap for a small model and impossible at scale; derived is free where the structured data exists; extracted costs generation quota and has the failure modes of section 6.</p>
+<p>Students choose an origin for each relationship type of their own model. That choice determines how much of section 6 they need.</p></div></div>
+<div class="frame" data-index="14"><section class="slide slide--content" aria-label="Slide 14"><div class="slide-body"><h2 class="slide-title">The course graph is curated</h2><div class="slide-content"><p>Every one of its <strong>141</strong> relationships was written by hand, from the syllabus.</p>
+<p><code>(:Topic {name: 'Chunking'})-[:BUILDS_ON]-&gt;(:Topic {name: 'Embeddings'})</code></p>
+<p>Most <code>BUILDS_ON</code> relationships are <strong>editorial judgements</strong> that no chunk of the course material states. An answer built on them <strong>cannot cite a source</strong>.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">14</span></div></section><div class="notes-src" hidden><p>≈2 min. This answers the question left open in section 1: who wrote the relationships that answered Week 4's question. The answer the model gave was correct and cited the graph's facts, but the facts themselves rest on the author's judgement.</p>
+<p>This is not a defect of the course graph, which was built to teach Cypher. It is the property that makes it a useful contrast with the students' graphs.</p></div></div>
+<div class="frame" data-index="15"><section class="slide slide--section" aria-label="Slide 15"><div class="slide-body"><h2 class="slide-title">Extracting entities and relationships with a model</h2></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">15</span></div></section><div class="notes-src" hidden><p>Section divider. Plan §6. ≈17 min.</p>
+<p>The goal: students extract with structured output constrained to their declared model, and name the ways extraction fails. All outputs in this section were recorded beforehand.</p></div></div>
+<div class="frame" data-index="16"><section class="slide slide--content" aria-label="Slide 16"><div class="slide-body"><h2 class="slide-title">Extraction: chunks in, facts out</h2><div class="slide-content"><pre class="verbatim"><code>IN     [w3-plan-3]  "...Students should also recognise 'cosine distance', reported
+                     by some vector stores as one minus the similarity..."
+       [w3-plan-5]  "...why an entire document cannot be embedded as one vector..."
+
+                     model  +  instruction  +  schema
+                                    |
+                                    v
+OUT    entities:   Cosine similarity, Cosine distance, Chunking, ...   (all Topic)
+       relations:  Cosine distance -[:BUILDS_ON]-&gt; Cosine similarity   from w3-plan-3</code></pre>
+<p>Each chunk goes in with an <strong>id</strong>. Each relationship comes back with the id of the chunk that <strong>stated</strong> it.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">16</span></div></section><div class="notes-src" hidden><p>≈2 min. Explain the task before showing any code. The input is several chunks in one call, each prefixed with its id. The output is not prose: it is two lists, the entities found and the relationships between them, in the types the design declares.</p>
+<p>The output shown is abridged from the first recorded run (2026-10-04, course graph model <code>Topic</code> and <code>BUILDS_ON</code>). The full result of both runs is on the slide after next. The two chunks were sections 3 and 5 of the Week 3 lecture plan, sent whole: they are larger than the chunks <code>week3/chunking.py</code> produces, and <code>w3-plan-3</code> and <code>w3-plan-5</code> are ids assigned for the run, not stored chunk ids.</p>
+<p>The chunk id on each relationship is the provenance of section 5: it is what lets an answer built on this relationship cite its chunk.</p></div></div>
+<div class="frame" data-index="17"><section class="slide slide--content" aria-label="Slide 17"><div class="slide-body"><h2 class="slide-title">Why the schema comes before extraction</h2><div class="slide-content"><p>Some tools extract <strong>without</strong> a schema and let the types emerge from the text.</p>
+<p>The result: relationship types for which <strong>no question was written</strong>.</p>
+<p>That is the <strong>decorative model</strong>, produced automatically.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">17</span></div></section><div class="notes-src" hidden><p>≈2 min. Students will meet schema-free extraction in tools and tutorials, including the community-summarisation approaches to graph indexing that Week 6 mentions. It has a place for exploring an unfamiliar corpus. For a graph designed to answer known questions, the design comes first and constrains the extraction.</p></div></div>
+<div class="frame" data-index="18"><section class="slide slide--content" aria-label="Slide 18"><div class="slide-body"><h2 class="slide-title">What an ontology is</h2><div class="slide-content"><div class="table-wrap"><table><thead><tr><th style="text-align:left"></th><th style="text-align:left">What it gives</th><th style="text-align:left">Example</th></tr></thead><tbody><tr><td style="text-align:left"><strong>Taxonomy</strong></td><td style="text-align:left">categories and subcategories: a hierarchy</td><td style="text-align:left">Foodstuffs → Fruit → Apple</td></tr><tr><td style="text-align:left"><strong>Ontology</strong></td><td style="text-align:left">the meaning of each type, how types relate, and rules</td><td style="text-align:left"><code>Order CONTAINS Product</code></td></tr><tr><td style="text-align:left"><strong>Knowledge graph</strong></td><td style="text-align:left">the instances themselves, connected</td><td style="text-align:left"><em>this</em> order contains <em>this</em> apple</td></tr></tbody></table></div>
+<blockquote><p>"The knowledge graph is what you build, while taxonomies and ontologies are the blueprints."</p></blockquote></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">18</span></div></section><div class="notes-src" hidden><p>≈3 min. The definitions and the e-commerce examples follow John Stegeman, "Taxonomy vs. ontology vs. knowledge graph", Neo4j blog, 16 June 2026 (https://neo4j.com/blog/knowledge-graph/taxonomy-vs-ontology-vs-knowledge-graph/). Its definition of an ontology, to read aloud: "An ontology describes a domain by providing semantic meanings and logical rules. It provides a model of the important aspects of that domain and how they relate." The quotation on the slide is from the same article.</p>
+<p>Make the three layers concrete with the course. The knowledge graph is what the practical builds: this chunk mentions Chroma, this topic uses Chroma. The ontology is the schema of the previous slide, written in <code>kg_model.py</code>: three entity types, and three relationship types each with a declared direction, BUILDS_ON from a Topic to a Topic, USES from a Topic to a Tool, ASSESSES from a Deliverable to a Topic. It is enforced: the loader drops a relationship whose end has the wrong type. The course graph has no taxonomy; a hierarchy such as cosine distance being a kind of similarity measure would need an IS_A relationship, which no competency question asks for.</p>
+<p>What separates this from an ontology in the formal sense is what it leaves out: class hierarchies, rules from which new facts are inferred (BUILDS_ON being transitive, say), and a standard language, usually RDF and OWL. This connects to the term on the competency-questions slide: those questions come from ontology engineering. The course stops at the small version, for the reason given there: the students' graphs are small, private, and designed for retrieval.</p></div></div>
+<div class="frame" data-index="19"><section class="slide slide--section" aria-label="Slide 19"><div class="slide-body"><h2 class="slide-title">Entity resolution</h2></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">19</span></div></section><div class="notes-src" hidden><p>Section divider. Plan §7. ≈8 min.</p>
+<p>The goal: students explain why extraction produces duplicate entities and choose a canonical key that merges them.</p></div></div>
+<div class="frame" data-index="20"><section class="slide slide--content" aria-label="Slide 20"><div class="slide-body"><h2 class="slide-title">The same entity, different strings</h2><div class="slide-content"><p>From the two recorded runs, on <strong>identical input</strong>:</p>
+<div class="table-wrap"><table><thead><tr><th style="text-align:left">Run 1</th><th style="text-align:left">Run 2</th></tr></thead><tbody><tr><td style="text-align:left"><code>Chunking</code></td><td style="text-align:left"><code>corpus chunking</code></td></tr><tr><td style="text-align:left"><code>Cosine similarity</code></td><td style="text-align:left"><code>cosine similarity</code></td></tr></tbody></table></div>
+<p><code>MERGE</code> compares keys <strong>exactly</strong>. Embeddings compared <strong>meaning</strong>; a key does not.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">20</span></div></section><div class="notes-src" hidden><p>≈2 min. In Week 3 this problem did not arise, because two chunks that use different words for the same thing still embed close together. A key on which MERGE matches is compared character by character, so the problem returns with the graph.</p>
+<p>Lower-casing merges the second row. Nothing mechanical merges the first.</p>
+<p>Two remedies apply together: the instruction asks for each name in a canonical form, and the loader reduces each name to a normalised key. For a corpus whose entities are already known, passing the list of existing names to the model is a third.</p></div></div>
+<div class="frame" data-index="21"><section class="slide slide--content" aria-label="Slide 21"><div class="slide-body"><h2 class="slide-title">What normalisation cannot do</h2><div class="slide-content"><p>Normalisation merges <strong>forms of one name</strong>. It does not merge <strong>different names</strong> for one entity: <code>ЛНУ</code> and <code>Львівський національний університет</code>.</p>
+<ul><li>A <strong>curated list of aliases</strong>, applied by the loader</li><li>Or a <strong>known defect</strong>, recorded as such</li></ul>
+<p>Choosing the key is <strong>part of designing each entity type</strong>.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">21</span></div></section><div class="notes-src" hidden><p>≈2 min. Connect this to Week 4's idempotent loading: MERGE on a key makes a load repeatable only if the key identifies the entity. Resolution is what gives the key its meaning.</p></div></div>
+<div class="frame" data-index="22"><section class="slide slide--section" aria-label="Slide 22"><div class="slide-body"><h2 class="slide-title">From the design to a re-seedable <code>ingest.py</code></h2></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">22</span></div></section><div class="notes-src" hidden><p>Section divider. Plan §8. ≈8 min. The first section to shorten if the session runs long: reduce it to the load order and the warning on the last slide.</p></div></div>
+<div class="frame" data-index="23"><section class="slide slide--content" aria-label="Slide 23"><div class="slide-body"><h2 class="slide-title">Where the design is enforced</h2><div class="slide-content"><p>Neo4j Community enforces <strong>only uniqueness constraints</strong>. The design lives in code, in <strong>three places that must agree</strong>:</p>
+<ol><li>The <strong>uniqueness constraints</strong>, one per entity key</li><li>The <strong>extraction schema</strong>, with its declared types</li><li>The <strong>loader</strong>, which refuses an undeclared relationship type</li></ol></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">23</span></div></section><div class="notes-src" hidden><p>≈2 min. Week 4, section 2: Neo4j imposes no schema by default, and existence, type, and key constraints are Enterprise features. A model that is written down in three places can drift; the practical writes the declared types once and builds the schema and the loader's check from that list.</p></div></div>
+<div class="frame" data-index="24"><section class="slide slide--content" aria-label="Slide 24"><div class="slide-body"><h2 class="slide-title">The load order</h2><div class="slide-content"><ol><li>Constraints</li><li>The text layer: documents and chunks</li><li>Entities, merged on their keys</li><li>Relationships between entities</li><li><code>MENTIONS</code>, from chunks to entities</li></ol>
+<p>Nodes before relationships, at every stage. <strong>Run it twice; the counts do not change.</strong></p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">24</span></div></section><div class="notes-src" hidden><p>≈2 min. This is Week 4's rule for idempotent loading, section 6, applied to two layers: merge each node on its key first, and merge relationships between nodes that already exist. Merging a whole pattern creates duplicates, or with constraints an error.</p>
+<p>The practical, section 5, loads a sample in this order and runs the load twice.</p></div></div>
+<div class="frame" data-index="25"><section class="slide slide--content" aria-label="Slide 25"><div class="slide-body"><h2 class="slide-title">Four stages, two of them saved</h2><div class="slide-content"><pre class="verbatim"><code>documents ──► chunks ──► embeddings ──► extraction ──► load ──► Neo4j
+             free        API quota       API quota      free
+             determ.     saved to file   saved to file  idempotent</code></pre>
+<p><strong>Rebuild</strong> re-runs the load from saved results, in seconds. <strong>Re-extraction</strong> is a separate, deliberate step.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">25</span></div></section><div class="notes-src" hidden><p>≈3 min. The syllabus makes a re-seedable <code>ingest.py</code> mandatory from this week: it protects against a deleted volume and a changed machine, and it is the reproducibility practice the course teaches.</p>
+<p>The syllabus asks for a script that rebuilds the graph from source data in one command. The plan reads source data as the documents together with the saved embeddings and extraction results, because repeating extraction on every rebuild at six requests per minute is not a rebuild. This reading is recorded in the plan's notes for the syllabus.</p></div></div></div>
+
+<aside id="notes" aria-label="Speaker notes">
+  <div class="notes-head"><span>Speaker notes</span><span id="timer">00:00</span></div>
+  <div id="notes-body"></div>
+</aside>
+
+<aside id="outline" aria-label="Slide list">
+  <div class="outline-head"><span>Slides</span><span id="outline-count">25</span></div>
+  <div id="outline-list"></div>
+</aside>
+
+<div id="hud">
+  <span id="counter">1 / 25</span>
+  <button type="button" data-act="prev" title="Previous (←)">‹</button>
+  <button type="button" data-act="next" title="Next (→)">›</button>
+  <button type="button" data-act="notes" title="Speaker notes (S)">S</button>
+  <button type="button" data-act="overview" title="Overview (O)">O</button>
+  <button type="button" data-act="outline" title="Slide list (L)">L</button>
+  <button type="button" data-act="theme" title="Light / dark (T)">T</button>
+  <button type="button" data-act="help" title="Help (?)">?</button>
+</div>
+
+<div id="overlay" role="dialog" aria-label="Keyboard shortcuts">
+  <dl>
+    <dt>← →</dt><dd>Previous / next slide</dd>
+    <dt>Space</dt><dd>Next slide</dd>
+    <dt>Home / End</dt><dd>First / last slide</dd>
+    <dt>1–9</dt><dd>Jump to slide number, then Enter</dd>
+    <dt>S</dt><dd>Speaker notes and lecture timer</dd>
+    <dt>R</dt><dd>Reset the timer</dd>
+    <dt>O</dt><dd>Slide overview — a visual grid, click a slide to jump</dd>
+    <dt>L</dt><dd>Slide list — titles only, click to jump</dd>
+    <dt>T</dt><dd>Light / dark, for the room you are in</dd>
+    <dt>F</dt><dd>Fullscreen</dd>
+    <dt>B</dt><dd>Blank the screen</dd>
+    <dt>Ctrl+P</dt><dd>Print / export a PDF handout</dd>
+    <dt>Esc</dt><dd>Close this, or leave overview</dd>
+  </dl>
+</div>
+<div id="blank"></div>
+
+<script>
+(function(){
+  "use strict";
+  var W = 1280, H = 720;
+  var stage = document.getElementById("stage");
+  var frames = Array.prototype.slice.call(stage.querySelectorAll(".frame"));
+  var notesPanel = document.getElementById("notes");
+  var notesBody = document.getElementById("notes-body");
+  var outlinePanel = document.getElementById("outline");
+  var outlineList = document.getElementById("outline-list");
+  var OUTLINE = [{"i": 1, "t": "Knowledge Graphs Design", "k": "title"}, {"i": 2, "t": "What a graph captures that a vector does not", "k": "section"}, {"i": 3, "t": "Two representations, two kinds of claim", "k": "content"}, {"i": 4, "t": "The same knowledge, two ways", "k": "content"}, {"i": 5, "t": "Two layers: the text and the domain", "k": "section"}, {"i": 6, "t": "Two layers, one join", "k": "content"}, {"i": 7, "t": "Designing the domain model from competency questions", "k": "section"}, {"i": 8, "t": "Questions first", "k": "content"}, {"i": 9, "t": "A model is validated before any data exists", "k": "content"}, {"i": 10, "t": "Graph design defects", "k": "content"}, {"i": 11, "t": "Direction and granularity", "k": "content"}, {"i": 12, "t": "Where relationships come from", "k": "section"}, {"i": 13, "t": "Three origins", "k": "content"}, {"i": 14, "t": "The course graph is curated", "k": "content"}, {"i": 15, "t": "Extracting entities and relationships with a model", "k": "section"}, {"i": 16, "t": "Extraction: chunks in, facts out", "k": "content"}, {"i": 17, "t": "Why the schema comes before extraction", "k": "content"}, {"i": 18, "t": "What an ontology is", "k": "content"}, {"i": 19, "t": "Entity resolution", "k": "section"}, {"i": 20, "t": "The same entity, different strings", "k": "content"}, {"i": 21, "t": "What normalisation cannot do", "k": "content"}, {"i": 22, "t": "From the design to a re-seedable ingest.py", "k": "section"}, {"i": 23, "t": "Where the design is enforced", "k": "content"}, {"i": 24, "t": "The load order", "k": "content"}, {"i": 25, "t": "Four stages, two of them saved", "k": "content"}];
+  var counter = document.getElementById("counter");
+  var progress = document.getElementById("progress");
+  var overlay = document.getElementById("overlay");
+  var blank = document.getElementById("blank");
+  var total = frames.length;
+  var index = 0;
+  var overview = false;
+  var pending = "";
+  var pendingTimer = null;
+
+  function store(key, value){ try{ localStorage.setItem(key, value); }catch(e){} }
+  function load(key){ try{ return localStorage.getItem(key); }catch(e){ return null; } }
+
+  var savedTheme = load("deck-theme");
+  if(savedTheme === "light" || savedTheme === "dark"){
+    document.documentElement.setAttribute("data-theme", savedTheme);
+  }
+
+  /* Shrink a slide's type until its content fits the fixed 1280x720 box.
+     Content is never removed -- only scaled. */
+  function fit(frame){
+    var slide = frame.querySelector(".slide");
+    var body = frame.querySelector(".slide-body");
+    if(!slide || !body) return;
+    body.style.setProperty("--fit", 1);
+    if(body.scrollHeight <= body.clientHeight + 1) { frame.removeAttribute("data-overflow"); return; }
+    var lo = 0.55, hi = 1, best = 0.55;
+    for(var i = 0; i < 9; i++){
+      var mid = (lo + hi) / 2;
+      body.style.setProperty("--fit", mid);
+      if(body.scrollHeight <= body.clientHeight + 1){ best = mid; lo = mid; } else { hi = mid; }
+    }
+    body.style.setProperty("--fit", best);
+    if(best <= 0.56 && body.scrollHeight > body.clientHeight + 1){
+      frame.setAttribute("data-overflow", "1");
+    } else {
+      frame.removeAttribute("data-overflow");
+    }
+  }
+
+  function layout(){
+    if(overview){
+      document.body.classList.add("is-overview");
+      var pad = 24, gap = 18;
+      var cols = window.innerWidth > 1500 ? 4 : (window.innerWidth > 1000 ? 3 : 2);
+      var cellW = (window.innerWidth - pad * 2 - gap * (cols - 1)) / cols;
+      var scale = cellW / W;
+      var cellH = H * scale;
+      frames.forEach(function(frame, i){
+        var col = i % cols, row = Math.floor(i / cols);
+        frame.style.transform = "translate(" + (col * (cellW + gap)) + "px," +
+                                (row * (cellH + gap)) + "px) scale(" + scale + ")";
+      });
+      stage.style.height = (Math.ceil(total / cols) * (cellH + gap) + pad) + "px";
+    } else {
+      document.body.classList.remove("is-overview");
+      stage.style.height = "";
+      var s = Math.min(window.innerWidth / W, window.innerHeight / H);
+      var x = (window.innerWidth - W * s) / 2, y = (window.innerHeight - H * s) / 2;
+      frames.forEach(function(frame){
+        frame.style.transform = "translate(" + x + "px," + y + "px) scale(" + s + ")";
+      });
+    }
+  }
+
+  function renderNotes(){
+    var src = frames[index].querySelector(".notes-src");
+    notesBody.innerHTML = src ? src.innerHTML
+      : '<p class="notes-empty">No notes for this slide.</p>';
+  }
+
+  /* Built once: a plain list of slide titles, independent of the O overview
+     grid. textContent only -- a title is untrusted-ish authored text, and
+     this sidesteps ever needing to HTML-escape it. */
+  function buildOutline(){
+    OUTLINE.forEach(function(o){
+      var row = document.createElement("div");
+      row.className = "outline-item" + (o.k === "section" || o.k === "title" ? " is-section" : "");
+      row.setAttribute("data-index", o.i);
+      var num = document.createElement("span");
+      num.className = "outline-num";
+      num.textContent = o.i;
+      var t = document.createElement("span");
+      t.className = "outline-title";
+      t.textContent = o.t;
+      row.appendChild(num);
+      row.appendChild(t);
+      outlineList.appendChild(row);
+    });
+  }
+
+  function updateOutlineHighlight(){
+    var items = outlineList.querySelectorAll(".outline-item");
+    for(var i = 0; i < items.length; i++){
+      items[i].classList.toggle("is-current", i === index);
+    }
+  }
+
+  function show(next, push){
+    index = Math.max(0, Math.min(total - 1, next));
+    frames.forEach(function(frame, i){ frame.classList.toggle("is-active", i === index); });
+    counter.textContent = (index + 1) + " / " + total;
+    progress.style.width = (total > 1 ? (index / (total - 1)) * 100 : 100) + "%";
+    renderNotes();
+    if(outlinePanel.classList.contains("is-open")) updateOutlineHighlight();
+    if(push !== false){
+      try{ history.replaceState(null, "", "#" + (index + 1)); }catch(e){}
+    }
+    if(overview) frames[index].scrollIntoView({block:"nearest"});
+  }
+
+  /* Lecture timer -- starts on first use of the notes panel. */
+  var elapsed = 0, ticking = null, timerEl = document.getElementById("timer");
+  function paint(){
+    var m = Math.floor(elapsed / 60), s = elapsed % 60;
+    timerEl.textContent = (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s;
+  }
+  function startTimer(){
+    if(ticking) return;
+    ticking = setInterval(function(){ elapsed++; paint(); }, 1000);
+  }
+
+  function toggleNotes(){
+    var open = notesPanel.classList.toggle("is-open");
+    if(open) startTimer();
+  }
+  function toggleOutline(){
+    var open = outlinePanel.classList.toggle("is-open");
+    if(open){
+      updateOutlineHighlight();
+      var current = outlineList.querySelector(".outline-item.is-current");
+      if(current) current.scrollIntoView({block:"nearest"});
+    }
+  }
+  function toggleOverview(){
+    overview = !overview;
+    layout();
+    if(!overview) frames[index].scrollIntoView({block:"nearest"});
+  }
+  function toggleTheme(){
+    var root = document.documentElement;
+    var next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    root.setAttribute("data-theme", next);
+    store("deck-theme", next);
+  }
+
+  document.getElementById("hud").addEventListener("click", function(ev){
+    var act = ev.target.getAttribute && ev.target.getAttribute("data-act");
+    if(!act) return;
+    if(act === "prev") show(index - 1);
+    else if(act === "next") show(index + 1);
+    else if(act === "notes") toggleNotes();
+    else if(act === "overview") toggleOverview();
+    else if(act === "outline") toggleOutline();
+    else if(act === "theme") toggleTheme();
+    else if(act === "help") overlay.classList.toggle("is-open");
+  });
+
+  outlineList.addEventListener("click", function(ev){
+    var item = ev.target.closest ? ev.target.closest(".outline-item") : null;
+    if(!item) return;
+    show(parseInt(item.getAttribute("data-index"), 10) - 1);
+    outlinePanel.classList.remove("is-open");
+  });
+
+  stage.addEventListener("click", function(ev){
+    if(!overview) return;
+    var frame = ev.target.closest ? ev.target.closest(".frame") : null;
+    if(!frame) return;
+    show(frames.indexOf(frame));
+    toggleOverview();
+  });
+
+  overlay.addEventListener("click", function(){ overlay.classList.remove("is-open"); });
+  blank.addEventListener("click", function(){ blank.classList.remove("is-open"); });
+
+  document.addEventListener("keydown", function(ev){
+    if(ev.ctrlKey || ev.metaKey || ev.altKey) return;
+    var key = ev.key;
+
+    if(/^[0-9]$/.test(key)){
+      pending += key;
+      clearTimeout(pendingTimer);
+      pendingTimer = setTimeout(function(){ pending = ""; }, 1200);
+      return;
+    }
+    if(key === "Enter" && pending){
+      show(parseInt(pending, 10) - 1);
+      pending = "";
+      return;
+    }
+
+    switch(key){
+      case "ArrowRight": case "PageDown": case " ": case "Spacebar":
+        ev.preventDefault(); show(index + 1); break;
+      case "ArrowLeft": case "PageUp":
+        ev.preventDefault(); show(index - 1); break;
+      case "ArrowDown": ev.preventDefault(); show(index + 1); break;
+      case "ArrowUp": ev.preventDefault(); show(index - 1); break;
+      case "Home": ev.preventDefault(); show(0); break;
+      case "End": ev.preventDefault(); show(total - 1); break;
+      case "s": case "S": case "і": case "І": toggleNotes(); break;
+      case "o": case "O": case "щ": case "Щ": toggleOverview(); break;
+      case "l": case "L": case "д": case "Д": toggleOutline(); break;
+      case "t": case "T": case "е": case "Е": toggleTheme(); break;
+      case "r": case "R": case "к": case "К": elapsed = 0; paint(); break;
+      case "b": case "B": case "и": case "И": blank.classList.toggle("is-open"); break;
+      case "f": case "F": case "а": case "А":
+        if(document.fullscreenElement) document.exitFullscreen();
+        else if(document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+        break;
+      case "?": overlay.classList.toggle("is-open"); break;
+      case "Escape":
+        if(blank.classList.contains("is-open")) blank.classList.remove("is-open");
+        else if(overlay.classList.contains("is-open")) overlay.classList.remove("is-open");
+        else if(overview) toggleOverview();
+        else if(outlinePanel.classList.contains("is-open")) outlinePanel.classList.remove("is-open");
+        else notesPanel.classList.remove("is-open");
+        break;
+    }
+  });
+
+  var touchX = null;
+  document.addEventListener("touchstart", function(ev){ touchX = ev.touches[0].clientX; }, {passive:true});
+  document.addEventListener("touchend", function(ev){
+    if(touchX === null) return;
+    var dx = ev.changedTouches[0].clientX - touchX;
+    if(Math.abs(dx) > 60) show(index + (dx < 0 ? 1 : -1));
+    touchX = null;
+  }, {passive:true});
+
+  var resizeTimer = null;
+  window.addEventListener("resize", function(){
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(layout, 90);
+  });
+  window.addEventListener("beforeprint", function(){ frames.forEach(fit); });
+
+  function boot(){
+    buildOutline();
+    frames.forEach(fit);
+    layout();
+    var hash = parseInt((location.hash || "").replace("#", ""), 10);
+    show(isNaN(hash) ? 0 : hash - 1, false);
+    var bad = frames.filter(function(f){ return f.hasAttribute("data-overflow"); })
+                    .map(function(f){ return f.getAttribute("data-index"); });
+    if(bad.length){
+      console.warn("[deck] content still overflows after scaling on slide(s): " + bad.join(", ") +
+                   " -- split them in the source Markdown with an --- rule.");
+    }
+  }
+  if(document.readyState === "complete") boot();
+  else window.addEventListener("load", boot);
+})();
+</script>
+</body>
+</html>

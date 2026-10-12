@@ -1,0 +1,624 @@
+<!doctype html>
+<html lang="uk" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Week 5 — Practical: A Knowledge Graph of the Course</title>
+<style>
+:root{
+  --w:1280px; --h:720px;
+  --bg:#fbfaf8; --panel:#ffffff; --ink:#1a1a1a; --ink-soft:#5b5b5b; --ink-faint:#8c8c8c;
+  --rule:#e2ded7; --accent:#1c5d99; --accent-soft:#e8f0f7; --mark:#f5efe3;
+  --code-bg:#f4f2ee; --code-ink:#26303a;
+  --tok-kw:#8a3d8f; --tok-str:#1f6f4a; --tok-com:#8c8c8c; --tok-num:#a35a1f;
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Consolas,"Liberation Mono",Menlo,monospace;
+}
+html[data-theme="dark"]{
+  --bg:#14161a; --panel:#1b1e24; --ink:#e9e6e1; --ink-soft:#a9a5a0; --ink-faint:#6f6b67;
+  --rule:#2c3138; --accent:#6fb3e8; --accent-soft:#1d2b38; --mark:#2a2620;
+  --code-bg:#1f242b; --code-ink:#d6dee7;
+  --tok-kw:#c99ae0; --tok-str:#7fd0a3; --tok-com:#7b7772; --tok-num:#e0a86a;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font-family:var(--font)}
+body.is-overview{overflow:auto}
+
+#stage{position:relative;width:100%;height:100%}
+.frame{position:absolute;top:0;left:0;width:var(--w);height:var(--h);transform-origin:top left}
+.slide{
+  position:absolute;inset:0;background:var(--panel);display:flex;flex-direction:column;
+  padding:56px 72px 40px;visibility:hidden;opacity:0;
+  transition:opacity .18s ease;overflow:hidden;
+}
+.frame.is-active .slide{visibility:visible;opacity:1}
+/* Inactive frames stay in the DOM (for the crossfade) stacked at the same
+   position as the active one. Without this they are invisible but still
+   catch the mouse, which silently blocks selecting text on the slide you
+   can actually see. Overview mode needs the opposite -- every thumbnail
+   must stay clickable -- so the rule is scoped to non-overview only. */
+body:not(.is-overview) .frame:not(.is-active){pointer-events:none}
+.slide-body{flex:1;min-height:0;font-size:calc(23px * var(--fit,1));line-height:1.5}
+
+.slide-title{margin:0 0 .7em;font-size:2.0em;line-height:1.15;font-weight:650;letter-spacing:-.015em}
+.slide--title{justify-content:center;padding:72px 96px}
+.slide--title .slide-body{display:flex;flex-direction:column;justify-content:center}
+.slide--title .slide-title{font-size:3.1em;margin-bottom:.35em}
+.slide-subtitle{margin:0;font-size:1.25em;color:var(--ink-soft);max-width:34em}
+.slide--section{justify-content:center}
+.slide--section .slide-body{display:flex;flex-direction:column;justify-content:center}
+.slide--section .slide-title{font-size:2.6em;margin-bottom:.5em}
+.slide--section .slide-title::after{
+  content:"";display:block;width:2.2em;height:3px;margin-top:.5em;background:var(--accent);border-radius:2px;
+}
+.slide--content .slide-title{
+  padding-bottom:.4em;border-bottom:2px solid var(--rule);
+}
+
+.slide-content h3{margin:1.1em 0 .45em;font-size:1.22em;font-weight:640;color:var(--accent)}
+.slide-content h4,.slide-content h5,.slide-content h6{margin:.9em 0 .35em;font-size:1.05em;font-weight:640}
+.slide-content>:first-child{margin-top:0}
+.slide-content p{margin:0 0 .7em;max-width:46em}
+.slide-content ul,.slide-content ol{margin:0 0 .7em;padding-left:1.35em}
+.slide-content li{margin:.3em 0}
+.slide-content li>ul,.slide-content li>ol{margin:.25em 0 .25em}
+.slide-content ul>li::marker{color:var(--accent)}
+.slide-content strong{font-weight:660}
+.slide-content a{color:var(--accent);text-decoration:none;border-bottom:1px solid var(--rule)}
+.slide-content hr{border:0;border-top:1px solid var(--rule);margin:1em 0}
+.slide-content code{
+  font-family:var(--mono);font-size:.88em;background:var(--code-bg);color:var(--code-ink);
+  padding:.12em .34em;border-radius:4px;
+}
+.slide-content pre{
+  margin:0 0 .75em;background:var(--code-bg);border:1px solid var(--rule);border-left:3px solid var(--accent);
+  border-radius:6px;padding:.7em .9em;overflow:auto;max-width:100%;
+}
+.slide-content pre code{
+  background:none;padding:0;font-size:.82em;line-height:1.45;color:var(--code-ink);
+  display:block;white-space:pre;
+}
+.slide-content pre.verbatim code{font-size:.78em;line-height:1.35}
+.tok-kw{color:var(--tok-kw)}.tok-str{color:var(--tok-str)}
+.tok-com{color:var(--tok-com);font-style:italic}.tok-num{color:var(--tok-num)}
+.slide-content blockquote{
+  margin:0 0 .8em;padding:.6em 1em;background:var(--accent-soft);border-left:3px solid var(--accent);
+  border-radius:0 6px 6px 0;
+}
+.slide-content blockquote p{margin:0;font-size:1.05em}
+.slide-content blockquote p+p{margin-top:.5em}
+.table-wrap{overflow-x:auto;margin:0 0 .8em;max-width:100%}
+.slide-content table{border-collapse:collapse;width:100%;font-size:.92em}
+.slide-content th,.slide-content td{padding:.4em .7em;border-bottom:1px solid var(--rule);vertical-align:top}
+.slide-content th{font-weight:660;color:var(--accent);border-bottom:2px solid var(--rule);white-space:nowrap}
+.slide-content tbody tr:last-child td{border-bottom:none}
+.slide-content img{max-width:100%;height:auto;border-radius:6px}
+
+.slide-foot{
+  display:flex;justify-content:space-between;align-items:flex-end;
+  font-size:13px;color:var(--ink-faint);padding-top:12px;flex:none;
+}
+.slide--title .slide-foot,.slide--section .slide-foot{opacity:.55}
+.foot-num{font-variant-numeric:tabular-nums}
+
+#progress{position:fixed;left:0;top:0;height:3px;background:var(--accent);width:0;z-index:40;transition:width .18s ease}
+#hud{
+  position:fixed;right:14px;bottom:12px;z-index:40;display:flex;gap:10px;align-items:center;
+  font-size:12px;color:var(--ink-faint);background:var(--bg);padding:4px 8px;border-radius:6px;opacity:.75;
+}
+#hud button{
+  font:inherit;color:inherit;background:none;border:1px solid var(--rule);border-radius:5px;
+  padding:2px 7px;cursor:pointer;
+}
+#hud button:hover{color:var(--accent);border-color:var(--accent)}
+
+#notes{
+  position:fixed;right:0;bottom:0;top:0;width:360px;z-index:50;background:var(--panel);
+  border-left:1px solid var(--rule);padding:18px 20px;overflow:auto;
+  font-size:15px;line-height:1.55;transform:translateX(100%);transition:transform .2s ease;
+}
+#notes.is-open{transform:none}
+#notes h3{margin:.9em 0 .3em;font-size:1em;color:var(--accent)}
+#notes p,#notes li{margin:.35em 0}
+#notes pre{background:var(--code-bg);padding:.5em .7em;border-radius:5px;overflow:auto;font-size:.85em}
+#notes code{font-family:var(--mono);font-size:.88em}
+.notes-head{
+  display:flex;justify-content:space-between;align-items:baseline;
+  border-bottom:1px solid var(--rule);padding-bottom:8px;margin-bottom:10px;
+  font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-faint);
+}
+#timer{font-variant-numeric:tabular-nums;font-size:15px;letter-spacing:0;color:var(--ink)}
+.notes-empty{color:var(--ink-faint);font-style:italic}
+
+/* Anchored to the L button in the HUD (bottom-right) horizontally, so
+   opening it is a small mouse/eye movement rather than a trip across the
+   screen -- but full page height, so a normal-length deck lists with no
+   internal scrolling. Closed state keeps pointer-events:none -- the same
+   fix as the inactive-slide-frame bug: an invisible-but-present fixed
+   element must not be able to catch clicks meant for whatever is under it. */
+#outline{
+  position:fixed;right:14px;top:16px;bottom:52px;z-index:50;background:var(--panel);
+  border:1px solid var(--rule);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.22);
+  width:320px;padding:12px 10px;overflow:auto;
+  transform-origin:bottom right;transform:scale(.97);opacity:0;pointer-events:none;
+  transition:transform .15s ease,opacity .15s ease;
+}
+#outline.is-open{transform:scale(1);opacity:1;pointer-events:auto}
+.outline-head{
+  display:flex;justify-content:space-between;align-items:baseline;
+  border-bottom:1px solid var(--rule);padding:0 8px 8px;margin:0 0 6px;
+  font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-faint);
+}
+.outline-item{
+  display:flex;gap:10px;align-items:baseline;padding:7px 8px;border-radius:5px;
+  cursor:pointer;font-size:14px;line-height:1.35;
+}
+.outline-item:hover{background:var(--accent-soft)}
+.outline-item.is-current{background:var(--accent-soft);color:var(--accent);font-weight:650}
+.outline-num{flex:none;width:2em;text-align:right;color:var(--ink-faint);font-variant-numeric:tabular-nums}
+.outline-item.is-current .outline-num{color:var(--accent)}
+.outline-item.is-section .outline-title{font-style:italic}
+
+#overlay{
+  position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.86);color:#fff;
+  display:none;align-items:center;justify-content:center;font-size:15px;line-height:1.7;
+}
+#overlay.is-open{display:flex}
+#overlay dl{display:grid;grid-template-columns:auto 1fr;gap:.4em 1.4em;margin:0}
+#overlay dt{font-family:var(--mono);color:#8fd0ff;text-align:right}
+#overlay dd{margin:0}
+#blank{position:fixed;inset:0;background:#000;z-index:70;display:none}
+#blank.is-open{display:block}
+
+body.is-overview #stage{height:auto;padding:24px}
+body.is-overview .slide{visibility:visible;opacity:1;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.12)}
+body.is-overview .frame{outline:2px solid transparent;border-radius:8px}
+body.is-overview .frame.is-active{outline-color:var(--accent)}
+body.is-overview #hud,body.is-overview #progress{opacity:.9}
+
+@media print{
+  html,body{overflow:visible;height:auto;background:#fff}
+  #progress,#hud,#notes,#outline,#overlay,#blank{display:none!important}
+  #stage{position:static;width:auto;height:auto}
+  .frame{position:static!important;transform:none!important;width:100%;height:auto;page-break-after:always}
+  .slide{
+    position:static;visibility:visible!important;opacity:1!important;
+    height:auto;min-height:0;border:1px solid #ddd;box-shadow:none;page-break-inside:avoid;
+  }
+  .slide-body{font-size:15px!important}
+  @page{size:landscape;margin:10mm}
+}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<div id="stage"><div class="frame" data-index="1"><section class="slide slide--title" aria-label="Slide 1"><div class="slide-body"><h1 class="slide-title">Week 5 — Practical</h1><p class="slide-subtitle">Modern AI Systems · Practical 5</p><div class="slide-content"><p><strong>A knowledge graph of the course, built the way you will build yours in Lab 2</strong></p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">1</span></div></section><div class="notes-src" hidden><p>≈90 min. Run sheet: none. Section intent in <code>week-05-practical-plan.md</code>; the step timings below sum to 89 minutes and are guidance, not a script.</p>
+<p>Project this deck and leave it up. Students self-pace through <code>week5/kg_lab.ipynb</code>, whose Parts 1 to 8 follow the steps here. Circulate.</p>
+<p>THE DECISION THAT SHAPES THIS SESSION: everyone builds the SAME graph, of the course itself. Students model their own domains in Lab 2, not today (decided 2026-10-04). Say this at the start, because several will arrive expecting to work on their project.</p>
+<p>THE CONSTRAINT: the free Gemini tier allows 20 generation requests per model per day (measured 2026-10-04). Extraction therefore runs on Lightning AI. Check in the first five minutes that every student has a working <code>LIGHTNING_API_KEY</code>; a student without one uses Gemini for the notebook's fourteen calls, which fit in a day's twenty.</p>
+<p>BEFORE THE SESSION: Neo4j running on every machine (Week 4), and <code>git pull</code> for the new <code>week5/</code> folder.</p></div></div>
+<div class="frame" data-index="2"><section class="slide slide--content" aria-label="Slide 2"><div class="slide-body"><h2 class="slide-title">What you leave with today</h2><div class="slide-content"><ul><li>A <strong>knowledge graph of the course</strong>, built from its documents alone, every extracted fact citing the chunk that states it</li><li>A measured picture of <strong>what extraction finds</strong>, and what resolution has to fix</li><li>An <strong><code>ingest.py</code></strong> that rebuilds it in one command, and is the template for <strong>Lab 2</strong></li></ul></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">2</span></div></section><div class="notes-src" hidden><p>≈1 min. Read the list and move on.</p></div></div>
+<div class="frame" data-index="3"><section class="slide slide--content" aria-label="Slide 3"><div class="slide-body"><h2 class="slide-title">One graph, the same for everyone</h2><div class="slide-content"><div class="table-wrap"><table><thead><tr><th style="text-align:left">You start with</th><th style="text-align:left">What it is</th></tr></thead><tbody><tr><td style="text-align:left">Week 3's sample corpus</td><td style="text-align:left">183 chunks of the course's own material, and nothing else</td></tr></tbody></table></div>
+<p><strong>Extraction</strong> builds the rest: topics, tools and deliverables that a chunk <strong>mentions</strong>, and the <code>BUILDS_ON</code>, <code>USES</code> and <code>ASSESSES</code> it <strong>states</strong>.</p>
+<p>Every result today can be <strong>checked</strong>, because everyone has the same documents.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">3</span></div></section><div class="notes-src" hidden><p>≈2 min. This is the reason for a shared example, and it is the same reason the Week 4 practical used the Movies graph: a known answer. On thirty different domains no one can tell whether a surprising result is a bug or a fact.</p>
+<p>State that this is exactly the position of Lab 2: documents and no graph. Week 4's hand-written course graph is not used today (instructor decision, 2026-10-04). Lab 2 is where students apply the same steps to their own domain; the <code>ingest.py</code> of Step 14 is the template.</p></div></div>
+<div class="frame" data-index="4"><section class="slide slide--content" aria-label="Slide 4"><div class="slide-body"><h2 class="slide-title">Before anything: 20 requests a day</h2><div class="slide-content"><p>The free Gemini tier allows <strong>20 generation requests per model per day</strong>, shared by everything you run with your key.</p>
+<ul><li>Today's extraction uses <strong>Lightning AI</strong>: <code>LIGHTNING_API_KEY</code> in <code>.env</code></li><li>No Lightning key? Use <code>provider="gemini"</code>: today needs <strong>14</strong> calls</li></ul>
+<pre class="lang-bash"><code><span class="tok-kw">cd</span> week5
+python -c <span class="tok-str">"import sys; sys.path.insert(0,'../common'); from llm_client import LLMClient; print(LLMClient(provider='lightning').chat('Say OK.').text)"</span></code></pre></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">4</span></div></section><div class="notes-src" hidden><p>≈3 min. Measured 2026-10-04: the quota is <code>GenerateRequestsPerDayPerProjectPerModel- FreeTier</code>, value 20, and the error asks to retry in several hours. The six-per-minute limit that earlier weeks planned around is not the one that binds.</p>
+<p>A <code>401</code> from Lightning means the key is invalid or expired; a new one comes from Lightning AI, Global Settings, Keys. This happened during preparation.</p>
+<p>State the Lab 2 consequence now: at three chunks per call, a 3,000-chunk corpus is 1,000 calls, which is fifty days of Gemini's free quota.</p></div></div>
+<div class="frame" data-index="5"><section class="slide slide--section" aria-label="Slide 5"><div class="slide-body"><h2 class="slide-title">Questions first</h2></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">5</span></div></section><div class="notes-src" hidden><p>Section divider. Plan §1 to §3. ≈20 min for the three steps that follow.</p></div></div>
+<div class="frame" data-index="6"><section class="slide slide--content" aria-label="Slide 6"><div class="slide-body"><h2 class="slide-title">Step 1 — Five competency questions</h2><div class="slide-content"><div class="table-wrap"><table><thead><tr><th style="text-align:left"></th><th style="text-align:left">Question</th></tr></thead><tbody><tr><td style="text-align:left">Q1</td><td style="text-align:left">Which documents mention Chroma, and for which week?</td></tr><tr><td style="text-align:left">Q2</td><td style="text-align:left">Which topics use Chroma, and where is that stated?</td></tr><tr><td style="text-align:left">Q3</td><td style="text-align:left">Which prerequisites does the material state, and where?</td></tr><tr><td style="text-align:left">Q4</td><td style="text-align:left">Which tools appear in more than one week's material?</td></tr><tr><td style="text-align:left">Q5</td><td style="text-align:left">Which documents discuss a topic that uses Chroma, without naming Chroma?</td></tr></tbody></table></div>
+<p>Each has its <strong>Cypher query written before any data exists</strong>. Read them: which need the <strong>text</strong> layer, what <strong>extraction</strong> adds, or <strong>both</strong>? Which relationship types do they traverse?</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">6</span></div></section><div class="notes-src" hidden><p>≈8 min. Notebook Part 1, Exercise 1. The queries are in <code>QUERIES</code>; Parts 5 and 6 run the same dictionary.</p>
+<p>Make the point that the queries were written before the data: that is the lecture's validation step, a question whose query cannot be written exposes a gap in the model. Every query is a single pattern.</p>
+<p>The relationship types traversed: FOR_WEEK, HAS_CHUNK, MENTIONS (Q1, Q4, Q5), USES (Q2, Q5), BUILDS_ON (Q3). Not traversed by any of the five: NEXT and ASSESSES. Step 3 returns to them.</p>
+<p>Answers to the "needs" column: Q1 and Q4 both, the text layer for documents and weeks and an extracted mention of a tool; Q2 and Q3 extraction alone, with the citing chunk read off the relationship; Q5 both, and it is the one a text search cannot answer: documents that discuss a topic the material elsewhere ties to Chroma, without naming Chroma.</p>
+<p>These questions replaced an earlier set about labs (2026-10-04) because the documents barely state what a lab assesses; Step 10 shows it. A competency question is only as good as the corpus's ability to answer it.</p></div></div>
+<div class="frame" data-index="7"><section class="slide slide--content" aria-label="Slide 7"><div class="slide-body"><h2 class="slide-title">Step 2 — Read the model</h2><div class="slide-content"><pre class="verbatim"><code>(:Document)-[:HAS_CHUNK]-&gt;(:Chunk)-[:NEXT]-&gt;(:Chunk)       text layer, no API call
+(:Document)-[:FOR_WEEK]-&gt;(:Week)                          week read from the file name
+(:Chunk)-[:MENTIONS]-&gt;(:Topic|Tool|Deliverable)           from extraction
+(:Topic)-[:BUILDS_ON]-&gt;(:Topic)   (:Topic)-[:USES]-&gt;(:Tool)
+(:Deliverable)-[:ASSESSES]-&gt;(:Topic)                      each with r.chunks</code></pre>
+<ol><li>Why is <code>FOR_WEEK</code> a relationship, but a document's <code>kind</code> a property?</li><li>Why is the <strong>alias table</strong> written by reading the output, not by the model?</li><li>Why does <code>r.chunks</code> list each chunk <strong>once</strong>?</li></ol></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">7</span></div></section><div class="notes-src" hidden><p>≈7 min. Notebook Part 2. The model is in <code>week5/kg_model.py</code>, written once; the schema and the loader's check are built from it.</p>
+<p>Answers. (1) Q1 and Q4 traverse from a document to its week; nothing traverses the kind, it is only read. (2) Which names are one entity is a judgement that must be the same on every run and checkable by a person; a model asked to merge names drifts between runs as much as the names do, and a wrong merge puts a false fact into the graph. (3) One relationship stated by three chunks would otherwise be three parallel relationships, and every path through it would be counted three times; and the list must not grow on a second load.</p>
+<p>The chunk ids are <code>&lt;file&gt;#&lt;position&gt;</code>. Chunking is deterministic, so they are the same on every machine: checked 2026-10-04, re-chunking reproduces all 183 chunks Week 3 stored.</p></div></div>
+<div class="frame" data-index="8"><section class="slide slide--content" aria-label="Slide 8"><div class="slide-body"><h2 class="slide-title">Step 3 — Review it against the defects</h2><div class="slide-content"><ul><li>A relationship type <strong>no question traverses</strong></li><li>A <strong>generic</strong> relationship, an <strong>over-general</strong> entity type</li><li>A <strong>value as a node</strong>; a question whose query <strong>needs a missing</strong> relationship</li><li>A relationship stored <strong>in both directions</strong></li><li>A distinction made a <strong>type</strong> that belongs in a property or label</li></ul>
+<p><strong>Which relationship types does none of Q1 to Q5 traverse?</strong> Justify each, or remove it.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">8</span></div></section><div class="notes-src" hidden><p>≈5 min. In pairs, from this slide; the notebook has no part for it. The seven checks are the lecture's five defects and its slide on direction and granularity.</p>
+<p>The intended finding: NEXT and ASSESSES. NEXT belongs to the text layer, and Week 6 uses it to widen a retrieved chunk to its neighbours. ASSESSES is the instructive one: it was declared so that the graph could answer questions about labs, and Step 10 shows the corpus cannot support it. The point to make is what a student does about such a type in their own model: write the question that justifies it and check the corpus states it, or remove it. It is kept here deliberately, as the example.</p></div></div>
+<div class="frame" data-index="9"><section class="slide slide--section" aria-label="Slide 9"><div class="slide-body"><h2 class="slide-title">Extraction</h2></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">9</span></div></section><div class="notes-src" hidden><p>Section divider. Plan §4. ≈22 min for the four slides that follow. Ten of the session's fourteen model calls per student are here, two in Part 3 and eight in Part 4; Part 7 makes four.</p></div></div>
+<div class="frame" data-index="10"><section class="slide slide--content" aria-label="Slide 10"><div class="slide-body"><h2 class="slide-title">Step 4 — A schema the model must follow</h2><div class="slide-content"><pre class="lang-python"><code><span class="tok-kw">class</span> Message(BaseModel):
+    category: Literal[<span class="tok-str">"setup"</span>, <span class="tok-str">"concept"</span>, <span class="tok-str">"deadline"</span>, <span class="tok-str">"other"</span>]
+    urgent: <span class="tok-kw">bool</span>
+    summary: <span class="tok-kw">str</span></code></pre>
+<p><code>Literal</code> becomes an <strong><code>enum</code></strong>: the model may return only those four.</p>
+<p>Extraction's <code>Mention.type</code> is the same, read from <strong><code>kg_model.py</code></strong>: <code>Literal[tuple(ENTITY_TYPES)]</code> = <code>Literal["Topic", "Tool", "Deliverable"]</code>.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">10</span></div></section><div class="notes-src" hidden><p>≈7 min. Notebook Part 3, then the opening of Part 4. Two calls. Part 3 builds on the Week 2 practical's §5, where students replaced a polite request for JSON with <code>schema=</code>; here they read the JSON Schema the class produces, see <code>result.parsed</code> arrive as a typed object, and compare the same request made in the prompt alone.</p>
+<p>Two measured points, 2026-10-04, <code>gpt-5-nano</code> via Lightning. First, do not promise that the prompt-only version fails: asking for the same JSON in the prompt parsed in six of six tries. The argument is the guarantee, not a demonstration: over 61 extraction calls one non-conforming reply is enough, and sent without strict mode this model returned "topic" for "Topic". Second, the schema fixes the shape and the vocabulary, not the judgement: the same message about a Docker port and a deadline was classified <code>deadline</code> in one run and <code>setup</code> in the next. This is the extraction lesson in miniature: a closed schema prevents undeclared types, not a wrong use of a declared one.</p>
+<p><code>tuple()</code> of a dictionary gives its keys, which is all the second line on the slide does. Read the instruction as well (<code>instruction()</code>): it asks for what a chunk states, not what is plausible, and defines each entity and relationship type in one line.</p></div></div>
+<div class="frame" data-index="11"><section class="slide slide--content" aria-label="Slide 11"><div class="slide-body"><h2 class="slide-title">Step 5 — Extract the sample, twice</h2><div class="slide-content"><p>Ten chunks, three per call. <strong>The same instruction both times.</strong></p>
+<pre class="lang-python"><code>llm = LLMClient(provider=<span class="tok-str">"lightning"</span>)
+first  = extract(llm, sample)
+second = extract(llm, sample)</code></pre>
+<p><strong>Read the ten chunks first.</strong> Your reading is the reference.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">11</span></div></section><div class="notes-src" hidden><p>≈8 min. Notebook Part 4. Eight calls; on Lightning each took 4 to 14 seconds in the preparation runs.</p>
+<p>What students should see, from the preparation run of 2026-10-04 (theirs will differ; extraction is not deterministic): the mathematics chunk gave "Laplace transform" and "Piecewise-defined function" in the first run and "Laplace image of the heat–hold–cool boundary" in the second; the stack diagram gave Cypher and Neo4j as tools, with two USES, in the first run, and neither in the second. The same chunks and the same instruction give different names and different facts. Nothing tells the model which names already exist, and in Lab 2 nothing could: that is why resolution exists.</p>
+<p>If a student's dropped count is large, their copy of <code>extraction.py</code> predates the fix that strips the brackets the model sometimes copies around a chunk id.</p></div></div>
+<div class="frame" data-index="12"><section class="slide slide--content" aria-label="Slide 12"><div class="slide-body"><h2 class="slide-title">Step 6 — Count what went wrong</h2><div class="slide-content"><div class="table-wrap"><table><thead><tr><th style="text-align:left">Failure</th><th style="text-align:left">Count</th></tr></thead><tbody><tr><td style="text-align:left"><strong>Invented</strong>: suggested, not stated</td><td style="text-align:left"></td></tr><tr><td style="text-align:left"><strong>Missed</strong>: stated, not returned</td><td style="text-align:left"></td></tr><tr><td style="text-align:left"><strong>Split</strong>: one entity, several names</td><td style="text-align:left"></td></tr><tr><td style="text-align:left"><strong>Wrong type</strong>: e.g. a tool returned as a topic</td><td style="text-align:left"></td></tr></tbody></table></div>
+<p>Then compare with the <strong>reference extraction</strong> of the same ten chunks.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">12</span></div></section><div class="notes-src" hidden><p>≈4 min. From the slide, in pairs: the notebook no longer has a counting cell.</p>
+<p>The reference sample was chosen to contain the failures. <code>week-03-lecture.md#12</code>, a pipeline diagram, came back as six BUILDS_ON along its arrows (Ingest -&gt; Chunk, Chunk -&gt; Embed, ...): the order of stages forced into a prerequisite. <code>week-02-lecture.md#14</code>, a table of a context's parts, came back as seven BUILDS_ON from "Good context" to each part: part-of forced into BUILDS_ON. <code>week-01-lecture.md#22</code>, the stack diagram, gave nine ASSESSES from the labs to layers of the stack. <code>week-01-lecture.md#23</code>, the list of weeks, gave the week titles as topics. <code>week-01-practical.md#15</code> gave Einstein -&gt; Princeton and Einstein -&gt; Relativity: an example inside the material, extracted as fact. The mathematics chunk returned ramp functions as topics, and the same names as tools at the end of a USES: one name, two types.</p>
+<p>The point to make: a closed schema prevents undeclared types. It does not prevent a wrong use of a declared one, and it cannot tell an example from a claim.</p></div></div>
+<div class="frame" data-index="13"><section class="slide slide--content" aria-label="Slide 13"><div class="slide-body"><h2 class="slide-title">What batching costs</h2><div class="slide-content"><p>The whole corpus, same model, only the batch size changed:</p>
+<div class="table-wrap"><table><thead><tr><th style="text-align:left">chunks per call</th><th style="text-align:left">calls</th><th style="text-align:left">mentions</th><th style="text-align:left">relationships</th><th style="text-align:left">entities</th></tr></thead><tbody><tr><td style="text-align:left">10</td><td style="text-align:left">19</td><td style="text-align:left">205</td><td style="text-align:left">37</td><td style="text-align:left">172</td></tr><tr><td style="text-align:left">3</td><td style="text-align:left">61</td><td style="text-align:left">623</td><td style="text-align:left">163</td><td style="text-align:left">388</td></tr></tbody></table></div>
+<p><strong>Fewer, larger calls are cheaper, and find less.</strong></p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">13</span></div></section><div class="notes-src" hidden><p>≈3 min. Measured 2026-10-04 on the 183-chunk corpus with the Lightning backend's model, extracting three entity types and three relationship types with no list of names. The 3-per-call run is the reference extraction shipped in <code>week5/extractions/</code>; the 10-per-call run is kept beside it for this comparison. "Entities" is the count after resolution. The earlier runs, with Week 4's names supplied, showed the same ordering.</p>
+<p>Connect it to Lab 2: the number of calls is the budget, and this table is the trade-off students make with it.</p></div></div>
+<div class="frame" data-index="14"><section class="slide slide--section" aria-label="Slide 14"><div class="slide-body"><h2 class="slide-title">Into the graph</h2></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">14</span></div></section><div class="notes-src" hidden><p>Section divider. Plan §5 to §8. ≈37 min for the nine slides that follow.</p></div></div>
+<div class="frame" data-index="15"><section class="slide slide--content" aria-label="Slide 15"><div class="slide-body"><h2 class="slide-title">Step 7 — Resolve the names</h2><div class="slide-content"><p>A <strong>key</strong> (lower case, tidied), then an <strong>alias</strong> table; a <strong>types</strong> table settles conflicts. Anything else is <strong>reported, not guessed</strong>.</p>
+<ul><li><code>Lab 1 — Vector RAG</code> → <em>Lab 1</em>: an alias</li><li><code>Chroma</code> as a topic and as a tool → <em>Tool</em>: a settled type</li><li><code>Knowledge graphs and Neo4j for AI</code> → a <strong>week</strong> title: left alone</li></ul>
+<p>A Ukrainian corpus also needs <strong>lemmatised</strong> keys. «Івана Франка» → <code>іван франк</code>.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">15</span></div></section><div class="notes-src" hidden><p>≈5 min. Notebook Part 5, Exercise 3. Both tables are in <code>kg_model.py</code>; read the comment above them. On the reference extraction (2026-10-04) resolution took 428 distinct (type, key) pairs to 388 entities: 46 entities had several spellings, mostly capitalisation, merged by the key alone; 10 names still came under two types and became two nodes; 10 relationships were dropped because an end had the wrong type, such as a Tool at the end of a BUILDS_ON.</p>
+<p>A wrong merge puts a false fact into the graph; a missed one only leaves two nodes. That is why the resolver does nothing clever, and why the tables hold only certain entries. Step 12 shows a wrong merge the key made by itself.</p>
+<p>The Ukrainian example is measured (2026-10-04, pymorphy3): «Іван Франко» gives <code>іван франко</code>, «Івана Франка» gives <code>іван франк</code>, read as the currency. It is for Lab 2; the course corpus is English.</p></div></div>
+<div class="frame" data-index="16"><section class="slide slide--content" aria-label="Slide 16"><div class="slide-body"><h2 class="slide-title">Step 8 — Load the sample, twice</h2><div class="slide-content"><pre class="verbatim"><code>constraints → text layer → entities → relationships → MENTIONS</code></pre>
+<pre class="lang-python"><code>resolved = resolve_results(first)     <span class="tok-com"># Step 7: what you read</span>
+load_all(driver, sample, resolved);  once  = snapshot()
+load_all(driver, sample, resolved);  twice = snapshot()
+once == twice                         <span class="tok-com"># True, including every list of chunk ids</span></code></pre></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">16</span></div></section><div class="notes-src" hidden><p>≈5 min. Notebook Part 5. The loader writes the resolution students inspected in Step 7 and resolves nothing itself, so what they read is exactly what is loaded. The order is the lecture's. <code>snapshot()</code> also sums the lengths of the <code>chunks</code> lists, because a loader that appends a chunk id on every run passes the node and relationship counts and still is not idempotent.</p>
+<p>Then the type check cell: <code>check_type</code> refuses <code>RELATED_TO</code> and an injection attempt. A relationship type cannot be a query parameter in Cypher 5, so it is written into the query text, and model output is untrusted input.</p>
+<p>Then Exercise 4: Q1 to Q5 on the sample graph. Most return little or nothing on ten chunks; ask which, and whether the cause is the model, the extraction, or the size of the sample.</p></div></div>
+<div class="frame" data-index="17"><section class="slide slide--content" aria-label="Slide 17"><div class="slide-body"><h2 class="slide-title">Step 9 — The whole corpus</h2><div class="slide-content"><p>Load the <strong>reference extraction</strong> of all 183 chunks. It is a file: <strong>no API call</strong>.</p>
+<div class="table-wrap"><table><thead><tr><th style="text-align:left"></th><th style="text-align:left"></th></tr></thead><tbody><tr><td style="text-align:left">Entities</td><td style="text-align:left"><strong>388</strong>: 283 topics, 82 tools, 23 deliverables</td></tr><tr><td style="text-align:left">Relationships</td><td style="text-align:left"><strong>145</strong>: 76 <code>USES</code>, 49 <code>BUILDS_ON</code>, 20 <code>ASSESSES</code>; 614 <code>MENTIONS</code></td></tr><tr><td style="text-align:left">In at most one chunk</td><td style="text-align:left"><strong>215</strong> of the 283 topics</td></tr></tbody></table></div>
+<p>Then run Q1 to Q5 again, now on the <strong>whole corpus</strong>.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">17</span></div></section><div class="notes-src" hidden><p>≈4 min. Notebook Part 6. Measured 2026-10-04 on Neo4j 5.26.31: identical counts after a load from an empty database and after a second load. If a student's counts differ, check the database was emptied first (the notebook does it) and that <code>extractions/course_corpus.json</code> is unmodified.</p>
+<p>The last row is the point of the slide. A graph built from documents has a long tail of names that appear once: slide titles, examples, passing remarks. The competency questions are about entities the material discusses repeatedly, which is the habit to carry into Lab 2.</p></div></div>
+<div class="frame" data-index="18"><section class="slide slide--content" aria-label="Slide 18"><div class="slide-body"><h2 class="slide-title">Step 10 — A relationship the material barely states</h2><div class="slide-content"><p><code>ASSESSES</code> was declared for questions about labs. Extraction found <strong>20</strong>:</p>
+<ul><li><strong>9</strong> from one chunk: the stack diagram, labs against its layers</li><li><strong>None</strong> says which topics Lab 1 assesses</li></ul>
+<p>Extraction finds only what the documents <strong>state</strong>.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">18</span></div></section><div class="notes-src" hidden><p>≈5 min. Notebook Part 6, the <code>ASSESSES</code> cell. What each lab assesses is in the syllabus, which is not in this corpus. The first set of competency questions for this session asked about labs and could not be answered from a graph built from these documents; it was replaced (2026-10-04) by the set on Step 1.</p>
+<p>The Lab 2 advice follows directly: before extracting, check every relationship type of the model against the corpus. A type the corpus does not state still produces relationships, which look like answers and are not. ASSESSES stays in the model as the example (instructor decision).</p></div></div>
+<div class="frame" data-index="19"><section class="slide slide--content" aria-label="Slide 19"><div class="slide-body"><h2 class="slide-title">Step 11 — Read the prerequisites</h2><div class="slide-content"><p>The 14 <code>BUILDS_ON</code> stated in four chunks. Sort them:</p>
+<div class="table-wrap"><table><thead><tr><th style="text-align:left">Correct</th><th style="text-align:left">Reversed</th><th style="text-align:left">Wrong type</th><th style="text-align:left">Not about the course</th></tr></thead><tbody><tr><td style="text-align:left"></td><td style="text-align:left"></td><td style="text-align:left"></td><td style="text-align:left"></td></tr></tbody></table></div>
+<p>Is <code>Embedding → chunking</code> <strong>wrong</strong>, or is <code>BUILDS_ON</code> <strong>under-defined</strong>?</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">19</span></div></section><div class="notes-src" hidden><p>≈5 min. Notebook Part 6, Exercise 5. The four chunks: <code>week-02-practical-plan.md#7</code>, <code>week-03-lecture-plan.md#3</code>, <code>week-03-lecture.md#12</code>, <code>week-01-practical.md#15</code>.</p>
+<p>A reading from the chunks, prepared 2026-10-04 for the instructor to check before the session. Correct, six: Tool calling and Cost work each -&gt; Structured output and -&gt; Thinking dial (the Week 2 practical plan: "Week 7 tool calling and Week 11 cost work both depend on them"); Cosine distance -&gt; Cosine similarity (defined as one minus it) and Ranking -&gt; Cosine similarity ("the mechanism every later section's ranking is built from"). Wrong type, six: the stages of the pipeline diagram, Ingest -&gt; Chunk, Chunk -&gt; Embed, Embed -&gt; Store, Query -&gt; Embed, Query -&gt; Search, Search -&gt; Ranked chunks, an order of steps read as prerequisites. Not about the course, two: Einstein -&gt; Princeton and Einstein -&gt; Relativity, from an example that illustrates what a relationship is. Reversed: none in these four.</p>
+<p>The question on the slide is the one to discuss: <code>Embedding -&gt; chunking</code> is stated in <code>week-03-practical.md#4</code>. A course teaches embeddings before chunking; a pipeline runs chunking before embedding. If two careful readers disagree on what a relationship means, the defect is in the model, not the extractor.</p></div></div>
+<div class="frame" data-index="20"><section class="slide slide--content" aria-label="Slide 20"><div class="slide-body"><h2 class="slide-title">Step 12 — Material that never names Chroma</h2><div class="slide-content"><p>Q5 on the whole corpus:</p>
+<pre class="verbatim"><code>week-01-lecture.md          Retrieval augmented generation
+week-02-practical-plan.md   Ingestion</code></pre>
+<p>A text search for "Chroma" cannot find these. <strong>Check each:</strong> does it contain "Chroma"?</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">20</span></div></section><div class="notes-src" hidden><p>≈2 min. Notebook Part 6, Q4, Q5 and Exercise 6. Measured 2026-10-04 on the reference extraction.</p>
+<p>Both rows are findings: neither document contains the string "Chroma" (checked against the corpus files; only the four Week 3 documents do, and Q1 finds all four). Each discusses a topic that the Week 3 material says uses Chroma. A query built on an absent pattern turns every missed mention into a false positive, so its answer is no better than the recall of the extraction it negates; here, the recall held.</p>
+<p>Q4 for discussion: its six tools include "CLAUDE", a wrong merge made by the key alone. The model Claude, named in <code>week-01-lecture.md#9</code>, and the file <code>CLAUDE.md</code>, named in <code>week-03-practical-plan.md#9</code>, lower-case to the same key. Ask what entry, in which table, would separate them.</p></div></div>
+<div class="frame" data-index="21"><section class="slide slide--content" aria-label="Slide 21"><div class="slide-body"><h2 class="slide-title">Co-mention is not citation</h2><div class="slide-content"><p>A chunk that <strong>mentions</strong> two topics does not <strong>state</strong> the relationship between them.</p>
+<pre class="lang-cypher"><code><span class="tok-kw">MATCH</span> (c:Chunk)-[:MENTIONS]-&gt;(a:Topic)-[r:BUILDS_ON]-&gt;(b:Topic)&lt;-[:MENTIONS]-(c)
+<span class="tok-kw">WHERE</span> <span class="tok-kw">NOT</span> c.id <span class="tok-kw">IN</span> r.chunks
+<span class="tok-kw">RETURN</span> <span class="tok-kw">count</span>(*)</code></pre>
+<p>Only the ids in <strong><code>r.chunks</code></strong> may be cited.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">21</span></div></section><div class="notes-src" hidden><p>≈2 min. Notebook Part 6. Measured 2026-10-04 on the reference extraction: 9 such chunk-relationship pairs. Week 6 enters the graph through MENTIONS, so this is the error to prevent there.</p></div></div>
+<div class="frame" data-index="22"><section class="slide slide--content" aria-label="Slide 22"><div class="slide-body"><h2 class="slide-title">Step 13 — Answering from the graph</h2><div class="slide-content"><p>Week 3's grounded instruction, unchanged; the sources are <strong>facts</strong>, each with its chunk.</p>
+<div class="table-wrap"><table><thead><tr><th style="text-align:left">Question</th><th style="text-align:left">Answer</th></tr></thead><tbody><tr><td style="text-align:left">Which parts of the course use Chroma?</td><td style="text-align:left">all <strong>six</strong>, each cited; the 3 nearest chunks only describe Chroma</td></tr><tr><td style="text-align:left">What does tool calling depend on?</td><td style="text-align:left">"Configuration" and "Prompt": <strong>faithful to a distorted fact</strong></td></tr><tr><td style="text-align:left">What does Lab 1 assess?</td><td style="text-align:left">"Knowledge" [1]: <strong>grounded, cited, and of no use</strong></td></tr></tbody></table></div></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">22</span></div></section><div class="notes-src" hidden><p>≈4 min. Notebook Part 7, Exercise 7. Four generation calls and one embedding. Measured 2026-10-04 and 2026-10-05 on Lightning with the reference extraction loaded.</p>
+<p>Three points, one per row. First, a question about a set of facts is where the graph wins: no chunk states the list of topics that use Chroma, and the Week 3 system, given the three nearest chunks, describes what Chroma is. Second, the model reports its sources faithfully, and the error is in a source: <code>week-02-practical-plan.md#4</code> says "the difference between a prompt and a configuration is the prerequisite for tool calling", and extraction split it into two prerequisites, Configuration and Prompt. The citation is what lets a student find this. Third, the grounded instruction stops the model adding to its sources; it cannot make them right. Lab 1 "assesses Knowledge" because the one ASSESSES fact came from the stack diagram (Step 10).</p>
+<p>Each query here names its starting node. Choosing the facts from the question itself, by search and traversal, is Week 6's subject; say so, and stop there.</p></div></div>
+<div class="frame" data-index="23"><section class="slide slide--content" aria-label="Slide 23"><div class="slide-body"><h2 class="slide-title">Step 14 — One command rebuilds it</h2><div class="slide-content"><pre class="lang-bash"><code>python ingest.py --reset      <span class="tok-com"># from an empty database</span>
+python ingest.py              <span class="tok-com"># again: no count changes</span></code></pre>
+<pre class="verbatim"><code>documents → chunks → embeddings → extraction → load
+            free     saved         saved         idempotent</code></pre></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">23</span></div></section><div class="notes-src" hidden><p>≈5 min. Notebook Part 8. The vectors are copied from Week 3's Chroma store and the extraction is read from the saved file, so the rebuild calls nothing. <code>--extract</code> re-runs extraction (61 calls on Lightning) and is a deliberate, separate step. <code>ingest.py</code> also removes Week 4's graphs if they are still in the database, since Community edition has one database and Week 4's course graph uses the same labels.</p></div></div>
+<div class="frame" data-index="24"><section class="slide slide--content" aria-label="Slide 24"><div class="slide-body"><h2 class="slide-title">Before you leave</h2><div class="slide-content"><ul><li><strong>Q1 to Q5</strong>: the layers and relationship types each needs, and what each returned</li><li>Your <strong>four failure counts</strong> from Step 6</li><li>Your <strong>sort</strong> of the prerequisites from four chunks</li><li><strong><code>python ingest.py</code></strong> run twice, counts unchanged</li></ul></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">24</span></div></section><div class="notes-src" hidden><p>≈2 min.</p></div></div>
+<div class="frame" data-index="25"><section class="slide slide--content" aria-label="Slide 25"><div class="slide-body"><h2 class="slide-title">For Lab 2</h2><div class="slide-content"><p>Copy <code>week5/</code> and change three things:</p>
+<ol><li>The declared types, aliases and settled types in <strong><code>kg_model.py</code></strong></li><li>The corpus: <strong><code>--corpus your_folder</code></strong> on both scripts</li><li>The <strong>competency questions</strong>, added to your gold set</li></ol>
+<p><strong>Start your extraction early.</strong> It is the one stage measured in hours or days.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">25</span></div></section><div class="notes-src" hidden><p>≈2 min. The competency questions should be ones the student's Lab 1 system cannot answer, added to the gold set with expected answers, since Lab 2 measures the graph against Lab 1 on that set.</p>
+<p>The reason to start early is not only the first extraction but the second: a model defect found in the week of the deadline leaves no time to revise the model and extract again.</p></div></div>
+<div class="frame" data-index="26"><section class="slide slide--section" aria-label="Slide 26"><div class="slide-body"><h2 class="slide-title">Troubleshooting</h2></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">26</span></div></section><div class="notes-src" hidden><p>Section divider. The errors met while preparing this session.</p></div></div>
+<div class="frame" data-index="27"><section class="slide slide--content" aria-label="Slide 27"><div class="slide-body"><h2 class="slide-title"><code>ServiceUnavailable</code> from <code>connect()</code></h2><div class="slide-content"><p>Neo4j is not running. From the repository root:</p>
+<pre class="lang-bash"><code>docker compose up -d</code></pre>
+<p>Allow about thirty seconds, then run the cell again.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">27</span></div></section><div class="notes-src" hidden><p>Same as Week 4. If Docker Desktop itself is not running, start it first.</p></div></div>
+<div class="frame" data-index="28"><section class="slide slide--content" aria-label="Slide 28"><div class="slide-body"><h2 class="slide-title"><code>401 Unauthorized</code> from Lightning</h2><div class="slide-content"><p>The key in <code>.env</code> is invalid or expired.</p>
+<p>Lightning AI → <strong>Global Settings → Keys</strong> → new key → <code>LIGHTNING_API_KEY=</code> in <code>.env</code>.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">28</span></div></section><div class="notes-src" hidden><p>Met during preparation on 2026-10-04: a key that had worked earlier returned 401 with an empty body.</p></div></div>
+<div class="frame" data-index="29"><section class="slide slide--content" aria-label="Slide 29"><div class="slide-body"><h2 class="slide-title"><code>429</code> with a retry delay of hours</h2><div class="slide-content"><p>The <strong>daily</strong> quota, not the per-minute one: 20 requests per model per day.</p>
+<ul><li>Switch to <code>provider="lightning"</code></li><li>Or wait: the error states how long</li></ul></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">29</span></div></section><div class="notes-src" hidden><p>The error names <code>GenerateRequestsPerDayPerProjectPerModel-FreeTier</code>. <code>llm_client.py</code> prints "rate limited: ~6 requests/minute" for every 429, which is misleading here; the retry delay in hours is the sign that it is the daily quota.</p></div></div>
+<div class="frame" data-index="30"><section class="slide slide--content" aria-label="Slide 30"><div class="slide-body"><h2 class="slide-title"><code>was extracted from different chunks</code></h2><div class="slide-content"><p>The corpus or the chunk size changed since the results were saved, so the chunk ids no longer match.</p>
+<p>Restore <code>week3/corpus/</code>, or re-extract.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">30</span></div></section><div class="notes-src" hidden><p><code>load_results</code> compares a fingerprint of every chunk id and text with the one saved in the results file, so results are never attached to the wrong chunks.</p></div></div>
+<div class="frame" data-index="31"><section class="slide slide--content" aria-label="Slide 31"><div class="slide-body"><h2 class="slide-title"><code>vectors: 0 of 183</code></h2><div class="slide-content"><p><code>ingest.py</code> found no Week 3 vectors to copy. The graph is complete without them; Week 6 needs them.</p>
+<pre class="lang-bash"><code><span class="tok-kw">cd</span> week3
+python ingest.py corpus/ --name week3_chunks</code></pre></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">31</span></div></section><div class="notes-src" hidden><p>Costs about two minutes of embedding quota for 183 chunks. Only needed if the student's Week 3 store was deleted or built under another collection name.</p></div></div></div>
+
+<aside id="notes" aria-label="Speaker notes">
+  <div class="notes-head"><span>Speaker notes</span><span id="timer">00:00</span></div>
+  <div id="notes-body"></div>
+</aside>
+
+<aside id="outline" aria-label="Slide list">
+  <div class="outline-head"><span>Slides</span><span id="outline-count">31</span></div>
+  <div id="outline-list"></div>
+</aside>
+
+<div id="hud">
+  <span id="counter">1 / 31</span>
+  <button type="button" data-act="prev" title="Previous (←)">‹</button>
+  <button type="button" data-act="next" title="Next (→)">›</button>
+  <button type="button" data-act="notes" title="Speaker notes (S)">S</button>
+  <button type="button" data-act="overview" title="Overview (O)">O</button>
+  <button type="button" data-act="outline" title="Slide list (L)">L</button>
+  <button type="button" data-act="theme" title="Light / dark (T)">T</button>
+  <button type="button" data-act="help" title="Help (?)">?</button>
+</div>
+
+<div id="overlay" role="dialog" aria-label="Keyboard shortcuts">
+  <dl>
+    <dt>← →</dt><dd>Previous / next slide</dd>
+    <dt>Space</dt><dd>Next slide</dd>
+    <dt>Home / End</dt><dd>First / last slide</dd>
+    <dt>1–9</dt><dd>Jump to slide number, then Enter</dd>
+    <dt>S</dt><dd>Speaker notes and lecture timer</dd>
+    <dt>R</dt><dd>Reset the timer</dd>
+    <dt>O</dt><dd>Slide overview — a visual grid, click a slide to jump</dd>
+    <dt>L</dt><dd>Slide list — titles only, click to jump</dd>
+    <dt>T</dt><dd>Light / dark, for the room you are in</dd>
+    <dt>F</dt><dd>Fullscreen</dd>
+    <dt>B</dt><dd>Blank the screen</dd>
+    <dt>Ctrl+P</dt><dd>Print / export a PDF handout</dd>
+    <dt>Esc</dt><dd>Close this, or leave overview</dd>
+  </dl>
+</div>
+<div id="blank"></div>
+
+<script>
+(function(){
+  "use strict";
+  var W = 1280, H = 720;
+  var stage = document.getElementById("stage");
+  var frames = Array.prototype.slice.call(stage.querySelectorAll(".frame"));
+  var notesPanel = document.getElementById("notes");
+  var notesBody = document.getElementById("notes-body");
+  var outlinePanel = document.getElementById("outline");
+  var outlineList = document.getElementById("outline-list");
+  var OUTLINE = [{"i": 1, "t": "Week 5 — Practical", "k": "title"}, {"i": 2, "t": "What you leave with today", "k": "content"}, {"i": 3, "t": "One graph, the same for everyone", "k": "content"}, {"i": 4, "t": "Before anything: 20 requests a day", "k": "content"}, {"i": 5, "t": "Questions first", "k": "section"}, {"i": 6, "t": "Step 1 — Five competency questions", "k": "content"}, {"i": 7, "t": "Step 2 — Read the model", "k": "content"}, {"i": 8, "t": "Step 3 — Review it against the defects", "k": "content"}, {"i": 9, "t": "Extraction", "k": "section"}, {"i": 10, "t": "Step 4 — A schema the model must follow", "k": "content"}, {"i": 11, "t": "Step 5 — Extract the sample, twice", "k": "content"}, {"i": 12, "t": "Step 6 — Count what went wrong", "k": "content"}, {"i": 13, "t": "What batching costs", "k": "content"}, {"i": 14, "t": "Into the graph", "k": "section"}, {"i": 15, "t": "Step 7 — Resolve the names", "k": "content"}, {"i": 16, "t": "Step 8 — Load the sample, twice", "k": "content"}, {"i": 17, "t": "Step 9 — The whole corpus", "k": "content"}, {"i": 18, "t": "Step 10 — A relationship the material barely states", "k": "content"}, {"i": 19, "t": "Step 11 — Read the prerequisites", "k": "content"}, {"i": 20, "t": "Step 12 — Material that never names Chroma", "k": "content"}, {"i": 21, "t": "Co-mention is not citation", "k": "content"}, {"i": 22, "t": "Step 13 — Answering from the graph", "k": "content"}, {"i": 23, "t": "Step 14 — One command rebuilds it", "k": "content"}, {"i": 24, "t": "Before you leave", "k": "content"}, {"i": 25, "t": "For Lab 2", "k": "content"}, {"i": 26, "t": "Troubleshooting", "k": "section"}, {"i": 27, "t": "ServiceUnavailable from connect()", "k": "content"}, {"i": 28, "t": "401 Unauthorized from Lightning", "k": "content"}, {"i": 29, "t": "429 with a retry delay of hours", "k": "content"}, {"i": 30, "t": "was extracted from different chunks", "k": "content"}, {"i": 31, "t": "vectors: 0 of 183", "k": "content"}];
+  var counter = document.getElementById("counter");
+  var progress = document.getElementById("progress");
+  var overlay = document.getElementById("overlay");
+  var blank = document.getElementById("blank");
+  var total = frames.length;
+  var index = 0;
+  var overview = false;
+  var pending = "";
+  var pendingTimer = null;
+
+  function store(key, value){ try{ localStorage.setItem(key, value); }catch(e){} }
+  function load(key){ try{ return localStorage.getItem(key); }catch(e){ return null; } }
+
+  var savedTheme = load("deck-theme");
+  if(savedTheme === "light" || savedTheme === "dark"){
+    document.documentElement.setAttribute("data-theme", savedTheme);
+  }
+
+  /* Shrink a slide's type until its content fits the fixed 1280x720 box.
+     Content is never removed -- only scaled. */
+  function fit(frame){
+    var slide = frame.querySelector(".slide");
+    var body = frame.querySelector(".slide-body");
+    if(!slide || !body) return;
+    body.style.setProperty("--fit", 1);
+    if(body.scrollHeight <= body.clientHeight + 1) { frame.removeAttribute("data-overflow"); return; }
+    var lo = 0.55, hi = 1, best = 0.55;
+    for(var i = 0; i < 9; i++){
+      var mid = (lo + hi) / 2;
+      body.style.setProperty("--fit", mid);
+      if(body.scrollHeight <= body.clientHeight + 1){ best = mid; lo = mid; } else { hi = mid; }
+    }
+    body.style.setProperty("--fit", best);
+    if(best <= 0.56 && body.scrollHeight > body.clientHeight + 1){
+      frame.setAttribute("data-overflow", "1");
+    } else {
+      frame.removeAttribute("data-overflow");
+    }
+  }
+
+  function layout(){
+    if(overview){
+      document.body.classList.add("is-overview");
+      var pad = 24, gap = 18;
+      var cols = window.innerWidth > 1500 ? 4 : (window.innerWidth > 1000 ? 3 : 2);
+      var cellW = (window.innerWidth - pad * 2 - gap * (cols - 1)) / cols;
+      var scale = cellW / W;
+      var cellH = H * scale;
+      frames.forEach(function(frame, i){
+        var col = i % cols, row = Math.floor(i / cols);
+        frame.style.transform = "translate(" + (col * (cellW + gap)) + "px," +
+                                (row * (cellH + gap)) + "px) scale(" + scale + ")";
+      });
+      stage.style.height = (Math.ceil(total / cols) * (cellH + gap) + pad) + "px";
+    } else {
+      document.body.classList.remove("is-overview");
+      stage.style.height = "";
+      var s = Math.min(window.innerWidth / W, window.innerHeight / H);
+      var x = (window.innerWidth - W * s) / 2, y = (window.innerHeight - H * s) / 2;
+      frames.forEach(function(frame){
+        frame.style.transform = "translate(" + x + "px," + y + "px) scale(" + s + ")";
+      });
+    }
+  }
+
+  function renderNotes(){
+    var src = frames[index].querySelector(".notes-src");
+    notesBody.innerHTML = src ? src.innerHTML
+      : '<p class="notes-empty">No notes for this slide.</p>';
+  }
+
+  /* Built once: a plain list of slide titles, independent of the O overview
+     grid. textContent only -- a title is untrusted-ish authored text, and
+     this sidesteps ever needing to HTML-escape it. */
+  function buildOutline(){
+    OUTLINE.forEach(function(o){
+      var row = document.createElement("div");
+      row.className = "outline-item" + (o.k === "section" || o.k === "title" ? " is-section" : "");
+      row.setAttribute("data-index", o.i);
+      var num = document.createElement("span");
+      num.className = "outline-num";
+      num.textContent = o.i;
+      var t = document.createElement("span");
+      t.className = "outline-title";
+      t.textContent = o.t;
+      row.appendChild(num);
+      row.appendChild(t);
+      outlineList.appendChild(row);
+    });
+  }
+
+  function updateOutlineHighlight(){
+    var items = outlineList.querySelectorAll(".outline-item");
+    for(var i = 0; i < items.length; i++){
+      items[i].classList.toggle("is-current", i === index);
+    }
+  }
+
+  function show(next, push){
+    index = Math.max(0, Math.min(total - 1, next));
+    frames.forEach(function(frame, i){ frame.classList.toggle("is-active", i === index); });
+    counter.textContent = (index + 1) + " / " + total;
+    progress.style.width = (total > 1 ? (index / (total - 1)) * 100 : 100) + "%";
+    renderNotes();
+    if(outlinePanel.classList.contains("is-open")) updateOutlineHighlight();
+    if(push !== false){
+      try{ history.replaceState(null, "", "#" + (index + 1)); }catch(e){}
+    }
+    if(overview) frames[index].scrollIntoView({block:"nearest"});
+  }
+
+  /* Lecture timer -- starts on first use of the notes panel. */
+  var elapsed = 0, ticking = null, timerEl = document.getElementById("timer");
+  function paint(){
+    var m = Math.floor(elapsed / 60), s = elapsed % 60;
+    timerEl.textContent = (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s;
+  }
+  function startTimer(){
+    if(ticking) return;
+    ticking = setInterval(function(){ elapsed++; paint(); }, 1000);
+  }
+
+  function toggleNotes(){
+    var open = notesPanel.classList.toggle("is-open");
+    if(open) startTimer();
+  }
+  function toggleOutline(){
+    var open = outlinePanel.classList.toggle("is-open");
+    if(open){
+      updateOutlineHighlight();
+      var current = outlineList.querySelector(".outline-item.is-current");
+      if(current) current.scrollIntoView({block:"nearest"});
+    }
+  }
+  function toggleOverview(){
+    overview = !overview;
+    layout();
+    if(!overview) frames[index].scrollIntoView({block:"nearest"});
+  }
+  function toggleTheme(){
+    var root = document.documentElement;
+    var next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    root.setAttribute("data-theme", next);
+    store("deck-theme", next);
+  }
+
+  document.getElementById("hud").addEventListener("click", function(ev){
+    var act = ev.target.getAttribute && ev.target.getAttribute("data-act");
+    if(!act) return;
+    if(act === "prev") show(index - 1);
+    else if(act === "next") show(index + 1);
+    else if(act === "notes") toggleNotes();
+    else if(act === "overview") toggleOverview();
+    else if(act === "outline") toggleOutline();
+    else if(act === "theme") toggleTheme();
+    else if(act === "help") overlay.classList.toggle("is-open");
+  });
+
+  outlineList.addEventListener("click", function(ev){
+    var item = ev.target.closest ? ev.target.closest(".outline-item") : null;
+    if(!item) return;
+    show(parseInt(item.getAttribute("data-index"), 10) - 1);
+    outlinePanel.classList.remove("is-open");
+  });
+
+  stage.addEventListener("click", function(ev){
+    if(!overview) return;
+    var frame = ev.target.closest ? ev.target.closest(".frame") : null;
+    if(!frame) return;
+    show(frames.indexOf(frame));
+    toggleOverview();
+  });
+
+  overlay.addEventListener("click", function(){ overlay.classList.remove("is-open"); });
+  blank.addEventListener("click", function(){ blank.classList.remove("is-open"); });
+
+  document.addEventListener("keydown", function(ev){
+    if(ev.ctrlKey || ev.metaKey || ev.altKey) return;
+    var key = ev.key;
+
+    if(/^[0-9]$/.test(key)){
+      pending += key;
+      clearTimeout(pendingTimer);
+      pendingTimer = setTimeout(function(){ pending = ""; }, 1200);
+      return;
+    }
+    if(key === "Enter" && pending){
+      show(parseInt(pending, 10) - 1);
+      pending = "";
+      return;
+    }
+
+    switch(key){
+      case "ArrowRight": case "PageDown": case " ": case "Spacebar":
+        ev.preventDefault(); show(index + 1); break;
+      case "ArrowLeft": case "PageUp":
+        ev.preventDefault(); show(index - 1); break;
+      case "ArrowDown": ev.preventDefault(); show(index + 1); break;
+      case "ArrowUp": ev.preventDefault(); show(index - 1); break;
+      case "Home": ev.preventDefault(); show(0); break;
+      case "End": ev.preventDefault(); show(total - 1); break;
+      case "s": case "S": case "і": case "І": toggleNotes(); break;
+      case "o": case "O": case "щ": case "Щ": toggleOverview(); break;
+      case "l": case "L": case "д": case "Д": toggleOutline(); break;
+      case "t": case "T": case "е": case "Е": toggleTheme(); break;
+      case "r": case "R": case "к": case "К": elapsed = 0; paint(); break;
+      case "b": case "B": case "и": case "И": blank.classList.toggle("is-open"); break;
+      case "f": case "F": case "а": case "А":
+        if(document.fullscreenElement) document.exitFullscreen();
+        else if(document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+        break;
+      case "?": overlay.classList.toggle("is-open"); break;
+      case "Escape":
+        if(blank.classList.contains("is-open")) blank.classList.remove("is-open");
+        else if(overlay.classList.contains("is-open")) overlay.classList.remove("is-open");
+        else if(overview) toggleOverview();
+        else if(outlinePanel.classList.contains("is-open")) outlinePanel.classList.remove("is-open");
+        else notesPanel.classList.remove("is-open");
+        break;
+    }
+  });
+
+  var touchX = null;
+  document.addEventListener("touchstart", function(ev){ touchX = ev.touches[0].clientX; }, {passive:true});
+  document.addEventListener("touchend", function(ev){
+    if(touchX === null) return;
+    var dx = ev.changedTouches[0].clientX - touchX;
+    if(Math.abs(dx) > 60) show(index + (dx < 0 ? 1 : -1));
+    touchX = null;
+  }, {passive:true});
+
+  var resizeTimer = null;
+  window.addEventListener("resize", function(){
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(layout, 90);
+  });
+  window.addEventListener("beforeprint", function(){ frames.forEach(fit); });
+
+  function boot(){
+    buildOutline();
+    frames.forEach(fit);
+    layout();
+    var hash = parseInt((location.hash || "").replace("#", ""), 10);
+    show(isNaN(hash) ? 0 : hash - 1, false);
+    var bad = frames.filter(function(f){ return f.hasAttribute("data-overflow"); })
+                    .map(function(f){ return f.getAttribute("data-index"); });
+    if(bad.length){
+      console.warn("[deck] content still overflows after scaling on slide(s): " + bad.join(", ") +
+                   " -- split them in the source Markdown with an --- rule.");
+    }
+  }
+  if(document.readyState === "complete") boot();
+  else window.addEventListener("load", boot);
+})();
+</script>
+</body>
+</html>
