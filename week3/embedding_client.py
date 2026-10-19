@@ -86,6 +86,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# Seconds before a request that has stopped responding raises instead of waiting for ever,
+# which froze the notebook kernel (added 2026-10-18; see common/llm_client.py).
+TIMEOUT_S = 120
+
 # The free-tier embedding quota is ~100 items per minute (measured 2026-09-14,
 # reconfirmed by a 429 on 2026-09-19). The metric is named "...Requests..." but a
 # batched embed_content bills one unit PER TEXT, so batching does not raise it.
@@ -155,7 +159,10 @@ class EmbeddingClient:
         # support -- see the module docstring and week-03-lecture-plan.md's
         # "Notes for the syllabus". Not a default-to-latest choice.
         self.model = "gemini-embedding-2"
-        self._client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
+        self._client = genai.Client(
+            api_key=os.environ["GEMINI_API_KEY"],
+            http_options=genai.types.HttpOptions(timeout=TIMEOUT_S * 1000),   # milliseconds
+        )
 
     def _embed_batch_gemini(self, texts, task_type, output_dimensionality):
         from google.genai import errors, types
@@ -200,7 +207,7 @@ class EmbeddingClient:
         if output_dimensionality is not None:
             body["dimensions"] = output_dimensionality
 
-        response = requests.post(self._url, headers=self._headers, json=body)
+        response = requests.post(self._url, headers=self._headers, json=body, timeout=TIMEOUT_S)
         response.raise_for_status()
         self.calls += 1
         return [row["embedding"] for row in response.json()["data"]]

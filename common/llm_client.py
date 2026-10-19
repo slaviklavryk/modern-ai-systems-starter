@@ -1,8 +1,11 @@
-"""One interface, two backends: Gemini (default) or Lightning AI.
+"""One interface, three backends: Gemini (default), Lightning AI, or OpenRouter.
 
     from llm_client import LLMClient
     llm = LLMClient()                  # reads LLM_PROVIDER from .env, defaults to "gemini"
     llm = LLMClient(provider="lightning")   # or force one explicitly
+
+OpenRouter (added 2026-10-18) sends the same request as Lightning; see _init_openrouter.
+The matrix below compares Gemini and Lightning only.
 
 `context_lab.py` and `prompt_lab.py` are both built on this, so flipping
 
@@ -57,6 +60,15 @@ three-way usage split  prompt/thoughts/candidates     prompt_tokens / completion
                                                       variance run to run: two
                                                       identical prompts produced
                                                       0 and 64 reasoning tokens.
+conversation history   contents with roles user /    messages with roles user /
+(Week 7)               model, verified 2026-10-17    assistant. NOT YET VERIFIED:
+                                                      Lightning was unavailable
+                                                      when this was added
+                                                      (2026-10-17)
+
+`history=` takes provider-neutral roles, "user" and "assistant"; this module maps
+"assistant" to Gemini's "model". The model keeps no session: every earlier turn is sent
+again on every call.
 """
 
 import os
@@ -68,6 +80,11 @@ from typing import Any, Optional
 from dotenv import load_dotenv
 
 load_dotenv()
+
+# Seconds before a request that has stopped responding raises instead of waiting for ever.
+# Without it a stalled request froze the notebook kernel: on Windows an interrupt does not
+# always break a blocking network read, so restarting the kernel hung as well.
+TIMEOUT_S = 120
 
 
 @dataclass
@@ -94,8 +111,11 @@ class LLMClient:
             self._init_gemini()
         elif self.provider == "lightning":
             self._init_lightning()
+        elif self.provider == "openrouter":
+            self._init_openrouter()
         else:
-            raise ValueError(f"Unknown LLM_PROVIDER {self.provider!r}. Use 'gemini' or 'lightning'.")
+            raise ValueError(f"Unknown LLM_PROVIDER {self.provider!r}. "
+                             "Use 'gemini', 'lightning' or 'openrouter'.")
         if model:
             self.model = model   # overrides the provider's pinned model
 
@@ -105,9 +125,12 @@ class LLMClient:
 
         self.model = "gemini-3.5-flash"
         self._genai = genai
-        self._client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
+        self._client = genai.Client(
+            api_key=os.environ["GEMINI_API_KEY"],
+            http_options=genai.types.HttpOptions(timeout=TIMEOUT_S * 1000),   # milliseconds
+        )
 
-    def _chat_gemini(self, prompt, *, system, temperature, schema, max_tokens, thinking):
+    def _chat_gemini(self, prompt, *, system, temperature, schema, max_tokens, thinking, history):
         from google.genai import errors, types
 
         config = types.GenerateContentConfig(
@@ -122,13 +145,21 @@ class LLMClient:
         for attempt in range(1, 7):
             try:
                 response = self._client.models.generate_content(
-                    model=self.model, contents=prompt, config=config
+                    model=self.model, contents=_gemini_contents(history, prompt), config=config
                 )
                 self.calls += 1
                 break
             except errors.ClientError as exc:
                 if exc.code != 429:
                     raise
+                if "PerDay" in str(exc):
+                    # Waiting cannot help: the free tier allows 20 requests a day per model
+                    # (measured 2026-10-04), and retrying may count against it.
+                    raise RuntimeError(
+                        f"{self.model}: daily limit reached (free tier, 20 requests a day per "
+                        f"model). It resets in about {_retry_hours(exc)} h; or switch "
+                        "LLM_PROVIDER in .env."
+                    ) from exc
                 print(f"  [rate limited: ~6 requests/minute. waiting 25s, attempt {attempt}]")
                 time.sleep(25)
             except errors.ServerError:
@@ -150,8 +181,10 @@ class LLMClient:
             raw=response,
         )
 
-    def _count_tokens_gemini(self, text: str) -> int:
-        return self._client.models.count_tokens(model=self.model, contents=text).total_tokens
+    def _count_tokens_gemini(self, text: str, history) -> int:
+        return self._client.models.count_tokens(
+            model=self.model, contents=_gemini_contents(history, text)
+        ).total_tokens
 
     # ---------------------------------------------------------- lightning
     def _init_lightning(self) -> None:
@@ -162,12 +195,27 @@ class LLMClient:
         self._headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
         self._url = "https://lightning.ai/api/v1/chat/completions"
 
-    def _chat_lightning(self, prompt, *, system, temperature, schema, max_tokens, thinking):
+    # --------------------------------------------------------- openrouter
+    # Added 2026-10-18, while Lightning was unavailable. The same OpenAI-compatible
+    # request as Lightning, so _chat_lightning serves both. The default model is a free
+    # one; free models are withdrawn without notice, so check the list at
+    # https://openrouter.ai/models?max_price=0 if this one stops answering.
+    def _init_openrouter(self) -> None:
+        key = os.environ.get("OPENROUTER_API_KEY")
+        if not key:
+            raise SystemExit("No OPENROUTER_API_KEY in .env  (openrouter.ai -> Settings -> API Keys)")
+        self.model = "nvidia/nemotron-3-ultra-550b-a55b:free"
+        self._headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
+        self._url = "https://openrouter.ai/api/v1/chat/completions"
+
+    def _chat_lightning(self, prompt, *, system, temperature, schema, max_tokens, thinking, history):
         import requests
 
         messages = []
         if system:
             messages.append({"role": "system", "content": system})
+        for role, text in history or ():
+            messages.append({"role": role, "content": text})
         messages.append({"role": "user", "content": prompt})
 
         body: dict = {"model": self.model, "messages": messages}
@@ -192,7 +240,7 @@ class LLMClient:
                                 "schema": _strict(json_schema)},
             }
 
-        response = requests.post(self._url, headers=self._headers, json=body)
+        response = requests.post(self._url, headers=self._headers, json=body, timeout=TIMEOUT_S)
         response.raise_for_status()
         self.calls += 1
         result = response.json()
@@ -226,31 +274,68 @@ class LLMClient:
         schema=None,
         max_tokens: Optional[int] = None,
         thinking: Optional[str] = None,
+        history: Optional[list[tuple[str, str]]] = None,
     ) -> ChatResult:
         """thinking accepts "minimal"/"low"/"medium"/"high" on either backend.
         See the module docstring for what is and is not verified per backend.
+
+        history: the earlier turns of a conversation, oldest first, as (role, text)
+        pairs with role "user" or "assistant". `prompt` is the new user turn.
         """
+        _check_roles(history)
         if self.provider == "gemini":
             return self._chat_gemini(
                 prompt, system=system, temperature=temperature, schema=schema,
-                max_tokens=max_tokens, thinking=thinking,
+                max_tokens=max_tokens, thinking=thinking, history=history,
             )
         return self._chat_lightning(
             prompt, system=system, temperature=temperature, schema=schema,
-            max_tokens=max_tokens, thinking=thinking,
+            max_tokens=max_tokens, thinking=thinking, history=history,
         )
 
-    def count_tokens(self, text: str) -> int:
+    def count_tokens(self, text: str, *, history: Optional[list[tuple[str, str]]] = None) -> int:
         """Free on Gemini. No equivalent exists on Lightning -- see the module
         docstring. Raises rather than silently making a real, billed call and
-        calling it free."""
+        calling it free.
+
+        history: as for chat(); the count is then of everything one call would send,
+        except the system instruction."""
         if self.provider != "gemini":
             raise NotImplementedError(
                 "count_tokens() has no free equivalent on the lightning backend. "
                 "Switch LLM_PROVIDER=gemini for this cell, or accept a real "
                 "(billed) call -- there is no free tokenizer endpoint to call instead."
             )
-        return self._count_tokens_gemini(text)
+        _check_roles(history)
+        return self._count_tokens_gemini(text, history)
+
+
+def _retry_hours(exc) -> str:
+    """The server's retry delay, e.g. 'retryDelay': '30421s', in hours; '?' if absent."""
+    import re
+
+    found = re.search(r"retryDelay'?\"?:\s*'?\"?(\d+)s", str(exc))
+    return f"{int(found.group(1)) / 3600:.0f}" if found else "?"
+
+
+# -------------------------------------------------------------- history helpers
+_GEMINI_ROLES = {"user": "user", "assistant": "model"}
+
+
+def _check_roles(history) -> None:
+    for role, _text in history or ():
+        if role not in _GEMINI_ROLES:
+            raise ValueError(f"history role {role!r}: use 'user' or 'assistant'")
+
+
+def _gemini_contents(history, prompt: str):
+    """A plain string when there is no history, as before; otherwise one Content per turn."""
+    if not history:
+        return prompt
+    from google.genai import types
+
+    turns = [(_GEMINI_ROLES[role], text) for role, text in history] + [("user", prompt)]
+    return [types.Content(role=role, parts=[types.Part(text=text)]) for role, text in turns]
 
 
 # --------------------------------------------------------------- schema helpers

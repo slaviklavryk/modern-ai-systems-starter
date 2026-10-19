@@ -29,6 +29,26 @@ A Lightning API key is obtained from the Lightning AI dashboard, under Global Se
 were needed only by an earlier, abandoned approach and play no part in the current
 implementation.
 
+### OpenRouter (Week 7 onward)
+
+Lightning has been unavailable since 16 October 2026, after a security incident on its
+platform. From Week 7 the course uses OpenRouter instead, which takes the same request
+format:
+
+```
+LLM_PROVIDER=openrouter
+OPENROUTER_API_KEY=your-key-here
+```
+
+A key is created at https://openrouter.ai, under Settings → API Keys; no payment is
+needed. The default model is `nvidia/nemotron-3-ultra-550b-a55b:free`. Free models allow
+20 requests a minute and 50 a day per account (OpenRouter's documentation, read
+2026-10-18), and are sometimes withdrawn without notice; if the default stops
+answering, pick another from https://openrouter.ai/models?max_price=0 and pass it as
+`LLMClient(model=...)`. This model follows a JSON schema but does not enforce it: every
+reply parsed in testing, but a reply that does not match raises when it is parsed.
+`count_tokens()` has no OpenRouter equivalent, as on Lightning.
+
 ---
 
 ## 2. What `llm_client.py` provides
