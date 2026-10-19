@@ -24,11 +24,13 @@
   header { margin-bottom: 2.5rem; }
   h1 { font-size: 1.9rem; margin: 0 0 .4rem; letter-spacing: -.01em; }
   .sub { color: var(--muted); margin: 0; }
+  .part + .part { margin-top: 2.25rem; }
+  .part > h2 { font-size: 1.15rem; margin: 0 0 .85rem; letter-spacing: -.005em; }
   .weeks { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); }
   .week {
     background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 1rem 1.15rem;
   }
-  .week h2 { font-size: .8rem; text-transform: uppercase; letter-spacing: .08em;
+  .week h3 { font-size: .8rem; text-transform: uppercase; letter-spacing: .08em;
               color: var(--muted); margin: 0 0 .75rem; }
   .session { display: block; text-decoration: none; color: var(--fg); padding: .45rem 0; }
   /* Separator between sessions only. Adjacent-sibling rather than :first-of-type,
@@ -55,43 +57,58 @@
     <p class="sub">Lecture and practical slides · twelve weeks · fourth-year Applied Mathematics and Computer Science</p>
   </header>
 
-  <div class="weeks">
-    <article class="week">
-      <h2>Week 1</h2>
-      <a class="session" href="week-01-lecture.html"><span class="kind">Lecture</span><span class="name">Modern AI and the AI Software Stack</span></a>
-      <a class="session" href="week-01-practical.html"><span class="kind">Practical</span><span class="name">First Calls and the Prompt Lab</span></a>
-    </article>
-    <article class="week">
-      <h2>Week 2</h2>
-      <a class="session" href="week-02-lecture.html"><span class="kind">Lecture</span><span class="name">LLMs, Tokens, Context, and Prompting</span></a>
-      <a class="session" href="https://github.com/slaviklavryk/modern-ai-systems-starter/blob/main/week2/context_lab.ipynb"><span class="kind">Practical</span><span class="name">context_lab.ipynb</span><span class="hint">notebook — no slides</span></a>
-    </article>
-    <article class="week">
-      <h2>Week 3</h2>
-      <a class="session" href="week-03-lecture.html"><span class="kind">Lecture</span><span class="name">Embeddings, Semantic Search, and RAG</span></a>
-      <a class="session" href="week-03-practical.html"><span class="kind">Practical</span><span class="name">From a Folder of Documents to a Grounded Answer</span></a>
-    </article>
-    <article class="week">
-      <h2>Week 4</h2>
-      <a class="session" href="week-04-lecture.html"><span class="kind">Lecture</span><span class="name">Neo4j: Graphs, Cypher, and Vector Search</span></a>
-      <a class="session" href="https://github.com/slaviklavryk/modern-ai-systems-starter/blob/main/week4/graph_lab.ipynb"><span class="kind">Practical</span><span class="name">graph_lab.ipynb</span><span class="hint">notebook — no slides</span></a>
-    </article>
-    <article class="week">
-      <h2>Week 5</h2>
-      <a class="session" href="week-05-lecture.html"><span class="kind">Lecture</span><span class="name">Knowledge Graphs: Designing a Graph and Populating It</span></a>
-      <a class="session" href="week-05-practical.html"><span class="kind">Practical</span><span class="name">A Knowledge Graph of the Course</span></a>
-    </article>
-    <article class="week">
-      <h2>Week 6</h2>
-      <a class="session" href="week-06-lecture.html"><span class="kind">Lecture</span><span class="name">Graph RAG: Retrieving from a Graph for a Model</span></a>
-      <a class="session" href="https://github.com/slaviklavryk/modern-ai-systems-starter/blob/main/week6/graph_rag_lab.ipynb"><span class="kind">Practical</span><span class="name">graph_rag_lab.ipynb</span><span class="hint">notebook — no slides</span></a>
-    </article>
-    <article class="week">
-      <h2>Week 7</h2>
-      <a class="session" href="week-07-lecture.html"><span class="kind">Lecture</span><span class="name">Conversation and Memory</span></a>
-      <a class="session" href="https://github.com/slaviklavryk/modern-ai-systems-starter/blob/main/week7/conversation_lab.ipynb"><span class="kind">Practical</span><span class="name">conversation_lab.ipynb</span><span class="hint">notebook — no slides</span></a>
-    </article>
-  </div>
+  <section class="part">
+    <h2>Basics</h2>
+    <div class="weeks">
+      <article class="week">
+        <h3>Week 1</h3>
+        <a class="session" href="week-01-lecture.html"><span class="kind">Lecture</span><span class="name">Modern AI and the AI Software Stack</span></a>
+        <a class="session" href="week-01-practical.html"><span class="kind">Practical</span><span class="name">First Calls and the Prompt Lab</span></a>
+      </article>
+      <article class="week">
+        <h3>Week 2</h3>
+        <a class="session" href="week-02-lecture.html"><span class="kind">Lecture</span><span class="name">LLMs, Tokens, Context, and Prompting</span></a>
+        <a class="session" href="https://github.com/slaviklavryk/modern-ai-systems-starter/blob/main/week2/context_lab.ipynb"><span class="kind">Practical</span><span class="name">context_lab.ipynb</span><span class="hint">notebook — no slides</span></a>
+      </article>
+    </div>
+  </section>
+
+  <section class="part">
+    <h2>Knowledge Bases and Graphs</h2>
+    <div class="weeks">
+      <article class="week">
+        <h3>Week 3</h3>
+        <a class="session" href="week-03-lecture.html"><span class="kind">Lecture</span><span class="name">Embeddings, Semantic Search, and RAG</span></a>
+        <a class="session" href="week-03-practical.html"><span class="kind">Practical</span><span class="name">From a Folder of Documents to a Grounded Answer</span></a>
+      </article>
+      <article class="week">
+        <h3>Week 4</h3>
+        <a class="session" href="week-04-lecture.html"><span class="kind">Lecture</span><span class="name">Neo4j: Graphs, Cypher, and Vector Search</span></a>
+        <a class="session" href="https://github.com/slaviklavryk/modern-ai-systems-starter/blob/main/week4/graph_lab.ipynb"><span class="kind">Practical</span><span class="name">graph_lab.ipynb</span><span class="hint">notebook — no slides</span></a>
+      </article>
+      <article class="week">
+        <h3>Week 5</h3>
+        <a class="session" href="week-05-lecture.html"><span class="kind">Lecture</span><span class="name">Knowledge Graphs: Designing a Graph and Populating It</span></a>
+        <a class="session" href="week-05-practical.html"><span class="kind">Practical</span><span class="name">A Knowledge Graph of the Course</span></a>
+      </article>
+      <article class="week">
+        <h3>Week 6</h3>
+        <a class="session" href="week-06-lecture.html"><span class="kind">Lecture</span><span class="name">Graph RAG: Retrieving from a Graph for a Model</span></a>
+        <a class="session" href="https://github.com/slaviklavryk/modern-ai-systems-starter/blob/main/week6/graph_rag_lab.ipynb"><span class="kind">Practical</span><span class="name">graph_rag_lab.ipynb</span><span class="hint">notebook — no slides</span></a>
+      </article>
+    </div>
+  </section>
+
+  <section class="part">
+    <h2>Agents</h2>
+    <div class="weeks">
+      <article class="week">
+        <h3>Week 7</h3>
+        <a class="session" href="week-07-lecture.html"><span class="kind">Lecture</span><span class="name">Conversation and Memory</span></a>
+        <a class="session" href="https://github.com/slaviklavryk/modern-ai-systems-starter/blob/main/week7/conversation_lab.ipynb"><span class="kind">Practical</span><span class="name">conversation_lab.ipynb</span><span class="hint">notebook — no slides</span></a>
+      </article>
+    </div>
+  </section>
 
   <footer>
     <p>Inside a deck: <kbd>→</kbd> next · <kbd>O</kbd> overview · <kbd>L</kbd> slide list ·
