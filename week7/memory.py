@@ -5,9 +5,7 @@ conversations.
     facts = extract(llm, turn_text)                       # one model call, structured output
     store = MemoryStore()                                 # week7/chroma/, a collection of its own
     ids = store.add(facts, source=turn_text, when="2026-10-17")
-    store.mark_profile(ids)                               # these facts go in every context
-    store.profile()                                       # explicit: the facts for every call
-    store.recall("Which embedding model should I use?")   # retrieved: the facts nearest the question
+    store.recall("Which embedding model should I use?")   # the facts nearest the question
     store.replace(ids[0], "a newer fact", source=..., when=...)
     store.delete(ids[1])
 
@@ -16,9 +14,9 @@ and the code writes them with the turn they came from and the date. Tools, with 
 model could decide to store something itself, are Week 8.
 
 The store is Week 3's VectorStore holding facts instead of chunks, in its own folder,
-apart from the graph, which the Week 6 setup step rebuilds. Two additions: each fact gets
-an id that is never reused, so that a fact can be replaced or deleted; and a fact can be
-marked as part of the profile.
+apart from the graph, which the Week 6 setup step rebuilds. Facts are retrieved as
+passages are, by meaning. One addition: each fact gets an id that is never reused, so
+that a fact can be replaced or deleted.
 """
 
 import pathlib
@@ -51,13 +49,12 @@ def extract(llm, turn: str) -> list[str]:
 
 
 class MemoryStore(VectorStore):
-    """Facts about one user, each with its source, the date it was stored, and whether it
-    belongs to the profile."""
+    """Facts about one user, each with its source and the date it was stored."""
 
     def __init__(self, embedder=None, name: str = "memory", *, reset: bool = False):
         super().__init__(embedder, name, path=str(_HERE / "chroma"), reset=reset)
 
-    def add(self, facts: list[str], *, source: str, when: str, profile: bool = False) -> list[str]:
+    def add(self, facts: list[str], *, source: str, when: str) -> list[str]:
         """Embed and store facts; returns one id per fact. A fact already stored word for
         word keeps its id and is not stored again, so re-running a cell adds nothing.
         (VectorStore numbers ids by count, which would reuse an id after a delete.)"""
@@ -66,7 +63,7 @@ class MemoryStore(VectorStore):
         if new:
             new_ids = [uuid.uuid4().hex[:8] for _ in new]
             vectors = self.embedder.embed_batch(new, task_type="RETRIEVAL_DOCUMENT")
-            metadatas = [{"source": source, "when": when, "profile": profile} for _ in new]
+            metadatas = [{"source": source, "when": when} for _ in new]
             self._collection.add(ids=new_ids, embeddings=vectors, documents=new, metadatas=metadatas)
             ids.update(zip(new, new_ids))
         return [ids[fact] for fact in facts]
@@ -76,32 +73,19 @@ class MemoryStore(VectorStore):
         return [{"id": i, "fact": doc, **meta}
                 for i, doc, meta in zip(got["ids"], got["documents"], got["metadatas"])]
 
-    def mark_profile(self, fact_ids: list[str], profile: bool = True) -> None:
-        """Put stored facts in the profile, or take them out. Their text is unchanged."""
-        got = self._collection.get(ids=fact_ids, include=["metadatas"])
-        self._collection.update(ids=got["ids"],
-                                metadatas=[{**meta, "profile": profile} for meta in got["metadatas"]])
-
-    def profile(self) -> list[str]:
-        """Explicit memory: the facts placed in every context, whatever the question."""
-        return [f["fact"] for f in self.all() if f["profile"]]
-
     def recall(self, question: str, k: int = 3) -> list[str]:
-        """Retrieved memory: the k facts nearest in meaning to the question."""
+        """The k facts nearest in meaning to the question."""
         k = min(k, self.count())
         return [h["chunk"] for h in self.search(question, n_results=k)] if k else []
 
-    def replace(self, fact_id: str, fact: str, *, source: str, when: str,
-                profile: Optional[bool] = None) -> None:
+    def replace(self, fact_id: str, fact: str, *, source: str, when: str) -> None:
         """A newer fact in place of an old one: same id, new text, source and date."""
-        old = self._collection.get(ids=[fact_id], include=["metadatas"])
-        if not old["ids"]:
+        if not self._collection.get(ids=[fact_id])["ids"]:
             raise KeyError(f"no fact with id {fact_id}")
-        keep = old["metadatas"][0]["profile"] if profile is None else profile
         self._collection.update(
             ids=[fact_id], documents=[fact],
             embeddings=[self.embedder.embed(fact, task_type="RETRIEVAL_DOCUMENT")],
-            metadatas=[{"source": source, "when": when, "profile": keep}])
+            metadatas=[{"source": source, "when": when}])
 
     def delete(self, fact_id: str) -> None:
         self._collection.delete(ids=[fact_id])
