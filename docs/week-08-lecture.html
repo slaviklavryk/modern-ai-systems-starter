@@ -1,0 +1,609 @@
+<!doctype html>
+<html lang="uk" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Week 8 — Tools and Agents</title>
+<style>
+:root{
+  --w:1280px; --h:720px;
+  --bg:#fbfaf8; --panel:#ffffff; --ink:#1a1a1a; --ink-soft:#5b5b5b; --ink-faint:#8c8c8c;
+  --rule:#e2ded7; --accent:#1c5d99; --accent-soft:#e8f0f7; --mark:#f5efe3;
+  --code-bg:#f4f2ee; --code-ink:#26303a;
+  --tok-kw:#8a3d8f; --tok-str:#1f6f4a; --tok-com:#8c8c8c; --tok-num:#a35a1f;
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Consolas,"Liberation Mono",Menlo,monospace;
+}
+html[data-theme="dark"]{
+  --bg:#14161a; --panel:#1b1e24; --ink:#e9e6e1; --ink-soft:#a9a5a0; --ink-faint:#6f6b67;
+  --rule:#2c3138; --accent:#6fb3e8; --accent-soft:#1d2b38; --mark:#2a2620;
+  --code-bg:#1f242b; --code-ink:#d6dee7;
+  --tok-kw:#c99ae0; --tok-str:#7fd0a3; --tok-com:#7b7772; --tok-num:#e0a86a;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font-family:var(--font)}
+body.is-overview{overflow:auto}
+
+#stage{position:relative;width:100%;height:100%}
+.frame{position:absolute;top:0;left:0;width:var(--w);height:var(--h);transform-origin:top left}
+.slide{
+  position:absolute;inset:0;background:var(--panel);display:flex;flex-direction:column;
+  padding:56px 72px 40px;visibility:hidden;opacity:0;
+  transition:opacity .18s ease;overflow:hidden;
+}
+.frame.is-active .slide{visibility:visible;opacity:1}
+/* Inactive frames stay in the DOM (for the crossfade) stacked at the same
+   position as the active one. Without this they are invisible but still
+   catch the mouse, which silently blocks selecting text on the slide you
+   can actually see. Overview mode needs the opposite -- every thumbnail
+   must stay clickable -- so the rule is scoped to non-overview only. */
+body:not(.is-overview) .frame:not(.is-active){pointer-events:none}
+.slide-body{flex:1;min-height:0;font-size:calc(23px * var(--fit,1));line-height:1.5}
+
+.slide-title{margin:0 0 .7em;font-size:2.0em;line-height:1.15;font-weight:650;letter-spacing:-.015em}
+.slide--title{justify-content:center;padding:72px 96px}
+.slide--title .slide-body{display:flex;flex-direction:column;justify-content:center}
+.slide--title .slide-title{font-size:3.1em;margin-bottom:.35em}
+.slide-subtitle{margin:0;font-size:1.25em;color:var(--ink-soft);max-width:34em}
+.slide--section{justify-content:center}
+.slide--section .slide-body{display:flex;flex-direction:column;justify-content:center}
+.slide--section .slide-title{font-size:2.6em;margin-bottom:.5em}
+.slide--section .slide-title::after{
+  content:"";display:block;width:2.2em;height:3px;margin-top:.5em;background:var(--accent);border-radius:2px;
+}
+.slide--content .slide-title{
+  padding-bottom:.4em;border-bottom:2px solid var(--rule);
+}
+
+.slide-content h3{margin:1.1em 0 .45em;font-size:1.22em;font-weight:640;color:var(--accent)}
+.slide-content h4,.slide-content h5,.slide-content h6{margin:.9em 0 .35em;font-size:1.05em;font-weight:640}
+.slide-content>:first-child{margin-top:0}
+.slide-content p{margin:0 0 .7em;max-width:46em}
+.slide-content ul,.slide-content ol{margin:0 0 .7em;padding-left:1.35em}
+.slide-content li{margin:.3em 0}
+.slide-content li>ul,.slide-content li>ol{margin:.25em 0 .25em}
+.slide-content ul>li::marker{color:var(--accent)}
+.slide-content strong{font-weight:660}
+.slide-content a{color:var(--accent);text-decoration:none;border-bottom:1px solid var(--rule)}
+.slide-content hr{border:0;border-top:1px solid var(--rule);margin:1em 0}
+.slide-content code{
+  font-family:var(--mono);font-size:.88em;background:var(--code-bg);color:var(--code-ink);
+  padding:.12em .34em;border-radius:4px;
+}
+.slide-content pre{
+  margin:0 0 .75em;background:var(--code-bg);border:1px solid var(--rule);border-left:3px solid var(--accent);
+  border-radius:6px;padding:.7em .9em;overflow:auto;max-width:100%;
+}
+.slide-content pre code{
+  background:none;padding:0;font-size:.82em;line-height:1.45;color:var(--code-ink);
+  display:block;white-space:pre;
+}
+.slide-content pre.verbatim code{font-size:.78em;line-height:1.35}
+.tok-kw{color:var(--tok-kw)}.tok-str{color:var(--tok-str)}
+.tok-com{color:var(--tok-com);font-style:italic}.tok-num{color:var(--tok-num)}
+.slide-content blockquote{
+  margin:0 0 .8em;padding:.6em 1em;background:var(--accent-soft);border-left:3px solid var(--accent);
+  border-radius:0 6px 6px 0;
+}
+.slide-content blockquote p{margin:0;font-size:1.05em}
+.slide-content blockquote p+p{margin-top:.5em}
+.table-wrap{overflow-x:auto;margin:0 0 .8em;max-width:100%}
+.slide-content table{border-collapse:collapse;width:100%;font-size:.92em}
+.slide-content th,.slide-content td{padding:.4em .7em;border-bottom:1px solid var(--rule);vertical-align:top}
+.slide-content th{font-weight:660;color:var(--accent);border-bottom:2px solid var(--rule);white-space:nowrap}
+.slide-content tbody tr:last-child td{border-bottom:none}
+.slide-content img{max-width:100%;height:auto;border-radius:6px}
+
+.slide-foot{
+  display:flex;justify-content:space-between;align-items:flex-end;
+  font-size:13px;color:var(--ink-faint);padding-top:12px;flex:none;
+}
+.slide--title .slide-foot,.slide--section .slide-foot{opacity:.55}
+.foot-num{font-variant-numeric:tabular-nums}
+
+#progress{position:fixed;left:0;top:0;height:3px;background:var(--accent);width:0;z-index:40;transition:width .18s ease}
+#hud{
+  position:fixed;right:14px;bottom:12px;z-index:40;display:flex;gap:10px;align-items:center;
+  font-size:12px;color:var(--ink-faint);background:var(--bg);padding:4px 8px;border-radius:6px;opacity:.75;
+}
+#hud button{
+  font:inherit;color:inherit;background:none;border:1px solid var(--rule);border-radius:5px;
+  padding:2px 7px;cursor:pointer;
+}
+#hud button:hover{color:var(--accent);border-color:var(--accent)}
+
+#notes{
+  position:fixed;right:0;bottom:0;top:0;width:360px;z-index:50;background:var(--panel);
+  border-left:1px solid var(--rule);padding:18px 20px;overflow:auto;
+  font-size:15px;line-height:1.55;transform:translateX(100%);transition:transform .2s ease;
+}
+#notes.is-open{transform:none}
+#notes h3{margin:.9em 0 .3em;font-size:1em;color:var(--accent)}
+#notes p,#notes li{margin:.35em 0}
+#notes pre{background:var(--code-bg);padding:.5em .7em;border-radius:5px;overflow:auto;font-size:.85em}
+#notes code{font-family:var(--mono);font-size:.88em}
+.notes-head{
+  display:flex;justify-content:space-between;align-items:baseline;
+  border-bottom:1px solid var(--rule);padding-bottom:8px;margin-bottom:10px;
+  font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-faint);
+}
+#timer{font-variant-numeric:tabular-nums;font-size:15px;letter-spacing:0;color:var(--ink)}
+.notes-empty{color:var(--ink-faint);font-style:italic}
+
+/* Anchored to the L button in the HUD (bottom-right) horizontally, so
+   opening it is a small mouse/eye movement rather than a trip across the
+   screen -- but full page height, so a normal-length deck lists with no
+   internal scrolling. Closed state keeps pointer-events:none -- the same
+   fix as the inactive-slide-frame bug: an invisible-but-present fixed
+   element must not be able to catch clicks meant for whatever is under it. */
+#outline{
+  position:fixed;right:14px;top:16px;bottom:52px;z-index:50;background:var(--panel);
+  border:1px solid var(--rule);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.22);
+  width:320px;padding:12px 10px;overflow:auto;
+  transform-origin:bottom right;transform:scale(.97);opacity:0;pointer-events:none;
+  transition:transform .15s ease,opacity .15s ease;
+}
+#outline.is-open{transform:scale(1);opacity:1;pointer-events:auto}
+.outline-head{
+  display:flex;justify-content:space-between;align-items:baseline;
+  border-bottom:1px solid var(--rule);padding:0 8px 8px;margin:0 0 6px;
+  font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-faint);
+}
+.outline-item{
+  display:flex;gap:10px;align-items:baseline;padding:7px 8px;border-radius:5px;
+  cursor:pointer;font-size:14px;line-height:1.35;
+}
+.outline-item:hover{background:var(--accent-soft)}
+.outline-item.is-current{background:var(--accent-soft);color:var(--accent);font-weight:650}
+.outline-num{flex:none;width:2em;text-align:right;color:var(--ink-faint);font-variant-numeric:tabular-nums}
+.outline-item.is-current .outline-num{color:var(--accent)}
+.outline-item.is-section .outline-title{font-style:italic}
+
+#overlay{
+  position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.86);color:#fff;
+  display:none;align-items:center;justify-content:center;font-size:15px;line-height:1.7;
+}
+#overlay.is-open{display:flex}
+#overlay dl{display:grid;grid-template-columns:auto 1fr;gap:.4em 1.4em;margin:0}
+#overlay dt{font-family:var(--mono);color:#8fd0ff;text-align:right}
+#overlay dd{margin:0}
+#blank{position:fixed;inset:0;background:#000;z-index:70;display:none}
+#blank.is-open{display:block}
+
+body.is-overview #stage{height:auto;padding:24px}
+body.is-overview .slide{visibility:visible;opacity:1;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.12)}
+body.is-overview .frame{outline:2px solid transparent;border-radius:8px}
+body.is-overview .frame.is-active{outline-color:var(--accent)}
+body.is-overview #hud,body.is-overview #progress{opacity:.9}
+
+@media print{
+  html,body{overflow:visible;height:auto;background:#fff}
+  #progress,#hud,#notes,#outline,#overlay,#blank{display:none!important}
+  #stage{position:static;width:auto;height:auto}
+  .frame{position:static!important;transform:none!important;width:100%;height:auto;page-break-after:always}
+  .slide{
+    position:static;visibility:visible!important;opacity:1!important;
+    height:auto;min-height:0;border:1px solid #ddd;box-shadow:none;page-break-inside:avoid;
+  }
+  .slide-body{font-size:15px!important}
+  @page{size:landscape;margin:10mm}
+}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<div id="stage"><div class="frame" data-index="1"><section class="slide slide--title" aria-label="Slide 1"><div class="slide-body"><h1 class="slide-title">Tools and agents</h1><p class="slide-subtitle">Modern AI Systems · Lecture 8</p><div class="slide-content"><p><em>Week 8 — From answering to acting</em></p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">1</span></div></section></div>
+<div class="frame" data-index="2"><section class="slide slide--content" aria-label="Slide 2"><div class="slide-body"><h2 class="slide-title">Main idea</h2><div class="slide-content"><p>Until now, the <strong>engineer</strong> decided every step: rewrite, retrieve, answer, store.</p>
+<p>An <strong>agent</strong> lets the model decide the next step, after seeing what the last one returned.</p>
+<p>It acts through <strong>tools</strong>. The model chooses; the application executes.</p>
+<p>[[https://www.oxfordlearnersdictionaries.com/definition/english/agency]]</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">2</span></div></section></div>
+<div class="frame" data-index="3"><section class="slide slide--content" aria-label="Slide 3"><div class="slide-body"><h2 class="slide-title">An agent</h2><div class="slide-content"><blockquote><p>An <strong>agent</strong> is a system in which the model decides the next step at run time, after seeing the result of the previous one, and decides when the task is finished.</p></blockquote>
+<pre class="verbatim"><code>request ──► model ──► chooses an action ──► the application performs it
+              ▲                                         │
+              └────────── observes the result ◄─────────┘
+
+            model ──► answer        when the model decides the goal is reached</code></pre></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">3</span></div></section></div>
+<div class="frame" data-index="4"><section class="slide slide--content" aria-label="Slide 4"><div class="slide-body"><h2 class="slide-title">The parts of an agent</h2><div class="slide-content"><div class="table-wrap"><table><thead><tr><th style="text-align:left">Part</th><th style="text-align:left">What it is</th><th style="text-align:left">In the course system</th></tr></thead><tbody><tr><td style="text-align:left">Goal</td><td style="text-align:left">what is to be achieved</td><td style="text-align:left">the user's request and the system instruction</td></tr><tr><td style="text-align:left">Actions</td><td style="text-align:left">what it can do</td><td style="text-align:left">the tools</td></tr><tr><td style="text-align:left">Observations</td><td style="text-align:left">what it learns by acting</td><td style="text-align:left">the tools' results</td></tr><tr><td style="text-align:left">State</td><td style="text-align:left">what it carries between steps</td><td style="text-align:left">the message history (Week 7), and memory</td></tr><tr><td style="text-align:left">Stopping</td><td style="text-align:left">what ends the run</td><td style="text-align:left">the model answers instead of acting, or the code stops it after <em>n</em> steps</td></tr></tbody></table></div>
+<p>The model normally stops itself, by answering. The step limit is the application's safeguard for a model that keeps acting and never answers.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">4</span></div></section></div>
+<div class="frame" data-index="5"><section class="slide slide--content" aria-label="Slide 5"><div class="slide-body"><h2 class="slide-title">So far, the engineer was building the steps</h2><div class="slide-content"><pre class="verbatim"><code>Week 2   prompt ──► answer
+Week 3   question ──► retrieve ──► answer
+Week 6   question ──► router ──► one retriever ──► answer
+Week 7   question ──► rewrite ──► retrieve ──► answer ──► store facts</code></pre>
+<p>Each step, and the order of the steps, is written in the code.</p>
+<p>The router and the rewrite are model calls, but each decides <strong>once</strong>, before any result is seen.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">5</span></div></section></div>
+<div class="frame" data-index="6"><section class="slide slide--content" aria-label="Slide 6"><div class="slide-body"><h2 class="slide-title">What changes</h2><div class="slide-content"><div class="table-wrap"><table><thead><tr><th style="text-align:left"></th><th style="text-align:left">Pipeline (Weeks 3–7)</th><th style="text-align:left">Agent</th></tr></thead><tbody><tr><td style="text-align:left">The steps</td><td style="text-align:left">fixed in code</td><td style="text-align:left">chosen by the model</td></tr><tr><td style="text-align:left">Model calls per question</td><td style="text-align:left">known in advance</td><td style="text-align:left">known only afterwards</td></tr><tr><td style="text-align:left">It stops</td><td style="text-align:left">after the last step</td><td style="text-align:left">when the model answers, or at a limit</td></tr><tr><td style="text-align:left">Testing</td><td style="text-align:left">each step, in a fixed order</td><td style="text-align:left">each run may take a different path</td></tr><tr><td style="text-align:left">An unforeseen question</td><td style="text-align:left">takes the same path as any other</td><td style="text-align:left">may be handled by another sequence of tools</td></tr></tbody></table></div></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">6</span></div></section></div>
+<div class="frame" data-index="7"><section class="slide slide--content" aria-label="Slide 7"><div class="slide-body"><h2 class="slide-title">What a model cannot do alone</h2><div class="slide-content"><p>The model can only <strong>write text</strong>. To act, it asks the application, through a <strong>tool</strong>.</p>
+<div class="table-wrap"><table><thead><tr><th style="text-align:left">The model lacks</th><th style="text-align:left">Example</th><th style="text-align:left">A tool that supplies it</th></tr></thead><tbody><tr><td style="text-align:left">Current information</td><td style="text-align:left">"What is the hryvnia rate for the euro?"</td><td style="text-align:left"><code>exchange_rate(currency)</code></td></tr><tr><td style="text-align:left">Exact calculation</td><td style="text-align:left">48,213 × 7,906</td><td style="text-align:left"><code>calculate(a, op, b)</code></td></tr><tr><td style="text-align:left">Data it was not given</td><td style="text-align:left">"Which documents mention Chroma?"</td><td style="text-align:left">a query over the graph</td></tr><tr><td style="text-align:left">A way to change anything</td><td style="text-align:left">"Remember that I use Docker"</td><td style="text-align:left">a write to memory</td></tr></tbody></table></div>
+<p>Week 2: the model knows only its training data and its context. It can often calculate by reasoning step by step, but at a cost in tokens and without a guarantee; a tool is exact.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">7</span></div></section></div>
+<div class="frame" data-index="8"><section class="slide slide--content" aria-label="Slide 8"><div class="slide-body"><h2 class="slide-title">A tool</h2><div class="slide-content"><p>A <strong>tool</strong> is a function in the application that the model may ask to have run.</p>
+<p>The model sees three things, and never the code:</p>
+<div class="table-wrap"><table><thead><tr><th style="text-align:left">Part</th><th style="text-align:left">For example</th></tr></thead><tbody><tr><td style="text-align:left"><strong>Name</strong></td><td style="text-align:left"><code>exchange_rate</code></td></tr><tr><td style="text-align:left"><strong>Description</strong></td><td style="text-align:left">"The official hryvnia exchange rate set by the National Bank of Ukraine for one currency. Use it for any question about a current rate."</td></tr><tr><td style="text-align:left"><strong>Parameters</strong></td><td style="text-align:left"><code>currency</code>: a string, an ISO 4217 code such as <code>EUR</code>; required</td></tr></tbody></table></div>
+<p>The description says <strong>what</strong> the tool does and <strong>when</strong> to use it. The parameters are written as a <strong>JSON schema</strong>, as in Week 5.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">8</span></div></section></div>
+<div class="frame" data-index="9"><section class="slide slide--content" aria-label="Slide 9"><div class="slide-body"><h2 class="slide-title">One tool call</h2><div class="slide-content"><pre class="verbatim"><code>application ──► model      the question + the tool definitions
+application ◄── model      a tool call:   exchange_rate {"currency": "EUR"}
+application                runs exchange_rate("EUR")  →  "1 EUR = 50.5766 UAH, ..."
+application ──► model      the same messages + the tool's result
+application ◄── model      the answer:    "The NBU rate is 50.5766 hryvnias to the euro."</code></pre>
+<p>Two model calls. The model <strong>asks</strong> for the tool; the application <strong>runs</strong> it.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">9</span></div></section></div>
+<div class="frame" data-index="10"><section class="slide slide--content" aria-label="Slide 10"><div class="slide-body"><h2 class="slide-title">The messages</h2><div class="slide-content"><p>The tool call and its result are <strong>two more messages</strong> in Week 7's history.</p>
+<pre class="verbatim"><code>role        content
+user        What is the hryvnia rate for the euro?
+assistant   call_1:  exchange_rate {"currency": "EUR"}
+tool        result of call_1:  1 EUR = 50.5766 UAH, set by the NBU for 26.10.2026
+assistant   The NBU rate is 50.5766 hryvnias to the euro.</code></pre>
+<ul><li>The tool call is a message from the <strong>assistant</strong>; its result is a message with the role <strong>tool</strong>.</li><li>Each result names the call it answers, by the call's <strong>id</strong>.</li><li>Roles and field names differ between providers: OpenRouter uses the OpenAI-compatible format, Gemini its own (Week 9).</li></ul></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">10</span></div></section></div>
+<div class="frame" data-index="11"><section class="slide slide--content" aria-label="Slide 11"><div class="slide-body"><h2 class="slide-title">Where tools sit in the context</h2><div class="slide-content"><pre class="verbatim"><code>system instructions        fixed                  Week 2
+tool definitions           fixed, on every call   Week 8
+memory: profile            per user               Week 7
+memory: retrieved facts    per turn               Week 7
+conversation history       per conversation       Week 7
+  tool calls and results   per step               Week 8
+retrieved passages         per question           Weeks 3–6
+the question               per call</code></pre>
+<p>The definitions are sent with <strong>every</strong> request, so every tool costs tokens on every call, whether or not it is used.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">11</span></div></section></div>
+<div class="frame" data-index="12"><section class="slide slide--content" aria-label="Slide 12"><div class="slide-body"><h2 class="slide-title">Two simple tools</h2><div class="slide-content"><div class="table-wrap"><table><thead><tr><th style="text-align:left">Tool</th><th style="text-align:left">Parameters</th><th style="text-align:left">The function behind it</th><th style="text-align:left">Supplies</th></tr></thead><tbody><tr><td style="text-align:left"><code>exchange_rate</code></td><td style="text-align:left"><code>currency</code>: a string such as <code>EUR</code></td><td style="text-align:left">one request to the NBU's public API</td><td style="text-align:left">current information</td></tr><tr><td style="text-align:left"><code>calculate</code></td><td style="text-align:left"><code>a</code>, <code>b</code>: numbers; <code>op</code>: one of <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code></td><td style="text-align:left">one arithmetic operation</td><td style="text-align:left">exact calculation</td></tr></tbody></table></div>
+<p>The function is ordinary code, and the model never sees it.</p>
+<p><code>op</code> is limited to four values by the schema (an <code>enum</code>), as <code>Literal</code> limited Week 5's types.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">12</span></div></section></div>
+<div class="frame" data-index="13"><section class="slide slide--content" aria-label="Slide 13"><div class="slide-body"><h2 class="slide-title">What the application does with a tool call</h2><div class="slide-content"><ol><li>Finds the function by the tool's <strong>name</strong>.</li><li>Reads the <strong>arguments</strong>, which arrive as JSON text.</li><li>Runs the function.</li><li>Adds the result to the messages, marked with the <strong>call's id</strong>.</li><li>Calls the model again. The model answers from the result, or asks for another tool.</li></ol></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">13</span></div></section></div>
+<div class="frame" data-index="14"><section class="slide slide--content" aria-label="Slide 14"><div class="slide-body"><h2 class="slide-title">Demonstration: the euro rate</h2><div class="slide-content"><pre class="verbatim"><code>WITHOUT TOOLS        "What is the hryvnia rate for the euro?"
+                     A rate from the training data, which may be months old,
+                     often given without saying so.
+
+WITH exchange_rate   tool call   exchange_rate {"currency": "EUR"}
+                     result      "1 EUR = 50.5766 UAH, set by the NBU for 26.10.2026"
+                     answer      "The NBU rate is 50.5766 hryvnias to the euro."</code></pre>
+<p>The rate changes every working day; the training data stops at a fixed date. The tool reads the rate <strong>when it is asked</strong>. The NBU sets each rate for the next working day, hence the date in the result.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">14</span></div></section></div>
+<div class="frame" data-index="15"><section class="slide slide--content" aria-label="Slide 15"><div class="slide-body"><h2 class="slide-title">The retrievers are already functions</h2><div class="slide-content"><div class="table-wrap"><table><thead><tr><th style="text-align:right">Week</th><th style="text-align:left">Retriever</th><th style="text-align:left">Returns</th></tr></thead><tbody><tr><td style="text-align:right">3</td><td style="text-align:left">vector</td><td style="text-align:left">the three nearest passages</td></tr><tr><td style="text-align:right">6</td><td style="text-align:left">graph by name</td><td style="text-align:left">facts about the entities the question names</td></tr><tr><td style="text-align:right">6</td><td style="text-align:left">hybrid</td><td style="text-align:left">the nearest passages, and facts about what they mention</td></tr><tr><td style="text-align:right">6</td><td style="text-align:left">text-to-Cypher</td><td style="text-align:left">rows from a query the model writes</td></tr></tbody></table></div>
+<p>Each becomes a tool with a description and one parameter: <strong>the query</strong>.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">15</span></div></section></div>
+<div class="frame" data-index="16"><section class="slide slide--content" aria-label="Slide 16"><div class="slide-body"><h2 class="slide-title">A retriever as a tool</h2><div class="slide-content"><div class="table-wrap"><table><thead><tr><th style="text-align:left">Part</th><th style="text-align:left"><code>search_course</code></th></tr></thead><tbody><tr><td style="text-align:left"><strong>Description</strong></td><td style="text-align:left">"Search the course materials (lectures, practicals and plans) for passages and facts relevant to the query. Use it for any question about the course."</td></tr><tr><td style="text-align:left"><strong>Parameters</strong></td><td style="text-align:left"><code>query</code>: a standalone search query that names what is asked about</td></tr><tr><td style="text-align:left"><strong>The function</strong></td><td style="text-align:left">Week 6's <code>hybrid</code>, unchanged</td></tr></tbody></table></div>
+<p>The result is text. The model reads it as one more message.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">16</span></div></section></div>
+<div class="frame" data-index="17"><section class="slide slide--content" aria-label="Slide 17"><div class="slide-body"><h2 class="slide-title">Two decisions move to the model</h2><div class="slide-content"><div class="table-wrap"><table><thead><tr><th style="text-align:left"></th><th style="text-align:left">Weeks 3–7</th><th style="text-align:left">Retrieval as a tool</th></tr></thead><tbody><tr><td style="text-align:left">Whether to retrieve</td><td style="text-align:left">always, before every answer</td><td style="text-align:left">the model decides</td></tr><tr><td style="text-align:left">The query</td><td style="text-align:left">the question, or Week 7's rewrite</td><td style="text-align:left">the model writes it</td></tr></tbody></table></div>
+<pre class="verbatim"><code>user        What distance does Chroma use by default?
+assistant   Chroma's unconfigured default is squared Euclidean distance [3].
+user        How do we change it?
+tool call   search_course {"query": "how to change the distance metric of a Chroma collection"}</code></pre>
+<p>The model writes the query with the whole history in view. Week 7's rewrite becomes part of the tool call, and it can go wrong in the same way: <strong>log the query</strong>.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">17</span></div></section></div>
+<div class="frame" data-index="18"><section class="slide slide--content" aria-label="Slide 18"><div class="slide-body"><h2 class="slide-title">From router to tool choice</h2><div class="slide-content"><p>Week 6's router: one model call chose one retriever, <strong>before</strong> any result was seen.</p>
+<p>With each retriever as a tool, the model chooses, and can choose again <strong>after</strong> seeing a result. The <strong>descriptions</strong> decide, as the router's descriptions did:</p>
+<div class="table-wrap"><table><thead><tr><th style="text-align:left">Tool</th><th style="text-align:left">Description</th></tr></thead><tbody><tr><td style="text-align:left"><code>facts_by_name</code></td><td style="text-align:left">"Facts from the course graph about tools, topics and labs named in the query. Returns nothing if the query names none."</td></tr><tr><td style="text-align:left"><code>search_passages</code></td><td style="text-align:left">"Passages from the course materials nearest in meaning to the query. Use it for explanations, reasons and procedures."</td></tr></tbody></table></div>
+<p>A description is a prompt. State <strong>what</strong> the tool returns and <strong>when</strong> to use it.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">18</span></div></section></div>
+<div class="frame" data-index="19"><section class="slide slide--content" aria-label="Slide 19"><div class="slide-body"><h2 class="slide-title">When there are many tools</h2><div class="slide-content"><ul><li>Every definition is sent with every request: more tools cost more tokens on every call, and make the choice harder.</li><li>Keep the set small: each tool should serve a kind of question the system must answer.</li><li>With a large set, choose the few relevant to the request first, for example by embedding the descriptions and searching them as in Week 3.</li></ul></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">19</span></div></section></div>
+<div class="frame" data-index="20"><section class="slide slide--content" aria-label="Slide 20"><div class="slide-body"><h2 class="slide-title">A fixed query as a tool</h2><div class="slide-content"><p><code>documents_mentioning</code>: <em>"List the course documents that mention a tool, topic or lab, given its name, for example 'Chroma'."</em></p>
+<p>The engineer writes one query in advance:</p>
+<pre class="lang-cypher"><code><span class="tok-kw">MATCH</span> (d:Document)-[:HAS_CHUNK]-&gt;(:Chunk)-[:MENTIONS]-&gt;(e:Entity {name: $name})
+<span class="tok-kw">RETURN</span> <span class="tok-kw">DISTINCT</span> d.name</code></pre>
+<p>The model supplies <strong>one value</strong>, <code>$name</code>. The query runs in Week 6's read-only transaction.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">20</span></div></section></div>
+<div class="frame" data-index="21"><section class="slide slide--content" aria-label="Slide 21"><div class="slide-body"><h2 class="slide-title">Narrow tools and a general one</h2><div class="slide-content"><div class="table-wrap"><table><thead><tr><th style="text-align:left"></th><th style="text-align:left">A fixed query</th><th style="text-align:left">Text-to-Cypher (Week 6)</th></tr></thead><tbody><tr><td style="text-align:left">Answers</td><td style="text-align:left">one kind of question</td><td style="text-align:left">many kinds</td></tr><tr><td style="text-align:left">The query is written by</td><td style="text-align:left">the engineer, once</td><td style="text-align:left">the model, on every call</td></tr><tr><td style="text-align:left">The model supplies</td><td style="text-align:left">one value</td><td style="text-align:left">a whole query</td></tr><tr><td style="text-align:left">Fails by</td><td style="text-align:left">not fitting the question</td><td style="text-align:left">a wrong label, direction or property</td></tr></tbody></table></div>
+<p>Write fixed queries for the questions your system must answer reliably. A general tool covers the rest, less reliably.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">21</span></div></section></div>
+<div class="frame" data-index="22"><section class="slide slide--content" aria-label="Slide 22"><div class="slide-body"><h2 class="slide-title">Memory as tools</h2><div class="slide-content"><p>Week 7's <code>MemoryStore</code> already has the functions:</p>
+<div class="table-wrap"><table><thead><tr><th style="text-align:left">Tool</th><th style="text-align:left">Week 7's method</th><th style="text-align:left">Kind</th></tr></thead><tbody><tr><td style="text-align:left"><code>recall_memory(query)</code></td><td style="text-align:left"><code>recall</code>: the stored facts nearest the query</td><td style="text-align:left">reads</td></tr><tr><td style="text-align:left"><code>remember(fact)</code></td><td style="text-align:left"><code>add</code>: store a fact with its source and date</td><td style="text-align:left">writes</td></tr><tr><td style="text-align:left"><code>replace_memory(id, fact)</code></td><td style="text-align:left"><code>replace</code>: a newer fact in place of an old one</td><td style="text-align:left">writes</td></tr><tr><td style="text-align:left"><code>forget(id)</code></td><td style="text-align:left"><code>delete</code></td><td style="text-align:left">writes</td></tr></tbody></table></div>
+<p>In Week 7 the <strong>application</strong> decided what to store. As a tool, the <strong>model</strong> decides.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">22</span></div></section></div>
+<div class="frame" data-index="23"><section class="slide slide--content" aria-label="Slide 23"><div class="slide-body"><h2 class="slide-title">Read and write tools</h2><div class="slide-content"><div class="table-wrap"><table><thead><tr><th style="text-align:left"></th><th style="text-align:left">Read</th><th style="text-align:left">Write</th></tr></thead><tbody><tr><td style="text-align:left">Examples</td><td style="text-align:left"><code>exchange_rate</code>, <code>search_course</code>, <code>documents_mentioning</code>, <code>recall_memory</code></td><td style="text-align:left"><code>remember</code>, <code>replace_memory</code>, <code>forget</code></td></tr><tr><td style="text-align:left">Changes state</td><td style="text-align:left">no</td><td style="text-align:left">yes, outside the conversation</td></tr><tr><td style="text-align:left">Repeated</td><td style="text-align:left">harmless</td><td style="text-align:left">may act again</td></tr><tr><td style="text-align:left">A wrong call costs</td><td style="text-align:left">a wrong answer</td><td style="text-align:left">a wrong state that persists</td></tr></tbody></table></div>
+<p>A write is guarded <strong>by the system</strong>, not by the prompt. Week 6 ran the model's Cypher in a <strong>read-only transaction</strong>: the database refused every write, whatever the query said.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">23</span></div></section></div>
+<div class="frame" data-index="24"><section class="slide slide--content" aria-label="Slide 24"><div class="slide-body"><h2 class="slide-title">Agent loop - One run</h2><div class="slide-content"><p>An illustration, with two tools: <code>facts_by_name</code> and <code>search_passages</code>.</p>
+<pre class="verbatim"><code>user      How do we change the distance metric in Chroma?
+
+step 1    facts_by_name      {"query": "Chroma"}
+          result             facts about what uses Chroma; none says how to configure it
+
+step 2    search_passages    {"query": "set the distance metric of a Chroma collection"}
+          result             passages, one with metadata={"hnsw:space": "cosine"}
+
+step 3    answer             "Pass metadata={'hnsw:space': 'cosine'} when the
+                              collection is created [1]."</code></pre>
+<p>The second step was chosen <strong>after</strong> the first result. No code decided it in advance.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">24</span></div></section></div>
+<div class="frame" data-index="25"><section class="slide slide--content" aria-label="Slide 25"><div class="slide-body"><h2 class="slide-title">Every step is a model call</h2><div class="slide-content"><ul><li>A run of <em>n</em> steps makes <em>n</em> model calls, and each re-sends the whole history, tool results included (Week 7).</li><li>OpenRouter's free models allow <strong>20 requests a minute and 50 a day</strong> per account, or 1,000 a day once 10 credits have been bought.</li><li>At 50 a day, a question that takes four steps can be asked about twelve times.</li><li>Describe the tools so that the first choice is usually right, and return results the model can use directly.</li><li>The step limit stops a loop that <strong>the model does not end</strong>.</li></ul></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">25</span></div></section></div>
+<div class="frame" data-index="26"><section class="slide slide--content" aria-label="Slide 26"><div class="slide-body"><h2 class="slide-title">Arguments are model output</h2><div class="slide-content"><p>The schema is a <strong>request</strong> to the model. The application checks the arguments before running anything, as Week 5 validated extraction.</p>
+<div class="table-wrap"><table><thead><tr><th style="text-align:left">The model sends</th><th style="text-align:left">The check</th></tr></thead><tbody><tr><td style="text-align:left"><code>calculate {"a": 48213, "op": "^", "b": 7906}</code></td><td style="text-align:left">rejected: <code>op</code> must be <code>+</code>, <code>-</code>, <code>*</code> or <code>/</code></td></tr><tr><td style="text-align:left"><code>calculate {"a": "forty", "op": "*", "b": 2}</code></td><td style="text-align:left">rejected: <code>a</code> is not a number</td></tr><tr><td style="text-align:left"><code>exchange_rate {}</code></td><td style="text-align:left">rejected: <code>currency</code> is required</td></tr></tbody></table></div>
+<p>Never pass the model's text to <code>eval</code>: a calculator built on <code>eval</code> runs any Python the model writes.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">26</span></div></section></div>
+<div class="frame" data-index="27"><section class="slide slide--content" aria-label="Slide 27"><div class="slide-body"><h2 class="slide-title">An error is a tool result</h2><div class="slide-content"><div class="table-wrap"><table><thead><tr><th style="text-align:left">What goes wrong</th><th style="text-align:left">What the model receives as the tool's result</th></tr></thead><tbody><tr><td style="text-align:left">An unknown tool</td><td style="text-align:left">"Error: there is no tool 'calc'. Tools: exchange_rate, calculate."</td></tr><tr><td style="text-align:left">Invalid arguments</td><td style="text-align:left">"Error: op must be one of +, -, *, /."</td></tr><tr><td style="text-align:left">An unknown currency</td><td style="text-align:left">"No NBU rate for 'XYZ'."</td></tr><tr><td style="text-align:left">The database is down</td><td style="text-align:left">"Error: ServiceUnavailable: could not connect to Neo4j."</td></tr></tbody></table></div>
+<p>The error goes back to the model as the tool's result, and the loop continues, so the model can <strong>correct the call</strong>. Week 6's text-to-Cypher already did this: a rejected query went back to the model with the database's error.</p></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">27</span></div></section></div></div>
+
+<aside id="notes" aria-label="Speaker notes">
+  <div class="notes-head"><span>Speaker notes</span><span id="timer">00:00</span></div>
+  <div id="notes-body"></div>
+</aside>
+
+<aside id="outline" aria-label="Slide list">
+  <div class="outline-head"><span>Slides</span><span id="outline-count">27</span></div>
+  <div id="outline-list"></div>
+</aside>
+
+<div id="hud">
+  <span id="counter">1 / 27</span>
+  <button type="button" data-act="prev" title="Previous (←)">‹</button>
+  <button type="button" data-act="next" title="Next (→)">›</button>
+  <button type="button" data-act="notes" title="Speaker notes (S)">S</button>
+  <button type="button" data-act="overview" title="Overview (O)">O</button>
+  <button type="button" data-act="outline" title="Slide list (L)">L</button>
+  <button type="button" data-act="theme" title="Light / dark (T)">T</button>
+  <button type="button" data-act="help" title="Help (?)">?</button>
+</div>
+
+<div id="overlay" role="dialog" aria-label="Keyboard shortcuts">
+  <dl>
+    <dt>← →</dt><dd>Previous / next slide</dd>
+    <dt>Space</dt><dd>Next slide</dd>
+    <dt>Home / End</dt><dd>First / last slide</dd>
+    <dt>1–9</dt><dd>Jump to slide number, then Enter</dd>
+    <dt>S</dt><dd>Speaker notes and lecture timer</dd>
+    <dt>R</dt><dd>Reset the timer</dd>
+    <dt>O</dt><dd>Slide overview — a visual grid, click a slide to jump</dd>
+    <dt>L</dt><dd>Slide list — titles only, click to jump</dd>
+    <dt>T</dt><dd>Light / dark, for the room you are in</dd>
+    <dt>F</dt><dd>Fullscreen</dd>
+    <dt>B</dt><dd>Blank the screen</dd>
+    <dt>Ctrl+P</dt><dd>Print / export a PDF handout</dd>
+    <dt>Esc</dt><dd>Close this, or leave overview</dd>
+  </dl>
+</div>
+<div id="blank"></div>
+
+<script>
+(function(){
+  "use strict";
+  var W = 1280, H = 720;
+  var stage = document.getElementById("stage");
+  var frames = Array.prototype.slice.call(stage.querySelectorAll(".frame"));
+  var notesPanel = document.getElementById("notes");
+  var notesBody = document.getElementById("notes-body");
+  var outlinePanel = document.getElementById("outline");
+  var outlineList = document.getElementById("outline-list");
+  var OUTLINE = [{"i": 1, "t": "Tools and agents", "k": "title"}, {"i": 2, "t": "Main idea", "k": "content"}, {"i": 3, "t": "An agent", "k": "content"}, {"i": 4, "t": "The parts of an agent", "k": "content"}, {"i": 5, "t": "So far, the engineer was building the steps", "k": "content"}, {"i": 6, "t": "What changes", "k": "content"}, {"i": 7, "t": "What a model cannot do alone", "k": "content"}, {"i": 8, "t": "A tool", "k": "content"}, {"i": 9, "t": "One tool call", "k": "content"}, {"i": 10, "t": "The messages", "k": "content"}, {"i": 11, "t": "Where tools sit in the context", "k": "content"}, {"i": 12, "t": "Two simple tools", "k": "content"}, {"i": 13, "t": "What the application does with a tool call", "k": "content"}, {"i": 14, "t": "Demonstration: the euro rate", "k": "content"}, {"i": 15, "t": "The retrievers are already functions", "k": "content"}, {"i": 16, "t": "A retriever as a tool", "k": "content"}, {"i": 17, "t": "Two decisions move to the model", "k": "content"}, {"i": 18, "t": "From router to tool choice", "k": "content"}, {"i": 19, "t": "When there are many tools", "k": "content"}, {"i": 20, "t": "A fixed query as a tool", "k": "content"}, {"i": 21, "t": "Narrow tools and a general one", "k": "content"}, {"i": 22, "t": "Memory as tools", "k": "content"}, {"i": 23, "t": "Read and write tools", "k": "content"}, {"i": 24, "t": "Agent loop - One run", "k": "content"}, {"i": 25, "t": "Every step is a model call", "k": "content"}, {"i": 26, "t": "Arguments are model output", "k": "content"}, {"i": 27, "t": "An error is a tool result", "k": "content"}];
+  var counter = document.getElementById("counter");
+  var progress = document.getElementById("progress");
+  var overlay = document.getElementById("overlay");
+  var blank = document.getElementById("blank");
+  var total = frames.length;
+  var index = 0;
+  var overview = false;
+  var pending = "";
+  var pendingTimer = null;
+
+  function store(key, value){ try{ localStorage.setItem(key, value); }catch(e){} }
+  function load(key){ try{ return localStorage.getItem(key); }catch(e){ return null; } }
+
+  var savedTheme = load("deck-theme");
+  if(savedTheme === "light" || savedTheme === "dark"){
+    document.documentElement.setAttribute("data-theme", savedTheme);
+  }
+
+  /* Shrink a slide's type until its content fits the fixed 1280x720 box.
+     Content is never removed -- only scaled. */
+  function fit(frame){
+    var slide = frame.querySelector(".slide");
+    var body = frame.querySelector(".slide-body");
+    if(!slide || !body) return;
+    body.style.setProperty("--fit", 1);
+    if(body.scrollHeight <= body.clientHeight + 1) { frame.removeAttribute("data-overflow"); return; }
+    var lo = 0.55, hi = 1, best = 0.55;
+    for(var i = 0; i < 9; i++){
+      var mid = (lo + hi) / 2;
+      body.style.setProperty("--fit", mid);
+      if(body.scrollHeight <= body.clientHeight + 1){ best = mid; lo = mid; } else { hi = mid; }
+    }
+    body.style.setProperty("--fit", best);
+    if(best <= 0.56 && body.scrollHeight > body.clientHeight + 1){
+      frame.setAttribute("data-overflow", "1");
+    } else {
+      frame.removeAttribute("data-overflow");
+    }
+  }
+
+  function layout(){
+    if(overview){
+      document.body.classList.add("is-overview");
+      var pad = 24, gap = 18;
+      var cols = window.innerWidth > 1500 ? 4 : (window.innerWidth > 1000 ? 3 : 2);
+      var cellW = (window.innerWidth - pad * 2 - gap * (cols - 1)) / cols;
+      var scale = cellW / W;
+      var cellH = H * scale;
+      frames.forEach(function(frame, i){
+        var col = i % cols, row = Math.floor(i / cols);
+        frame.style.transform = "translate(" + (col * (cellW + gap)) + "px," +
+                                (row * (cellH + gap)) + "px) scale(" + scale + ")";
+      });
+      stage.style.height = (Math.ceil(total / cols) * (cellH + gap) + pad) + "px";
+    } else {
+      document.body.classList.remove("is-overview");
+      stage.style.height = "";
+      var s = Math.min(window.innerWidth / W, window.innerHeight / H);
+      var x = (window.innerWidth - W * s) / 2, y = (window.innerHeight - H * s) / 2;
+      frames.forEach(function(frame){
+        frame.style.transform = "translate(" + x + "px," + y + "px) scale(" + s + ")";
+      });
+    }
+  }
+
+  function renderNotes(){
+    var src = frames[index].querySelector(".notes-src");
+    notesBody.innerHTML = src ? src.innerHTML
+      : '<p class="notes-empty">No notes for this slide.</p>';
+  }
+
+  /* Built once: a plain list of slide titles, independent of the O overview
+     grid. textContent only -- a title is untrusted-ish authored text, and
+     this sidesteps ever needing to HTML-escape it. */
+  function buildOutline(){
+    OUTLINE.forEach(function(o){
+      var row = document.createElement("div");
+      row.className = "outline-item" + (o.k === "section" || o.k === "title" ? " is-section" : "");
+      row.setAttribute("data-index", o.i);
+      var num = document.createElement("span");
+      num.className = "outline-num";
+      num.textContent = o.i;
+      var t = document.createElement("span");
+      t.className = "outline-title";
+      t.textContent = o.t;
+      row.appendChild(num);
+      row.appendChild(t);
+      outlineList.appendChild(row);
+    });
+  }
+
+  function updateOutlineHighlight(){
+    var items = outlineList.querySelectorAll(".outline-item");
+    for(var i = 0; i < items.length; i++){
+      items[i].classList.toggle("is-current", i === index);
+    }
+  }
+
+  function show(next, push){
+    index = Math.max(0, Math.min(total - 1, next));
+    frames.forEach(function(frame, i){ frame.classList.toggle("is-active", i === index); });
+    counter.textContent = (index + 1) + " / " + total;
+    progress.style.width = (total > 1 ? (index / (total - 1)) * 100 : 100) + "%";
+    renderNotes();
+    if(outlinePanel.classList.contains("is-open")) updateOutlineHighlight();
+    if(push !== false){
+      try{ history.replaceState(null, "", "#" + (index + 1)); }catch(e){}
+    }
+    if(overview) frames[index].scrollIntoView({block:"nearest"});
+  }
+
+  /* Lecture timer -- starts on first use of the notes panel. */
+  var elapsed = 0, ticking = null, timerEl = document.getElementById("timer");
+  function paint(){
+    var m = Math.floor(elapsed / 60), s = elapsed % 60;
+    timerEl.textContent = (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s;
+  }
+  function startTimer(){
+    if(ticking) return;
+    ticking = setInterval(function(){ elapsed++; paint(); }, 1000);
+  }
+
+  function toggleNotes(){
+    var open = notesPanel.classList.toggle("is-open");
+    if(open) startTimer();
+  }
+  function toggleOutline(){
+    var open = outlinePanel.classList.toggle("is-open");
+    if(open){
+      updateOutlineHighlight();
+      var current = outlineList.querySelector(".outline-item.is-current");
+      if(current) current.scrollIntoView({block:"nearest"});
+    }
+  }
+  function toggleOverview(){
+    overview = !overview;
+    layout();
+    if(!overview) frames[index].scrollIntoView({block:"nearest"});
+  }
+  function toggleTheme(){
+    var root = document.documentElement;
+    var next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    root.setAttribute("data-theme", next);
+    store("deck-theme", next);
+  }
+
+  document.getElementById("hud").addEventListener("click", function(ev){
+    var act = ev.target.getAttribute && ev.target.getAttribute("data-act");
+    if(!act) return;
+    if(act === "prev") show(index - 1);
+    else if(act === "next") show(index + 1);
+    else if(act === "notes") toggleNotes();
+    else if(act === "overview") toggleOverview();
+    else if(act === "outline") toggleOutline();
+    else if(act === "theme") toggleTheme();
+    else if(act === "help") overlay.classList.toggle("is-open");
+  });
+
+  outlineList.addEventListener("click", function(ev){
+    var item = ev.target.closest ? ev.target.closest(".outline-item") : null;
+    if(!item) return;
+    show(parseInt(item.getAttribute("data-index"), 10) - 1);
+    outlinePanel.classList.remove("is-open");
+  });
+
+  stage.addEventListener("click", function(ev){
+    if(!overview) return;
+    var frame = ev.target.closest ? ev.target.closest(".frame") : null;
+    if(!frame) return;
+    show(frames.indexOf(frame));
+    toggleOverview();
+  });
+
+  overlay.addEventListener("click", function(){ overlay.classList.remove("is-open"); });
+  blank.addEventListener("click", function(){ blank.classList.remove("is-open"); });
+
+  document.addEventListener("keydown", function(ev){
+    if(ev.ctrlKey || ev.metaKey || ev.altKey) return;
+    var key = ev.key;
+
+    if(/^[0-9]$/.test(key)){
+      pending += key;
+      clearTimeout(pendingTimer);
+      pendingTimer = setTimeout(function(){ pending = ""; }, 1200);
+      return;
+    }
+    if(key === "Enter" && pending){
+      show(parseInt(pending, 10) - 1);
+      pending = "";
+      return;
+    }
+
+    switch(key){
+      case "ArrowRight": case "PageDown": case " ": case "Spacebar":
+        ev.preventDefault(); show(index + 1); break;
+      case "ArrowLeft": case "PageUp":
+        ev.preventDefault(); show(index - 1); break;
+      case "ArrowDown": ev.preventDefault(); show(index + 1); break;
+      case "ArrowUp": ev.preventDefault(); show(index - 1); break;
+      case "Home": ev.preventDefault(); show(0); break;
+      case "End": ev.preventDefault(); show(total - 1); break;
+      case "s": case "S": case "і": case "І": toggleNotes(); break;
+      case "o": case "O": case "щ": case "Щ": toggleOverview(); break;
+      case "l": case "L": case "д": case "Д": toggleOutline(); break;
+      case "t": case "T": case "е": case "Е": toggleTheme(); break;
+      case "r": case "R": case "к": case "К": elapsed = 0; paint(); break;
+      case "b": case "B": case "и": case "И": blank.classList.toggle("is-open"); break;
+      case "f": case "F": case "а": case "А":
+        if(document.fullscreenElement) document.exitFullscreen();
+        else if(document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+        break;
+      case "?": overlay.classList.toggle("is-open"); break;
+      case "Escape":
+        if(blank.classList.contains("is-open")) blank.classList.remove("is-open");
+        else if(overlay.classList.contains("is-open")) overlay.classList.remove("is-open");
+        else if(overview) toggleOverview();
+        else if(outlinePanel.classList.contains("is-open")) outlinePanel.classList.remove("is-open");
+        else notesPanel.classList.remove("is-open");
+        break;
+    }
+  });
+
+  var touchX = null;
+  document.addEventListener("touchstart", function(ev){ touchX = ev.touches[0].clientX; }, {passive:true});
+  document.addEventListener("touchend", function(ev){
+    if(touchX === null) return;
+    var dx = ev.changedTouches[0].clientX - touchX;
+    if(Math.abs(dx) > 60) show(index + (dx < 0 ? 1 : -1));
+    touchX = null;
+  }, {passive:true});
+
+  var resizeTimer = null;
+  window.addEventListener("resize", function(){
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(layout, 90);
+  });
+  window.addEventListener("beforeprint", function(){ frames.forEach(fit); });
+
+  function boot(){
+    buildOutline();
+    frames.forEach(fit);
+    layout();
+    var hash = parseInt((location.hash || "").replace("#", ""), 10);
+    show(isNaN(hash) ? 0 : hash - 1, false);
+    var bad = frames.filter(function(f){ return f.hasAttribute("data-overflow"); })
+                    .map(function(f){ return f.getAttribute("data-index"); });
+    if(bad.length){
+      console.warn("[deck] content still overflows after scaling on slide(s): " + bad.join(", ") +
+                   " -- split them in the source Markdown with an --- rule.");
+    }
+  }
+  if(document.readyState === "complete") boot();
+  else window.addEventListener("load", boot);
+})();
+</script>
+</body>
+</html>
