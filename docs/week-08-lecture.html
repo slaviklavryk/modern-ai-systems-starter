@@ -231,7 +231,7 @@ user        What is the hryvnia rate for the euro?
 assistant   call_1:  exchange_rate {"currency": "EUR"}
 tool        result of call_1:  1 EUR = 50.5766 UAH, set by the NBU for 26.10.2026
 assistant   The NBU rate is 50.5766 hryvnias to the euro.</code></pre>
-<ul><li>The tool call is a message from the <strong>assistant</strong>; its result is a message with the role <strong>tool</strong>.</li><li>Each result names the call it answers, by the call's <strong>id</strong>.</li><li>Roles and field names differ between providers: OpenRouter uses the OpenAI-compatible format, Gemini its own (Week 9).</li></ul></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">10</span></div></section></div>
+<ul><li>The tool call is a message from the <strong>assistant</strong>; its result is a message with the role <strong>tool</strong>.</li><li>Each result names the call it answers, by the call's <strong>id</strong>.</li><li>Roles and field names differ between providers: OpenRouter uses the OpenAI-compatible format, Gemini its own.</li></ul></div></div><div class="slide-foot"><span class="foot-label"></span><span class="foot-num">10</span></div></section></div>
 <div class="frame" data-index="11"><section class="slide slide--content" aria-label="Slide 11"><div class="slide-body"><h2 class="slide-title">Where tools sit in the context</h2><div class="slide-content"><pre class="verbatim"><code>system instructions        fixed                  Week 2
 tool definitions           fixed, on every call   Week 8
 memory: profile            per user               Week 7
