@@ -26,6 +26,10 @@ neo4j==6.3.1
 langchain==1.4.7
 langchain-openai==1.7.2
 
+# LangChain's chat model for Google's Gemini API (ChatGoogleGenerativeAI), the alternative
+# provider in week9/agent_stack_lab.ipynb. Verified 2026-11-01 with google-genai 2.22.0.
+langchain-google-genai==4.4.2
+
 # Optional, not installed by default. Only the built-in demo in multimodal_demo.py
 # draws its own images and needs this; that script works on your own image files
 # without it. Uncomment if you want the zero-argument demo. Verified with 10.0.1.
