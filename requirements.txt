@@ -30,6 +30,13 @@ langchain-openai==1.7.2
 # provider in week9/agent_stack_lab.ipynb. Verified 2026-11-01 with google-genai 2.22.0.
 langchain-google-genai==4.4.2
 
+# MCP: the protocol's Python SDK, whose FastMCP runs the servers in week10/, and LangChain's
+# adapter, which turns a server's tools into LangChain tools. The adapter requires mcp below
+# 2, so the SDK is pinned to its last 1.x release, which speaks the protocol revisions up to
+# 2025-11-25. Verified 2026-11-08 on Python 3.14.
+mcp==1.30.0
+langchain-mcp-adapters==0.3.2
+
 # Optional, not installed by default. Only the built-in demo in multimodal_demo.py
 # draws its own images and needs this; that script works on your own image files
 # without it. Uncomment if you want the zero-argument demo. Verified with 10.0.1.
