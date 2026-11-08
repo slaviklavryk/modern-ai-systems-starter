@@ -33,3 +33,6 @@ Thumbs.db
 
 # Week 6 answers written by evaluate.py and graph_rag_lab.ipynb
 week6/results/
+
+# Claude Code's project MCP servers, written by `claude mcp add --scope project`
+.mcp.json
