@@ -416,17 +416,24 @@ terms, and a suspended account costs you your personal email too.
 | A node never appears in vector search | Its vector has the wrong length, and the index silently ignores it. `graph_vectors.py` checks the length before writing; your own code should too |
 | Graph gone after restarting Docker | Someone ran `docker compose down -v`, which deletes the volume. `python load_graph.py --movies` or `python load_graph.py` rebuilds either graph |
 | The Movies graph (or the course graph) has disappeared | Loading one graph removes the other: Community edition has one database, so they take turns. Load the one you need; after the course graph, run `python graph_vectors.py` again |
+
 ## What is here
 
 ```
 requirements.txt          Dependencies, pinned. Install once, covers all weeks
 .env.example              Copy to .env (at the repo root) and fill in
-.gitignore               Keeps .env and week3/chroma/ out of git
+.gitignore               Keeps .env, the Chroma stores and week6/results/ out of git
 docker-compose.yml       Neo4j, pinned and memory-capped — started in Week 4
 
 common/
-  llm_client.py          Switches every notebook between Gemini and Lightning AI
-  LLM_CLIENT.md          How that switch works, and what does and does not carry over
+  llm_client.py          One interface for every notebook: Gemini (default), Lightning AI or OpenRouter
+  LLM_CLIENT.md          How the backend is chosen, and what does and does not carry over
+
+utils/
+  kill_kernels.ps1       List Jupyter kernels, and kill one that will not restart (Windows)
+  verify_lightning.py    Checks whether Lightning AI answers with your key
+
+docs/                    The published slides; index.html lists every week
 
 week1/
   hello.py               Your first model call
@@ -455,8 +462,54 @@ week4/
                          Loading one of the two graphs removes the other
   graph_db.py            Connect to Neo4j and run Cypher. `python graph_db.py` checks it is up
   graph_vectors.py       Embeddings on nodes, the vector index, and copying chunks from Chroma
+
+week5/
+  kg_lab.ipynb           A knowledge graph of the course, extracted from its documents
+  kg_model.py            The graph's declared model: entity types, relationships, how names are matched
+  extraction.py          Extract entities and relationships from chunks of text, with a schema
+  kg_loader.py           Load an extraction into Neo4j; loading it twice changes nothing
+  constraints.cypher     One uniqueness constraint per key of the graph
+  ingest.py              Rebuild the course knowledge graph in one command
+  extractions/           The reference extraction of the course corpus, so no API call is needed
+
+week6/
+  graph_rag_lab.ipynb    Four retrievers and a router, compared on a test set
+  build_graph.py         Rebuild the cleaned graph with its chunk vectors. One command
+  cleaning.py            Merge spellings and settle types in the Week 5 graph
+  retrievers.py          Vector, by name, hybrid and text-to-Cypher retrieval, and the grounded answer
+  router.py              One model call chooses the retriever
+  vector_check.py        Refuses a search whose vectors come from another embedding model
+  evaluate.py            Runs every retriever on the test set and writes the answers out for judging
+  test_set.json          Five questions with their expected answers
+
+week7/
+  conversation_lab.ipynb A conversation over the Week 6 retrievers, then memory across conversations
+  conversation.py        Rewrite a follow-up, retrieve, answer with the earlier turns as history
+  memory.py              Facts about the user, stored with their source and date
+
+week8/
+  agent_lab.ipynb        One LangChain agent with the course's tools, built in six steps
+  agent_kit.py           The model on OpenRouter, a tool's definition, and ask(), which shows each step
+
+week9/
+  agent_stack_lab.ipynb  One agent built from a configuration, one setting changed per part
+  agent_stack.py         The course's tools, the context assembled before each call, memory extraction
+
+week10/
+  mcp_lab.ipynb          The course's tools as MCP servers, used from MCP Inspector and the agent
+  rates_server.py        MCP server: the NBU exchange rate, today's and on a past date (port 8001)
+  course_server.py       MCP server: the course search and graph tools, a resource and a prompt (port 8002)
+  servers.json           The two servers' addresses, read by the notebook and by MCP Inspector
+  mcp_host.py            The notebook's connection to the servers, and an awaited ask()
+
+week11/
+  security_lab.ipynb     Attacking and defending the course's agent
+  security_kit.py        A post planted in the search results, markers, the addresses in an answer
+  deadlines_server.py    MCP server from outside the course; --changed changes its tool (port 8003)
+  servers.json           The three servers' addresses
 ```
 
-Week 3 reuses `week2/context_lab.py`, and both weeks use `common/llm_client.py`; a short
-path line at the top of the files that reach across folders makes those imports resolve
-from any working directory.
+Later weeks build on earlier ones: Week 3 reuses `week2/context_lab.py`, Week 6 cleans the
+Week 5 graph, and Weeks 9–11 reuse the tools and helpers of Weeks 6–8. A short path line
+at the top of each file that reaches across folders, or the first cell of the notebook,
+makes those imports resolve from any working directory.
