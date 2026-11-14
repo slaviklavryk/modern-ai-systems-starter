@@ -39,6 +39,19 @@ def exchange_rate(
     r = rows[0]
     return f"1 {r['cc']} = {r['rate']} UAH, set by the NBU for {r['exchangedate']}"
 
+@mcp.tool(annotations=ToolAnnotations(readOnlyHint=True))
+def exchange_rate_on(
+    currency: str = Field(description="The currency's ISO 4217 code, such as EUR or USD"),
+    day: datetime.date = Field(description="The date, as YYYY-MM-DD"),
+) -> str:
+    """The official hryvnia exchange rate that the National Bank of Ukraine set for one
+    currency on a past date. Use it to compare a rate with an earlier one."""
+    rows = requests.get(f"{NBU}?valcode={currency}&date={day:%Y%m%d}&json", timeout=10).json()
+    if not rows:                                # a future date returns an empty list
+        return f"No NBU rate for {currency!r} on {day.isoformat()}."
+    r = rows[0]
+    return f"1 {r['cc']} = {r['rate']} UAH, set by the NBU for {r['exchangedate']}"
+
 
 if __name__ == "__main__":
     mcp.run(transport="streamable-http")
