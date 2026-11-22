@@ -36,3 +36,6 @@ week6/results/
 
 # Claude Code's project MCP servers, written by `claude mcp add --scope project`
 .mcp.json
+
+# Week 12 run records, written by the evaluation notebook
+week12/results/
